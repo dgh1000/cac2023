@@ -51,7 +51,7 @@ analyzePcRepetition = do
       f2 = map stChords f1
       f3 :: [Map Int Chord]
       f3 = concatMap getChords f2 
-      allChords :: [Chord]
+      allChords ::  [Chord]
       allChords = concatMap M.elems f3
       fc :: Chord -> [Int]
       fc (Chord _ _ (NSingles m) _) = map (midiPitch . nPitch) $ M.elems m

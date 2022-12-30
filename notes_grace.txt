@@ -100,10 +100,12 @@ CONSIDERING OTHER METHODS OF DOING TIES
     ends.
 
 - propose: work with it still in stage Map Loc [XMsrData]: except
-    we use Loc 
-  - advantage: XMsrData has "tie start" and "tie stop" flags 
+    we use Loc for ending 
+  - advantage: XMsrData has "tie start" and "tie stop" flags, can remove
+    everything that is a tie stop
   - work backwards, convolving with 
 
 - we could preserve 
+etc. etc.
 
 
