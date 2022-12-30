@@ -1,0 +1,74 @@
+{-# LANGUAGE TupleSections #-}
+module Instruments.IrCello where
+
+import qualified Data.Map.Strict as M
+import Data.Set(Set)
+import Instruments
+import Instruments.ModKsInstr
+import Score.ScoreData
+
+-- Ircam cello
+--
+--   Sets up ModKsInstr
+--
+
+-- NOTES; all making instruments take staffname , whit also needs
+-- instrument name not sure how that's different than staff name
+-- or how it is used, I don't think it has an user-facing meaning
+-- MetaInstr irCello_mki "make instrument?" "modKsRun" compute mod
+-- values and keyswitches?
+--
+irCello :: String -> String -> MetaInstr
+irCello iname staffN = MetaInstr iname [staffN] irCello_mki modKsRun
+
+-- NOTES: oh here is irCello_mki. it's based on a ModKsInstr
+
+irCello_mki = ModKsInstr [] irCello_trillMod irCello_articDests
+              irCello_articKs irCello_velCurves irCello_aliases
+              irCello_modDests irCello_modVelCurve
+
+
+irCello_aliases = [("arco", "o/C0"),("sfz", "o/C#0")]
+
+irCello_trillMod :: Set ChordModifier -> Maybe Int -> Maybe String
+irCello_trillMod mods mTrill
+  | StrongAccent `elem` mods = Just "o/C#0"
+  | Staccato     `elem` mods = Just "o/D0"
+  | (SingTrem 0) `elem` mods = Just "o/D#0"
+  | (SingTrem 1) `elem` mods = Just "o/D#0"
+  | (SingTrem 2) `elem` mods = Just "o/D#0"
+  | mTrill == Just 1         = Just "o/E0"
+  | mTrill == Just 2         = Just "o/F0"
+  | otherwise                = Nothing
+
+oArtics = ["o/C0", "o/C#0", "o/D0", "o/D#0", "o/E0", "o/F0", "o/F#0", "o/G0"]
+         
+
+irCello_articDests =
+  M.fromList [ ("o/C0" , (0,1))
+             , ("o/C#0", (0,1))
+             , ("o/D0" , (0,1))
+             , ("o/D#0", (0,1))
+             , ("o/E0" , (0,1))  -- trill minor 2nd
+             , ("o/F0" , (0,1))  -- trill major 2nd
+             , ("o/G0" , (0,1))  -- harmonics
+             , ("ox"   , (0,2))
+             , ("pr"   , (0,3))
+             , ("tx"   , (0,4))
+             ]
+
+irCello_articKs = M.fromList $ xs ++
+    [("ox",Nothing),("pr",Nothing),("tx",Nothing)]
+  where
+    xs = zipWith (\s x -> (s,Just x)) oArtics [24..]
+
+irCello_velCurves = out
+  where
+    c1 = VelCurve [ (0.45,10), (8.55,127)]
+    out = M.fromList $ map (,c1) (oArtics ++ ["ox","pr","tx"])
+
+irCello_modDests = [(0,2),(0,4)]
+
+irCello_modVelCurve = VelCurve [ (0.45,10), (8.55,127) ]
+
+

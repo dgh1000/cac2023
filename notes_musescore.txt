@@ -1,0 +1,79 @@
+code to put near experimental modifications for MuseScore: MUSESCORE. also putting this
+near attempt to figure out current logic for Sibelius files
+
+
+Okay so Sibelius doesn't attach a voice to chord notes and MuseScore does. Where in
+my code am I enforcing no voice on a chord note and can that change?
+Can I just assume that chord note has same voice as previous note?
+
+goal: locate how staves are computed from musicxml, in particular the output of a piano score
+  in MuseScore
+functions:
+  - in RunOnce.hs:273, a call to parseXScore. could attach debugging to this variable 'xd'
+  - parseXScore
+
+12/27: Next steps: allow for dynamics on both staves of a piano score
+
+- Strategy: 
+  - make a set of voice numbers for every staff (v.n.'s that appear on that staff)
+  - current hypothesis: there is no overlap in v.n.'s between staves
+  - read the staff number of any dynamic markings and make one list of dynamic markings
+    for each staff
+  - create base dynamic curve for each staff. Duplicate it for each voice on that staff.
+  - Final result is one dyn. curve for each voice. The rest proceeds as before. 
+
+- Learn how dynamics work now.
+  - what is Curve?
+    - Curve = Curve [OneCurve]
+    - OneCurve = (Map Double (Seg Double)) TimeSigs (Map Double Loc)
+    -             ^ segments versus time              ^ how to convert time back to Loc 
+    --                                                  for some purpose (maybe just debugging)
+    - Seg a = Seg Double a a   <end> <value1> <value2>
+
+  - abstraction of all types of dynamics markings
+     data DynMark = DmLev1Simple Double
+                  | DmLev1R Double
+                  | DmLev1L Double
+                  | DmLev1LR Double Double
+                  | DmLev2R Double
+                  | DmLev2L Double
+                  | DmLev2LR Double
+                  | DmHairpin HairpinType Loc
+
+
+  - what is stored in TrState?
+    - _trStateLoudnessMaps :: Map String (Map Int Curve) -- clearly one curve per voice number
+
+  - what does Dynamics.hs do?
+
+    - staffLev1 and staffLev2 operate on a list of DynMark
+      - staffLev1 :: TimeSigs -> AbsTimeMap -> Map Loc [DynMark] -> Staff -> OneCurve
+                                                                    ^ only used for true end
+      - staffLev2 :: TimeSigs -> AbsTimeMap -> Map Loc [DynMark] -> Staff -> OneCurve
+                                                                    ^ not used at all
+      - New staffLev1, staffLev2
+        - staffLev1 :: TimeSigs -> AbsTimeMap -> Map Loc [DynMark] -> Loc -> OneCurve
+        - staffLev2 :: TimeSigs -> AbsTimeMap -> Map Loc [DynMark] -> OneCurve
+
+- new stuff
+  - added to Staff: stVoiceMap :: Map Int Int
+
+- new stuff in Dynamics.hs
+  
+  - doStaff :: TimeSigs -> AbsTimeMap -> Staff -> [Curve]
+
+  - hpDynCurves :: Map String AbsTimeMap -> Score -> Map String Curve
+    will become :: Map String AbsTimeMap -> Score -> Map String [Curve]
+
+  - combineDynHairpin :: Map Loc [Dynamic] -> Map Loc Hairpin -> Map Loc [DynMark]
+
+  - split by staff :
+    Map Int Int -> Map Loc [Dynamic] -> [Map Loc [Dynamic]]
+    Map Int Int -> Map Loc Hairpin -> [Map Loc Hairpin]
+
+- apply hairpins and dynamics to proper sc. soft. staff
+  - will need to split up by score software staff
+  - how do MuseScore & Sib. distinguish where a hairpin or dynamic marking is?
+    - staff number? voice number?
+
+    

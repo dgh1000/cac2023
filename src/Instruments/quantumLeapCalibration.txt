@@ -1,0 +1,67 @@
+
+--> calibrating SOLO FLUTE to SOLO VIOLIN <--
+
+  FLUTE keyswitch (24+2) "susLeg" note 72
+
+    compared to solo violin susLeg (ks: 24 + 3)  note 64  at 0.0 dB in fader
+
+
+    8   -> 11
+    16  -> 25
+    24  -> 33
+    32  -> 45
+    40  -> 55
+    48  -> 65  -- 
+    56  -> 72  -- okay
+    64  -> 85  -- changed
+    72  -> 89 -- changed
+    80  -> 95 -- changed
+    88  -> 99 -- changed
+    96  -> 104 -- okay
+    102 -> 109
+    110 -> 113
+    118 -> 119
+    127 -> 127
+
+solo violin susLeg (ks: 24 + 3)  note 66 at -6.0 dB in fader
+   --------- vs. -------  
+guitar note 60 at -2.0 dB in fader
+
+
+8 -> 1 (and still way too loud)
+
+16 -> 1 (and sitll too loud)
+
+24 -> 1
+
+32 -> 46
+
+
+
+
+40 -> 4
+
+48 -> 6
+
+56 -> 9
+
+64 -> 28
+
+72 -> 60
+
+80 -> 80
+
+88 -> 86
+
+96 -> 96
+
+104 -> 104
+
+112 -> 110
+
+120 -> 118
+
+127 -> 121
+
+
+

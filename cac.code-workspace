@@ -1,0 +1,16 @@
+{
+	"folders": [
+        {
+            "path": "src/Score"
+        },
+        {
+            "path": "."
+        },
+        {
+            "path": "src/Instruments"
+        },
+        {
+            "path": "src/Translation"
+        }
+    ]
+}

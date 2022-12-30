@@ -1,0 +1,22 @@
+Network Set List
+  NetworkSet
+    nextT:    1.000
+    networks
+      Network
+        ptrState: 2
+        Nodes
+          iden: 1
+            Node
+              iden: 1, pitch:     Just 60
+              tSpan: Just    1.000 dur: Just    0.500
+              ampl: Just  -10.000, timbre: Just default
+          iden: 2
+            Node
+              iden: 2, pitch:     Just 60
+              tSpan: Just    1.000 dur: Just    0.500
+              ampl: Just  -10.000, timbre: Just default
+          iden: 3
+            Node
+              iden: 3, pitch:     Just 60
+              tSpan: Just    1.000 dur: Just    0.500
+              ampl: Just  -10.000, timbre: Just default

@@ -1,0 +1,30 @@
+
+where should I go with plan to generate my own music styles? I mean generate music according to
+existing styles? well I have a motif. I arrange the motif in various ways in order to fit
+chords and rhythmic models. and fit a shape.
+
+harmonic model... I'm clueless. how do you make something that sounds like good tonality? well
+we know we have motifs. we have a chord progression. I don't want to ram it into a chord
+progression rigidly but need to. so then we have some way of studying whether we have created
+an unpleasant harmony, or a pleasant harmony. probably have some basic categories of types of
+harmony, chords.
+
+is there any way I could work on categorization of harmony types? probably easiest to have
+material to work with and I get that through searching. 
+
+what's the simplest search I can do? 
+
+how about we have a list of chords, we search the deployment of motifs such that the emphasized
+notes, rhythmic accented, land on those chords
+
+we can deploy a motif in a way that is successful in terms of the outline of the notes, the
+points, beats that outline a particular harmony, but the notes in-between might not sound
+good. we will have examples that sound good, and those that don't. first-level way of looking
+at it is that certain harmonies, or complexity of harmony, occurs in the bad-sounding ones. it
+tells us what to avoid.
+
+each can be analyzed in terms of harmonic content: this can be intervals that are present, 
+
+what concepts do we want to incorporate: how about single melody, motif, outline. outline means
+that some notes will stand out, others will be subordinate, tend to be avoided.
+

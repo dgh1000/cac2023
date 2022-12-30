@@ -1,0 +1,14 @@
+<score-partwise version="3.0">
+  <work>
+    <work-title />
+  </work>
+  <part-list>
+    <score-part>
+      <part-name>piano</part-name>
+    </score-part>
+    <score-instrument id="I1">
+      <instr-name>piano</instr-name>
+      <instrument-sound>keyboard.piano.grand</instrument-sound>
+    </score-instrument>
+  </part-list>
+</score-partwise>

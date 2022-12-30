@@ -1,0 +1,122 @@
+XScore
+Parts:
+  Part name: Piano
+    measure num: 1
+      [0] XDWords "ext@5" Nothing
+        offset: Nothing
+        voice: Nothing
+        staff: Just 1
+      [2] XDWords "T=120" Nothing
+        offset: Nothing
+        voice: Nothing
+        staff: Just 1
+    measure num: 2
+      [0] XDDynamics "f"
+        offset: Nothing
+        voice: Nothing
+        staff: Just 1
+      [0] Pitch: D5
+        duration : 0
+        isGrace  : Just False
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: A4
+        duration : 1
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [1] Pitch: G4
+        duration : 1
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [2] Pitch: A4
+        duration : 1
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [3] Pitch: B4
+        duration : 1
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [4] Pitch: C5
+        duration : 4
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [4] XDDynamics "p"
+        offset: Nothing
+        voice: Nothing
+        staff: Just 2
+      [4] Pitch: C3
+        duration : 1
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 5
+        staff    : Just 2
+        Notations: 
+      [5] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Nothing
+        staff: Just 2
+      [5] Pitch: B2
+        duration : 1
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 5
+        staff    : Just 2
+        Notations: 
+      [6] Pitch: A2
+        duration : 1
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 5
+        staff    : Just 2
+        Notations: 
+      [7] Pitch: G2
+        duration : 1
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 5
+        staff    : Just 2
+        Notations: 
+      [8] XDWedge WedgeStop
+        offset: Nothing
+        voice: Nothing
+        staff: Just 2
+    measure num: 3
+      [0] XDDynamics "p"
+        offset: Nothing
+        voice: Nothing
+        staff: Just 1
+      [0] Pitch: C5
+        duration : 4
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] XDDynamics "f"
+        offset: Nothing
+        voice: Nothing
+        staff: Just 2
+      [0] Pitch: E2
+        duration : 1
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 5
+        staff    : Just 2
+        Notations: 

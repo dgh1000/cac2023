@@ -1,0 +1,16 @@
+
+PROCESS OF CONVERTING XML DOC TO Map Loc (Map Int Chord)
+
+- preliminary chords.. no ties done yet
+  - lMapMaybe xMsrDataToNote: (filter out just notes)
+    - Map Loc [XMsrData] -> Map Loc [XNote]
+  - M.map groupNotesByVoice
+    - Map Loc [XNote] -> Map Loc (Map Int [XNote])
+  - Maybe put grace notes in here with 32nd note duration? we would need
+    to look for all grace notes at a given Loc and produce new (Loc,Map Int [XNote])
+    as well as modify 
+
+  - M.mapWithKey (noteMapToChordMap msrInfo)
+    - Map Loc (Map Int [XNote]) -> Map Loc (Map Int PrelimChord)
+
+- do ties 

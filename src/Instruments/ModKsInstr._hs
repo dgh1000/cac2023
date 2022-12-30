@@ -1,0 +1,134 @@
+
+-- so we need to add accents to the mod curve. we need to **test** the mod
+-- curve. we need to consolidate common patterns between piano and mod ks.
+--
+-- what is in common? well they both do
+--
+--   get proper loudness curve
+--
+--     note about altering this for accents: it would have to be done prior to
+--     calling the routine on each low level note
+--
+--   find marks
+--
+--     in Mod/Ks: only needs marks for current staff
+--
+--     in Piano: needs both current staff and combined staves
+--
+--   lookup artic: == mod/ks only ==
+--
+--  
+--   lookup loudness and throw error if missing dynamic mark
+--
+-- == IN MOD/KS ONLY ==
+--
+--   lookup 
+
+
+module Instruments.ModKsInstr where
+
+import qualified Data.Map.Strict as M
+import Debug.Trace
+import Data.Map.Strict(Map)
+import Text.Printf
+import Data.Set(Set)
+import Control.Monad
+import Control.Monad.State
+import Instruments
+import Translation.InstrUtils
+import Translation.TimeMap
+import Translation.Trill
+import Translation.Curves
+import Translation.AlterTimes
+import Common
+import Common.CommonUtil
+import Score.ScoreData
+import Util.Exception
+
+-- there's not a make modKsInstr because it's all in the data strucutre
+-- modKsRun. can only be one staff 
+-- do Init is those init raws
+-- I think allStaffLowLevel is a unifired . there's something
+-- called LowLevelNote. is that the new name for raw
+
+modKsRun :: MetaInstr -> ModKsInstr -> Int -> Int -> Tr MetaInstr
+modKsRun instr mki msrBeg msrEnd = do
+  let staffN = case iStaffNs instr of
+        [x] -> x
+  doInit mki
+  allStaffLowLevel staffN False msrBeg msrEnd  >>=
+    mapM (doLowLevel mki) >>=
+    (alterTOff . concat) >>=
+    includeNotes
+  return $ MetaInstr (iName instr) (iStaffNs instr) mki modKsRun
+
+
+doInit :: ModKsInstr -> Tr ()
+doInit mki = includeInitRaws $ miInitRaws mki
+
+
+doLowLevel :: ModKsInstr -> LowLevelNote -> Tr [TrNote]
+doLowLevel mki
+  (LowLevelNote staffN loc trueEnd vn chord note pit onOff mTrill) = do
+    score <- gets tsScore
+    lc <- (mkLookup vn . mkLookup staffN) `liftM` gets tsLoudness
+    let marks = mkLookup staffN $ scMarksByStaff score 
+        markedArtic = case lookupStaffMarkLE isArtic "'#'" loc marks of
+          Just s  -> s
+          Nothing -> throwMine $ printf ("no marked artic on staff '%s' " ++
+                     "before loc %s") staffN (showLoc2 loc)
+        mTrillSize = case mTrill of
+          NoTrill         -> Nothing
+          NonSplitTrill x -> Just x
+        modifyArtic a =
+          case miTrillModArtic mki (cModifiers chord) mTrillSize of
+            Just s  -> s
+            Nothing -> a
+        artLk k m msg = case M.lookup k m of
+          Just x -> x
+          Nothing -> throwMine $ printf ("data for artic '%s' of type " ++
+                     "'%s' is missing for staff '%s'") k msg staffN
+        loud = case curveLookup (onTime onOff) lc of
+          Just x  -> clipLoud $ computeAccent2 (cModifiers chord) x
+          Nothing -> throwMine $ printf ("missing dynamic mark on staff " ++
+                     "'%s' before %s") staffN (showLoc2 loc)
+        articAlias a = case lookup a (miArticAliases mki) of
+          Nothing -> a
+          Just x  -> x
+        finalArtic = articAlias $ modifyArtic markedArtic
+        dest = artLk finalArtic (miArticDests mki) "dest"
+        ks   = artLk finalArtic (miArticKs mki) "keyswitch"
+        velCurve = artLk finalArtic (miArticVelCurves mki) "velcurve"
+        noteMods = ksToMod ks
+        vel = lookupVel "ModKsInstr" loud velCurve
+        destData = DestData dest pit vel noteMods
+        alterEnd = uEndAlter score staffN loc trueEnd (cModifiers chord)
+        arpDelta = case lookupStaffMarkLE isArpDelta "'arp'" loc marks of
+          Nothing -> throwMine $ printf ("missing arp delta on staff '%s'" ++
+                     " before loc %s") staffN (showLoc2 loc)
+          Just x -> x
+    arpAlter <- genericArp [staffN] loc pit arpDelta
+    let ooOut | Arpeggiate `elem` (cModifiers chord) =
+                  let (t1,t2) = headTimes onOff
+                  in consTimes "arp" (t1+arpAlter) t2 onOff
+              | otherwise = onOff
+    return $ [TrSingle staffN loc trueEnd vn chord note ooOut [destData]
+                       pit loud alterEnd 0.05]
+
+-- what affects OnOff? arpeggio. 
+
+ksToMod :: Maybe Int -> [Modif]
+ksToMod mi = case mi of
+  Just k  -> [ModifKs (Left (-0.1)) k]
+  Nothing -> []
+  
+
+mkLookup k m = case M.lookup k m of {Just x -> x}
+
+{-
+mkiRun :: MetaInstr -> ModKsInstr -> Int -> Int -> Tr MetaInstr
+mkiRun instr mki msrB msrE = do
+  
+  return instr
+-}
+  

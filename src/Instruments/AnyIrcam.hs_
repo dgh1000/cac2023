@@ -1,0 +1,74 @@
+module Instruments.AnyIrcam where
+
+import qualified Data.Map as M
+import Text.Printf
+import Control.Arrow
+import Control.Lens
+import Instruments
+import System.Environment
+import Translation.RunOnce
+import Translation.GenericShape
+import Translation
+import Configs.GenericShapeMasterFunctions
+import Translation.InstrUtils
+import Common
+import Instruments.Any
+ 
+defaultVelCurveAny = VelCurve [(0,1),(9,127)]
+
+
+fromTable :: String -> [(String,a)] -> String -> a
+fromTable msg table artic = case lookup artic table of
+  Nothing -> error $ printf "In %s, artic '%s' not found in table" msg artic
+  Just x  -> x
+
+
+irDefault :: String -> (Int,Int) -> (AnySimple -> AnySimple) -> MetaInstr
+irDefault staffN dest setter =
+  makeAnySimple staffN gsFunc1 (setter anySimp) 
+  where
+    anySimp = AnySimple 
+      { _anySimpleAccentAmt   = 0.6
+      , _anySimpleStacFn      = return
+      , _anySimpleEndAlterFn  = return
+      , _anySimpleArpFn       = return
+      , _anySimpleModFn       = \_ _ _ -> return []
+      , _anySimpleDestFn      = const dest
+      , _anySimpleVelSource   = VsCurve $ const defaultVelCurveAny
+      , _anySimpleKsFn        = const Nothing
+      , _anySimpleVolFn       = const $ Left 110
+      , _anySimpleAliases     = []
+      , _anySimpleStaffN      = staffN
+      }
+
+
+irFlute staffN dest = irDefault staffN dest setter
+  where
+    setter = set endAlterFn updateEndAlter
+           . set ksFn (fromTable "flute, ks table" ksTable)
+           . set volFn (fromTable "flute, vol table" volTable)
+    ksTable =
+       map (second Just) [ ("tr2" ,  53)
+                         , ("tr1" ,  52) 
+                         , ("ord" ,  48) ]
+       
+    volTable =          [ ("tr2" ,  Left 127)
+                        , ("tr1" ,  Left 127)
+                        , ("ord" ,  Left 110) ]
+
+irViolin staffN dest = irDefault staffN dest setter
+  where
+    setter = set endAlterFn updateEndAlter
+           . set ksFn (fromTable "violin, ks table" ksTable)
+   
+    ksTable =
+      map (second Just) [ ("stac", 38)
+                        , ("ord" , 36) ]
+               
+irGtr staffN dest defaultVol = irDefault staffN dest setter
+  where
+   
+    setter = set volFn (const (Right $ VelCurve [(0.95,10),(8.05,127)]))
+           . set velCurveFn (const $ VelCurve [(0.95,64),(8.05,127)])
+
+

@@ -1,0 +1,30 @@
+
+Synths as needed for WTC C minor prelude and fugue
+------------------------------------------------
+
+definitions
+
+  control curve: some control that is sent continuously, such as modulation.
+
+we have
+
+  SYNTH: a meta-instrument plugin that contains
+
+    accent amount, list of bracket functions
+
+  BRACKET FUNCTIONS
+
+    functions that follow an algorithm to convert notes to MIDI: that means
+
+      determing channel: this is read from MARK ON STAFF
+
+      determining velocity
+
+      determining volume related control curve
+
+      determining beginning control settings - this is configured
+
+      determine separation or legato: this is READ FROM SLURS, ext MARKS and
+      trunc MARKS
+
+

@@ -1,0 +1,25 @@
+Types of Music xml data
+
+XDirection: type and data provided to constructor
+  XDMetronome String Int
+  XDWords String (Maybe Int) [Text and default-y attr if present]
+  XDDynamics String
+  XDWedge WedgeType
+  XDPedal PedalEvt Bool (Bool: true if attr 'line' is 'yes')
+  XDOctaveShift Int (number of octaves up or down; or 0 means stop)
+  XDOtherDirection String (where Sibelius puts my custom trill symbols)
+
+XNotation
+  XNSLur String (Maybe Int) 'start' or 'stop', number
+  XNArticulations [XArticulation]
+  XNOrnaments [XOrnament]
+  XNFermata
+  XNArpeggiate
+  XNTechnical [XTechnical]
+
+XArticulation: stac, staccatissimo, accent strong accent tenuto, detached legato
+
+XOrnament: TillMark, Tremolo TremoloType Int 
+  (tremolo type: single, start, stop)
+
+WedgeType: cresc, dim, stop

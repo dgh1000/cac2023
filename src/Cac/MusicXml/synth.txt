@@ -1,0 +1,6 @@
+
+MaoBracket Piano-staff1 [  2: 1+     ] [  2: 3+     ] b
+MaoBracket Piano-staff2 [  2: 1+ 1/ 2] [  2: 3+ 1/ 2] a
+MaoArtic Piano-staff2 [  2: 3+ 1/ 2] foo
+MaoBracket Piano-staff1 [  2: 3+ 1/ 2] [  3: 1+     ] a
+MaoBracket Piano-staff2 [  2: 4+ 1/ 2] [  3: 2+     ] c

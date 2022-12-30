@@ -1,0 +1,82 @@
+
+organizing synthesized music with Falcon, Moog, and Reaper
+
+  what varies?
+
+     the source of music is different: 
+
+       Sibelius files, like Bach fugue or my own compositions
+ 
+       algorithmically generated music
+
+       piano roll note entry
+
+  the method of configuration of the synthesizer is different
+
+    HIGHEST LEVEL: Reaper or Logic files
+
+      these unite 
+
+        all virtual instruments (including more than one kind in same file)
+
+        assigning them to MIDI devices and channels
+
+        putting fader and pan on them
+ 
+        have EQ
+
+    LOWEST LEVEL: Falcon instruments or Moog patches
+
+      these could be reused as part of a nuew Reaper file
+
+      these exist one-to-one with MIDI "dest" (interface & channel)
+
+      contain all the (1) patching (presence of oscillators, etc.), (2)
+      control settings , (3) midi channel assignments to controls
+
+    MEDIUM LEVEL: Falcon multis
+
+      several Falcon instruments combined. can be reused as part of new
+      Reaper file
+
+    LOW LEVEL:
+
+      template Falcon instruments
+
+      assigning midi channels to controls: these can be saved and reused
+      independently in Moog. Part of template Falcon instrument
+
+  what data types are we using in cac/Instruments?
+
+    Any: very generic 
+
+      you give a 'note function' and a 'mod function' to be defined any way
+      you like
+
+      AnySimple: a helper data definition. 
+
+        fill out the fields of this structure with functions and data 
+
+        pass it to 'makeAnySimple'
+
+    Synth: based on bracket functions
+
+      you give it a set of *named* channels 
+
+        a channel holds the configuration for one MIDI dest channel, most
+        likely a virtual instrument
+
+      and a set of *named* bracket function
+
+        which contain a function that converts SNotes to MIDI notes and MIDI
+        controls aimed toward one or more the named channels
+
+    SynthExamples
+
+      SimpleBracketFunc: you fill out the data and pass it to
+        'simpleBracketFunc'
+
+      
+
+ 
+   

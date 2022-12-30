@@ -1,0 +1,288 @@
+module Instruments.Synth where
+
+import qualified Data.List as L
+import qualified Data.Map as M
+import qualified Data.Set as S
+import Debug.Trace
+import Text.Printf
+import Data.Map(Map)
+import Data.Set(Set)
+import Data.Maybe
+import Common
+import Common.CommonUtil
+import Translation
+import Translation.InstrUtils
+import qualified Translation.TimeMap as TimeMap
+import Instruments
+import Score.ScoreData
+import Util.Map
+import Util.Exception
+import Control.Lens
+import Control.Lens.TH
+import Control.Monad.State
+
+--  BrData: internal representation in this module: final representation of
+--  all data related to one Bracket
+--
+--         <bracket name> <maybe ctrl name> <staffN> <loc1> <loc2>
+--         <maybe center loc> <param>
+data BrData = BrData String (Maybe String) String Loc Loc (Maybe Loc) [Double]
+
+
+-- BrDataTemp: internal represenation of bracket data, but missing bracket
+--   name and staff name. Used when constructing [BrData] for one staff.
+--
+-- <maybe ctrl name> <loc1> <loc2> <maybe center loc> <Params>
+data BrDataTemp = BrDataTemp (Maybe String) Loc Loc (Maybe Loc) [Double]
+
+
+makeSynth ::
+  String -> [String] -> Double -> Map String BracketFunc -> GsFunc -> MetaInstr
+makeSynth name staffNs accentAmt bracketFuncs gsFunc =
+  MetaInstr name staffNs (Synth accentAmt bracketFuncs) True 
+            runSynth gsFunc
+
+
+-- runSynth
+--
+--   input: MetaPrepared, which is (1) map of staff name to snotes, and (2)
+--   beginning and end Locs of range being translated
+--
+--   output: side-effects the notesOut and rawsOut and initRawsOut fields of
+--   TrState
+--
+--   Synth
+--
+--     map of bracket function name to bracket function
+--
+--     job:
+--
+--       find all brackets within the region to be translated
+--
+--       for each range, call appropriate bracket function with prepared
+--       BracketParams structure, get back TrRaws and SNotes, and put them in
+--       TrState
+--
+--       for each Synth channel, compute init TrRaws that go with default
+--       settings and put them in TrState 
+--
+runSynth :: MetaInstr -> Synth -> MetaPrepared -> Tr ()
+runSynth meta synth metaPre = do
+  -- find all brackets within region of MetaPrepared
+  bracketDatas <- runSynth_findAllBrackets meta
+  rawsSNotes <- mapM (runSynth_convertBracket meta synth metaPre) bracketDatas
+  let (theRaws,theSNotes) = mconcat rawsSNotes
+  -- initRaws <- runSynth_computeInitRaws synth
+  includeNotes theSNotes
+  includeRaws theRaws
+  -- includeInitRaws initRaws
+  
+
+
+-- runSynth_findAllBrackets
+--
+--   Call computeBrData on every staff and concat them
+runSynth_findAllBrackets :: MetaInstr -> Tr [BrData]
+runSynth_findAllBrackets meta =
+  concat `liftM` forM (iStaffNs meta) computeBrData 
+
+
+-- runSynth_convertBracket
+--
+--   Given one bracket (expressed as BrData, with parameters such as name,
+--   maybe control name, staff name, beg/end/maybe center locs), construct a
+--   BracketParams data and pass it to the function associated with that
+--   name (stored in $ view bracketFuncs synth)
+--
+--   Looks like we are filtering sNotes, but we need to create a begin time to
+--   go with begin loc
+runSynth_convertBracket :: MetaInstr -> Synth -> MetaPrepared -> BrData ->
+                           Tr ([TrRaw],[SNote])
+runSynth_convertBracket meta synth metaPre
+  brd@(BrData name mCtrlName staffN loc1 loc2 mLocC params) = do
+    let snsFiltered =
+          filter (\n -> loc1 <= snLoc n && snLoc n < loc2)
+          (synLookup "1" staffN $ view allSNotes metaPre)
+        b = BracketParams name staffN loc1 loc2 mLocC snsFiltered
+                          params
+        f = synLookup ("4 " ++ name) name $ view bracketFuncs synth
+    flag <- runSynth_bracketInRange metaPre brd
+    if flag
+       then f meta synth b
+       else return ([], [])
+
+
+runSynth_bracketInRange :: MetaPrepared -> BrData -> Tr Bool
+runSynth_bracketInRange metaPre (BrData _ _ staffN loc1 loc2 _ _) = do
+  atms <- view timeMaps `liftM` get
+  let atm = synLookup "99" staffN atms
+      tf l = TimeMap.lookupTime l atm
+      t1 = tf loc1
+      t2 = tf loc2
+      (mLoc1, mLoc2) = view range metaPre
+      mT1 = tf mLoc1
+      mT2 = tf mLoc2
+  return $ not (mT2 < t1 || mT1 > t2)
+
+
+-- computeBrData
+--
+--   Given staff name, compute [BrData].
+--
+computeBrData :: String -> Tr [BrData]
+computeBrData staffN = do
+  bmarks <- cbd_getOneStaffBrackets staffN
+  return $ cbd_doOneStaff staffN bmarks
+
+
+cbd_doOneStaff :: String -> Map Loc [BracketMark] -> [BrData]
+cbd_doOneStaff staffN ms = concatMap f $ S.toList names
+  where
+    names = cbd_findAllBracketNames ms
+    f :: String -> [BrData]
+    f n = map fromTemp temps
+      where
+        filtered = cbd_filterOneName n ms
+        temps = cbd_foldOneNameBrackets filtered
+        fromTemp :: BrDataTemp -> BrData
+        fromTemp (BrDataTemp mCtrl loc1 loc2 mLocC vs) =
+          BrData n mCtrl staffN loc1 loc2 mLocC vs
+
+
+cbd_getOneStaffBrackets :: String -> Tr (Map Loc [BracketMark])
+cbd_getOneStaffBrackets staffN = 
+  (lMapMaybe maybeBracketMark . synLookup "2" staffN . scMarksByStaff)
+  <$> gets (view score)
+
+
+cbd_findAllBracketNames :: Map Loc [BracketMark] -> Set String
+cbd_findAllBracketNames = S.fromList . concatMap g . M.toList
+  where
+    g :: (Loc,[BracketMark]) -> [String]
+    g (_,ms) = map brMarkName ms
+
+
+cbd_filterOneName :: String -> Map Loc [BracketMark] -> 
+                               [(Loc,[BracketMark])]
+cbd_filterOneName name m = mapMaybe filterOneLoc $ M.toAscList m
+  where
+    filterOneLoc :: (Loc,[BracketMark]) -> Maybe (Loc,[BracketMark])
+    filterOneLoc (loc,ms) = case filter pred2 ms of
+      [] -> Nothing
+      xs -> Just (loc,xs)
+    pred2 :: BracketMark -> Bool
+    pred2 br = brMarkName br == name
+
+
+-- <BrData accumulated so far>
+-- <maybe fold in progress>
+data ComputeBrData_Fold = ComputeBrData_Fold [BrDataTemp]
+                          (Maybe Cbd_Fold_InProgress)
+
+-- <begin loc>
+--
+data Cbd_Fold_InProgress = Cbd_Fold_InProgress Loc (Maybe String) [Double]
+                           (Maybe Loc)
+
+cbd_initFold :: ComputeBrData_Fold
+cbd_initFold = ComputeBrData_Fold [] Nothing
+
+
+cbd_foldOneNameBrackets :: [(Loc,[BracketMark])] -> [BrDataTemp]
+cbd_foldOneNameBrackets bs = case m of
+    Nothing -> bd
+    Just _  -> throwMine $ "error in cbd_foldOneNamebrackets: fold still " ++
+                           "in progress, no right bracket conclusion" 
+  where ComputeBrData_Fold bd m = foldl cbd_foldStep cbd_initFold bs
+
+
+-- cbd_foldStep
+--
+--  One step. cases:
+--   no fold in progress
+--     no left bracket: error
+--     left bracket: initialize fold in progress with loc and maybe ctrl
+--       name and list of control values
+--   fold in progress
+--     with a no center loc defined
+--       we find a center -> set center location of the 'in progress' data
+--       we find a right but no center -> add to list of BrDataTemp and
+--                                        set 'in-progress' to Nothing
+--
+cbd_foldStep :: ComputeBrData_Fold -> (Loc,[BracketMark]) -> ComputeBrData_Fold
+cbd_foldStep (ComputeBrData_Fold bs Nothing) (loc1,bms) =
+  case cbd_findLeftBr bms of
+    Nothing -> throwMine $ printf ("error 'no left bracket' in folding " ++
+               "over brackets at loc %s") (showLoc2 loc1)
+    Just (mCtrl,vs) -> ComputeBrData_Fold bs
+                       (Just $ Cbd_Fold_InProgress loc1 mCtrl vs Nothing)
+cbd_foldStep (ComputeBrData_Fold bs (Just ip)) (loc1,bms) =
+  case ip of
+    Cbd_Fold_InProgress locB mCtrl vs Nothing 
+     | cbd_findCenterBr bms -> 
+         ComputeBrData_Fold bs (Just $ Cbd_Fold_InProgress locB mCtrl vs
+                                (Just loc1))
+     | cbd_findRightBr bms ->
+         ComputeBrData_Fold (BrDataTemp mCtrl locB loc1 Nothing vs:bs) Nothing
+    Cbd_Fold_InProgress locB mCtrl vs (Just locC)
+     | cbd_findCenterBr bms -> throwMine $ printf ("error: 'two center " ++
+                               "brackets' in folding over brackets at " ++
+                               "loc %s") (showLoc2 loc1)
+     | cbd_findRightBr bms ->
+         ComputeBrData_Fold (BrDataTemp mCtrl locB loc1 (Just locC) vs:bs)
+                            Nothing 
+
+
+cbd_findLeftBr :: [BracketMark] -> Maybe (Maybe String,[Double])
+cbd_findLeftBr xs = listToMaybe $ mapMaybe mLeft xs
+  where
+    mLeft (BmLeft _ mCtrl vs) = Just (mCtrl,vs)
+    mLeft _                   = Nothing
+
+
+cbd_findCenterBr :: [BracketMark] -> Bool
+cbd_findCenterBr = any isCenter 
+  where
+    isCenter BmCenter = True
+    isCenter _        = False
+
+    
+cbd_findRightBr :: [BracketMark] -> Bool
+cbd_findRightBr = any isRight
+  where
+    isRight (BmRight _) = True
+    isRight _           = False
+
+
+maybeBracketMark :: MarkD -> Maybe BracketMark
+maybeBracketMark (BracketL s mCtrl vs) = Just $ BmLeft s mCtrl vs
+maybeBracketMark (BracketR s)   = Just $ BmRight s
+maybeBracketMark BracketC       = Just BmCenter
+maybeBracketMark _              = Nothing
+
+
+synLookup n k m = case M.lookup k m of 
+  Just x -> x
+  Nothing -> error $ "synLookup: " ++ n
+
+
+{-
+-- genControlRaw
+--
+--   given a staff name, a time, a destination, a set of named controls (which
+--   can come from the SynthChan) and a particular setting (which can come
+--   from (view defSettings synthChan) or provided by a SimpleBracketFunc)
+genControlRaw :: String -> Double -> (Int,Int) -> NamedCtrlNums -> 
+                 (String,ChanCtrl CtrlValue) -> [TrRaw]
+genControlRaw staffN t dest ctrlNums (name,value) = out
+  where
+    num = synLookup "3" name ctrlNums
+    doRaw :: Int -> Int -> TrRaw
+    doRaw n v = TrRaw staffN t dest 0xb0 n v
+    out = case (value,num) of
+      (ChanCtrlAdsr v1 v2 v3 v4,ChanCtrlAdsr n1 n2 n3 n4) ->
+        [ doRaw n1 v1, doRaw n2 v2, doRaw n3 v3, doRaw n4 v4 ]
+      (ChanCtrlFreq v,ChanCtrlFreq n) -> [doRaw v n]
+-}
+
+

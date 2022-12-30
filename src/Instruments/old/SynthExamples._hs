@@ -1,0 +1,45 @@
+module Instruments.SynthExamples where
+
+import qualified Data.Map as M
+import Data.Map (Map)
+import Instruments.InstrumentsData
+import Common
+
+{-
+makeSynth :: [String] -> GsFunc -> Double -> VelCurve ->
+             [(String,(Int,Int))] -> MetaInstr
+makeSynth staffNs shapeFn accentAmt velCurve brackChans =
+  error "foo"
+
+
+makeSynth2 :: [String] -> GsFunc -> Map String SynthBracketFn -> Double ->
+              VelCurve -> MetaInstr
+makeSynth2 = error "foo"
+
+-}
+
+
+patch01 = SynPatch "basicStrStack02" (0,2)
+          basicStrStack02Controls
+          (M.fromList [("01", basicStrStack02Artic01)])
+
+-- channels of controllers
+
+-- Program:
+--   basic-str-stack-02.uvip
+basicStrStack02Controls =
+  M.fromList [ ("ampEnv"      , CsAdsr 16 17 18 19)
+             , ("analogAdsr1" , CsAdsr 20 21 22 23) ]
+
+basicStrStack02Artic01 =
+  SynthArtic basicStrStack02Values01 defaultVelCurve 0.5 
+  where
+    basicStrStack02Values01 =
+      M.fromList [ ("ampEnv"
+                   , CvAdsr (SvRaw 64) (SvRaw 64) (SvRaw 64) (SvRaw 64) )
+                 ]
+
+makeSynth01 :: MetaInstr
+makeSynth01 = error "foo"
+  where
+    syn = Synth M.empty M.empty 0.05

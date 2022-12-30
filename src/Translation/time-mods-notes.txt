@@ -1,0 +1,166 @@
+
+reworking time mod models, Sept. 4, 2017
+------------------------------------------------------------
+
+IMPORTANT IDEA: order of applying time mods
+
+   Marked Tempo/Ramps
+
+   Boundary/Adjust2
+
+   old-style: Adjust and AdjustMarker
+
+     a warning will be given and they will be ignored
+
+   old-style warp and staff warp
+
+     error given and they will be ignored
+
+   absolute warp and pause
+
+     note: since these adjust a time delta by a number of **beats**, not a
+     number of **seconds**, we have to consider the average beats per minute
+     over the range they apply
+
+
+
+arpeggios: an aside
+
+  as an aside, we may want to implement these differently: the first notes are
+  shifted EARLIER in time rather than the last notes shifted later. Or some
+  kind of balance
+
+
+simplifying idea: all time mod locations are adjusted to exact slice boundary
+before any processing is done
+
+what kinds of time mods are there?
+
+  XXX warp: this moves an arrival point, at loc T2. the modification of time
+  starts at T1 and continues to T3, where T1 < T2 < T3
+
+    does it maintain overall duration T3-T1? not sure
+
+    this may be superceded by Boundaries and TimeAdjusts, the new model
+
+    details of implementation
+
+      calls applyTimeMod_oneWarp: which I guess changes 
+
+  XXX absolute warp: change delay between points T1 and T2 to an exact value. 
+
+    this is useful when I want to tweak an arrival point, especially in a
+    piece that doesn't have a strong meter
+
+    do AFTER Boundary/TimeAdjust
+
+      (If done before, the requested absolute time may be altered by later
+      stages)
+
+  XXX old-style adjust: seems like a kind of warp
+
+    I'm not sure what's different between this and warp
+
+    maybe it was meant for staves only. maybe it was meant not to require a
+    marker
+
+  XXX pause
+
+    can be described as an asbolute warp unit mod once we round to nearest
+    slice
+
+    so probably implement this after Boundaries/Adjusts
+
+  XXX mult pause: don't need this any more, get rid of it
+
+    will deprecate
+
+  XXX TwoModify: don't need this
+
+    will deprecate
+
+  tempo
+
+    part of original map, before any adjusts
+
+  ramps & rit/accel
+
+    these function very similarly: definitely part of original time map
+
+  NEW: Boundaries and Adjusts
+
+    boundary defined by |
+
+    adjust starts + or -
+
+    staff boundaries are ^| and staff adjusts start ^+ or ^-
+
+    do global boundaries adjusts first, staff ones later
+
+a pause that lets note cut off
+
+  do we include a special kind pause so that a note's duration is shortened,
+  so that it gets released before the next note?
+
+  we could use a special articulation to shorten a note by 1.5 slices or so,
+  which would guarantee no part of it crosses over into pause slice
+
+varying tempo, pauses, etc
+
+  vary marked tempos? ramps?
+
+    commonality between marked tempos and ramps: all of them 
+
+    requirement: anything faster stays faster. anything the same stays the
+    same. complicated to do.
+
+  vary Boundary/Adjust2? old style adjust?
+
+    can vary the adjustment magnitude pretty easily
+
+  absolute warp and pause
+
+    can vary the magnitude up and down by some amount
+
+algorithm
+
+  general processing for all:
+
+    parse Mark2
+
+      I end up with some time-modification data attached to a specific Loc
+
+    create variable maps from Mark2
+
+    create Mark3
+
+      this involves, in part, computing boundary locations for adjusts and
+      grouping them together
+
+      replace NumVars with Doubles
+
+    write code that rounds Mark3 Locs to a slice boundary
+
+    produce unit time mods
+
+    
+
+  when creating time maps
+
+    create one map that includes all Marks that apply to all staves
+
+    create another map for each staff, including Marks that apply only to that
+    staff
+
+    
+
+  
+
+  think about how to handle the situation that global adjust boundaries could
+  be on different staffs, but staff adjust boundaries should be on same
+  staff. 
+
+
+
+
+  

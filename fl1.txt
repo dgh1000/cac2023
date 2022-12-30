@@ -1,0 +1,9 @@
+
+[201: 3+     ]
+  simple: Nothing
+    ramp left: Nothing ramp rght: Nothing
+    hairpin  : :Just "(hp Diminuendo [204: 2+255/256])"
+[204: 3+     ]
+  simple: Just "2.00"
+    ramp left: Nothing ramp rght: Nothing
+    hairpin  : :Nothing

@@ -1,0 +1,78 @@
+{-# LANGUAGE TupleSections #-}
+module Instruments.IrTrumpet where
+
+import qualified Data.Map.Strict as M
+import Data.Set(Set)
+import Instruments.InstrumentsData
+import Instruments.ModKsInstr
+import Score.ScoreData
+
+-- Ircam cello
+--
+--   Sets up ModKsInstr
+--
+
+irTpt:: String -> String -> Int -> MetaInstr
+irTpt iname staffN stream = MetaInstr iname [staffN] (irTpt_mki stream)
+                                      modKsRun
+
+irTpt_mki stream =
+   ModKsInstr [] irTpt_trillMod (irTpt_articDests stream)
+              irTpt_articKs irTpt_velCurves irTpt_aliases
+              irTpt_modDests irTpt_modVelCurve
+
+
+irTpt_aliases = [ ("ord", "o/C1")
+                , ("sfz", "o/C#1")
+                , ("stac", "o/D1")
+                , ("flat", "o/D#1")
+                , ("trillMin2nd", "o/E1")
+                , ("trillMaj2nd", "o/F1")
+                ]
+
+
+irTpt_trillMod :: Set ChordModifier -> Maybe Int -> Maybe String
+irTpt_trillMod mods mTrill
+  | StrongAccent `elem` mods = Just "sfz"
+  | Staccato     `elem` mods = Just "stac"
+  | (SingTrem 0) `elem` mods = Just "flat"
+  | (SingTrem 1) `elem` mods = Just "flat"
+  | (SingTrem 2) `elem` mods = Just "flat"
+  | mTrill == Just 1         = Just "trillMin2nd"
+  | mTrill == Just 2         = Just "trillMaj2nd"
+  | otherwise                = Nothing
+
+
+oArtics = ["o/C1", "o/C#1", "o/D1", "o/D#1", "o/E1", "o/F1", "o/F#1", "o/G1"]
+         
+
+irTpt_articDests stream = M.fromList $ map (,(stream,1)) oArtics
+
+{-
+  M.fromList [ ("o/C0" , (0,1))
+             , ("o/C#0", (0,1))
+             , ("o/D0" , (0,1))
+             , ("o/D#0", (0,1))
+             , ("o/E0" , (0,1))  -- trill minor 2nd
+             , ("o/F0" , (0,1))  -- trill major 2nd
+             , ("o/G0" , (0,1))  -- harmonics
+             , ("ox"   , (0,2))
+             , ("pr"   , (0,3))
+             , ("tx"   , (0,4))
+             ]
+-}
+
+irTpt_articKs = M.fromList $ xs 
+  where
+    xs = zipWith (\s x -> (s,Just x)) oArtics [36..]
+
+irTpt_velCurves = out
+  where
+    c1 = VelCurve [ (0.45,10), (8.55,127)]
+    out = M.fromList $ map (,c1) oArtics
+
+irTpt_modDests = [(0,2),(0,4)]
+
+irTpt_modVelCurve = VelCurve [ (0.45,10), (8.55,127) ]
+
+

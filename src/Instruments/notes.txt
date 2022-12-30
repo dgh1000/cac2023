@@ -1,0 +1,147 @@
+
+Wrting and configuring instruments 
+----------------------------------------------------------------------
+(specifically instruments for playing back MusXML files, generally 
+produced by Sibelius)
+
+
+definitions
+--------------------
+
+   the "sibelius-haskell file" or SHF:
+
+     the file with the same name as the sibelius file
+
+
+introduction
+--------------------
+
+This document describes the overall system for writing and configuring
+instruments for playback of Sibelius files. It covers
+
+  - how a new instrument file, like Synth.hs, is coded in Haskell.
+
+  - how some of these instruments have configuration options that make them
+    fairly general-purpose (for instance, a synth instrument may be
+    configurated by a list of "bracket functions" that do the translation of
+    bracketed regions)
+
+  - how to set up a SHF
+
+
+lowest level: MetaInstr structure
+----------------------------------------------------------------------
+
+To create an instrument like Piano.hs or Synth.hs, you set up a MetaInstr data
+structure with some data and two functions.
+
+The data includes the following:
+
+  (1) MetaInstr name, (2) list of staff names, (3) custom type of 'data' for
+      the implementation (for example a piano has Piano-type data, a Synth has
+      Synth-type data)
+
+  (plus split trill flag, probably not always important)
+
+The functions include:
+
+  run function
+
+    input: MetaPrepared. output: SNotes and TrRaws
+
+  shapeFn
+
+    input: GsCombined data (this describes one shape mark on the
+    score). output: list of unit time mods needed to execute the shape.
+
+
+Synth: abstracting the creation of sound
+--------------------------------------------------
+
+The purpose of "abstraction"
+
+  When "orchestrating" a composition with Synth
+
+    The composition has staves, which have phrases. 
+
+      a 'phrase' is a conceptual unit of music with a uniform timbre
+
+    the timbre of phrase P, in the final rendered composition, is T_p.
+
+  we may want to make systematic changes in timbre as we work on the rendering
+
+    at the moment, T_p_1, T_p_2, and T_p_3 may all be a trumpet-like sound.
+
+    we want to change all of those a violin-like sound
+
+  what determines timbre? two levels of indirection
+
+    We have a phrase P_1. The actual timbre results from two design choices:
+
+      (1) **In the Sibelius score**, we a bracket function with name B_1 to go
+          with this phrase.
+
+      (2) The Haskell code implementation of B_1 will direct notes to synth
+          chan named SC_1
+
+    To change timbre of P_1, we can
+
+      (1) In the Sibelius score, use a bracket function **other than** B_1.
+
+      (2) change the Haskell implementation of B_1 to direct notes to
+          **another synth chan** SC_2
+
+
+
+Synth: (making a MetaInstr with Synth-type data)
+------------------------------------------------------------
+
+  The MetaInstr will be filled in with Synth-type data, hereafter referred to
+  as a Synth
+
+  A 'Synth' is constructed from the following data
+
+    - map of name to 'SynthChan'
+
+    - map of name to 'ConvertNoteFunc'
+
+  as with any MetaInstr, a Synth provides 2 functions
+
+    (1) the "run" function
+
+    (2) the generic shape function map
+
+
+**Initialization** of MIDI software synth (i.e. Falcon) controls
+----------------------------------------------------------------------
+
+  "default settings": some controls of a SynthChan are initialized at the
+      beginning of playback and left alone thereafter
+
+  "bracket function settings": some controls of a SynthChan are initialized
+      for each phrase marked by a bracket function
+
+  how are these two things configured?
+
+    SynthChan default settings are in the 'chanDefSettings' field of SynthChan
+    data
+
+    bracket function defaults defined in each bracket function, perhaps as
+    default data
+    
+
+Implementations of commonly used bracket functions go in SynthExamples.hs
+----------------------------------------------------------------------
+ 
+  
+
+
+
+  
+
+
+
+
+
+
+

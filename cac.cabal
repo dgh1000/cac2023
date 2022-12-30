@@ -1,0 +1,153 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 2f2334a4d421c1b8fdbb16c236f59053f73f8ff13b3059930609757355c41a26
+
+name:           cac
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/Mike/cac#readme>
+homepage:       https://github.com/Mike/cac#readme
+bug-reports:    https://github.com/Mike/cac/issues
+author:         Mike
+maintainer:     michaelmossey@gmail.com
+copyright:      2017
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/Mike/cac
+
+library
+  exposed-modules:
+      Cac.SimpleGen.Data
+      Cac.Markov.Data
+      Cac.Markov.Run
+      Cac.Markov.Util
+      Common
+      Common.CommonUtil
+      Instruments.ShowInstruments
+      Instruments.Piano
+      Instruments.FalconData
+      Translation.AlterTimes
+      Instruments.Any
+      Instruments.AnyQ
+      Instruments
+      Translation.Curves
+      Translation.Dynamics
+      Translation.GenericShape
+      Translation.InstrUtils
+      Translation.RunOnce
+      Translation.SendControl
+      Translation.Splice2
+      Translation.TimeMap
+      Translation.ToMidi
+      Translation.Trill
+      Translation.ApplyTimeMod2
+      Translation.ToUnitTimeMods2
+      Translation
+      Translation.ShowTranslation
+      Midi.Interface
+      Midi.InterfaceWithMessages
+      Midi.MidiData
+      Midi.MidiUtil
+      Score.FindEnd
+      Score.ParseMarks
+      Score.ScoreData
+      Score.ScoreExport
+      Score.ShowScore
+      Score.XmlToScore
+      Util.Curve
+      Util.Exception
+      Util.FileUtil
+      Util.Map
+      Util.Math
+      Util.Maybe
+      Util.Set
+      Util.Showable
+      Util.Text
+      Util.UtilData
+      Util.RandomState
+      Util.Parse
+      Util.RandMonad
+      XmlDoc.ParseXml
+      XmlDoc.Process
+      XmlDoc.XmlDocData
+      XmlDoc.XmlDocExport
+      Csound.Test
+      Configs.GenericShapeMasterFunctions
+      Lib
+  other-modules:
+      Paths_cac
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , deepseq
+    , array
+    , filepath
+    , directory
+    , bytestring
+    , parsec
+    , containers
+    , PortMidi
+    , mtl
+    , random
+    , lens
+    , xml
+    , midi
+    , HCodecs
+    , cereal
+  default-language: Haskell2010
+
+
+executable spawnMp
+  main-is: spawnMp.hs
+  other-modules:
+  hs-source-dirs:
+      app/Mp
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , cac
+    , parsec
+    , filepath
+    , haskeline
+    , process
+  default-language: Haskell2010
+
+
+executable testCtrl
+  main-is: testCtrl.hs
+  other-modules:
+  hs-source-dirs:
+      app/CalibrateSampler
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , cac
+    , lens
+    , mtl
+    , PortMidi
+    , random
+  default-language: Haskell2010
+
+test-suite cac-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_cac
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , cac
+  default-language: Haskell2010

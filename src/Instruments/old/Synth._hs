@@ -1,0 +1,320 @@
+
+{-# LANGUAGE TupleSections, TypeSynonymInstances, FlexibleInstances,
+             ScopedTypeVariables#-}
+
+
+-- we are moving to sampled instruments for my compositions. not going to
+-- assume I can ever create really beautiful synthesized sound.
+--
+-- bracket functions are still useful. they indicate how notes on a staff
+-- should be directed (to which MIDI channels) and it's still possible to
+-- associate some kind of expressive curve with them. or is it? isn't that the
+-- domain of generic shapes? well you can accomplish two things with one
+-- mark. that's good.
+--
+-- so we have something like a synth bracket function, but it doesn't have to
+-- change much besides mod wheel. mod wheel versus. 
+
+module Instruments.Synth where
+
+
+import qualified Data.List as L
+import qualified Data.Set as S
+import qualified Data.Map.Strict as M
+import Debug.Trace
+import Text.Printf
+import Data.Map.Strict(Map)
+import Data.List(sortBy)
+import Data.Maybe
+import Control.Arrow
+import Control.Monad
+import Control.Monad.State
+import Control.Lens
+import Data.Function
+import Instruments.InstrumentsData
+import Instruments.InstrUtils
+import Instruments.TimeMap
+import Score.ScoreData
+import Common
+import Common.CommonUtil
+import Util.Exception
+import Util.Showable
+import Util.Map
+
+
+-- using a synth meta instr means:
+--
+--   "patch": a combination of a midi channel and a set of midi controls to be
+--   sent to that channel prior to playing notes
+--
+--   brackets will be used to surround notes to be played and specify a
+--   conversion function
+--
+--   ---> notes not surrounded by brackets will not be played <---
+--
+--   ---> more than one bracket can surround a group of notes <---
+--
+-- 
+
+runSynth :: MetaInstr -> Synth -> MetaPrepared -> Tr ()
+runSynth instr synth@(Synth patches brackFns _) metaPre = do
+  let doStaff staffN = do
+        let sns = synLookup staffN $ view allSNotes metaPre
+        brData <- doBrackets staffN
+        let doBrack1 :: BrData -> [SNote] -> Tr ([SNote],[TrRaw])
+            doBrack1 (BrData typ loc1 loc2 amt) =
+              case M.lookup typ $ brackFns of
+                Just fn -> fn instr synth loc1 loc2 amt staffN
+            doBrack :: BrData -> Tr ([SNote],[TrRaw])
+            doBrack b@(BrData _ loc1 loc2 _) =
+              doBrack1 b $ filter (\s -> loc1 <= snLoc s && snLoc s < loc2) sns
+        (mconcat <$> mapM doBrack brData)  :: Tr ([SNote],[TrRaw])
+  (notesOut::[SNote],rawsOut) <- mconcat <$> mapM doStaff (iStaffNs instr)
+  includeNotes notesOut
+  includeRaws rawsOut
+
+  
+{-
+
+
+-----> version of 'runSynth' before changed to MetaPrepared <-----
+                         on Aug 2, 2018
+
+runSynth instr synth msrBeg msrEnd = do
+  -- do staff: what's the common pattern here
+  let doStaff staffN = do
+        sns <- allStaffSNote staffN True msrBeg msrEnd
+        brData <- doBrackets staffN
+        let doBrack1 :: BrData -> [SNote] -> Tr [SNote]
+            doBrack1 (BrData typ loc1 loc2 amt) =
+                case M.lookup typ $ syFns synth of
+                  Just fn -> fn instr synth loc1 loc2 amt
+            doBrack :: BrData -> Tr [SNote]
+            doBrack b@(BrData _ loc1 loc2 _) = do
+              let notes = filter (\s -> loc1 <= snLoc s && snLoc s < loc2) sns
+              doBrack1 b notes
+        concat `liftM` (mapM doBrack brData)
+  mapM doStaff (iStaffNs instr) >>= includeNotes . concat
+  return $ MetaInstr (iName instr) (iStaffNs instr) synth runSynth
+           (iShapeFn instr)
+
+-}
+
+-- BrData: <bracket name> <loc1> <loc2> <param>
+data BrData = BrData String Loc Loc (Maybe Double)
+
+
+-- computeBrData
+--
+--   Compute [BrData] for one staff.
+--
+--   1. Compute Map Loc [BracketMark] for this staff.
+--
+--   2. For every BmLeft in this map, take its Loc l, and search forward
+--      for first matching BmRight. Compile those into one BrData.
+--
+doBrackets :: String -> Tr [BrData]
+doBrackets staffN = do
+  ms <-  (lMapMaybe maybeBracketMark . synLookup staffN . scMarksByStaff)
+         <$> gets (view score)
+  let f :: Loc -> [BrData]
+      f loc = mapMaybe (g loc upperMap) here
+        where
+          here = case M.lookup loc ms of {Just x -> x}
+          util (x,ys) = zip (repeat x) ys
+          upperMap = concatMap util . M.toAscList . snd $ M.split loc ms
+      g :: Loc -> [(Loc,BracketMark)] -> BracketMark -> Maybe BrData
+      g loc upper (BmLeft s value) = case L.find pred upper of
+        Nothing -> throwMine "xxxnm2390"
+        Just (locR,_) -> Just $ BrData s loc locR value
+        where
+          pred (_,BmRight rs) = rs == s
+          pred _              = False
+      g _ _ _ = Nothing
+  return $ concatMap f $ M.keys ms
+
+
+maybeBracketMark :: MarkD -> Maybe BracketMark
+maybeBracketMark (BracketL s v) = Just $ BmLeft s v
+maybeBracketMark (BracketR s)   = Just $ BmRight s
+maybeBracketMark _              = Nothing
+
+synLookup k m = case M.lookup k m of {Just x -> x}
+
+----------------------------------------------------------------------
+--               example bracket functions
+
+{-
+
+                  COMMENTING OUT BASIC DEMO
+
+-- bf1
+--
+--   Basic demo.
+--
+--   How does note get converted to MIDI?
+--
+-- VelCurve -> (Int,Int) ->
+-- MetaInstr -> Synth -> Loc -> Loc -> Maybe Double -> [SNote] -> Tr [SNote]
+bf1 :: VelCurve -> (Int,Int) -> SynthBracketFn
+bf1 velC dest instr synth loc1 loc2 amt notesIn = do
+  let doDestAndVel :: SNote -> SNote
+      doDestAndVel sn = sn { snDescr = "bf1: dest & vel"
+                           , snHistory = sn : snHistory sn
+                           , snDest = dest
+                           , snVel = lookupVel "in bf1(synth)," l velC
+                           , snMods = []}
+        where
+          l | snLoud sn >= 0 = snLoud sn
+      -- doNote
+      --
+      --   Add specifics to basic SNote provided in notesIn. Set the
+      --   following:
+      --
+      --     - loudness based on loudness curves and any accents that are
+      --       present
+      --
+      --     - adjust timing for possible staccato
+      --
+      --     - adjust the end timing for possible legato or separation
+      --
+      doNote :: SNote -> Tr SNote
+      doNote s = updateLoud (syAccentAmt synth) s >>=
+                 updateStac >>= updateEndAlter >>=
+                 return . doDestAndVel
+  notesOut <- mapM doNote notesIn
+  return (notesOut,[])
+
+-}
+
+-- bfMod
+--
+--   A simple bracket function that sends volume information to the
+--   mod wheel.
+--
+bfMod :: VelCurve -> (Int,Int) -> SynthBracketFn
+bfMod = error "bfMod"  -- COMMENTING OUT BFMOD 
+{-
+patchMoog01 = Patch
+  { paName  = "moog01"
+  , paCtrls = M.fromList [ ("filter01", SynthFilter (1,76) (1,71))
+                         , ("filter01Res" , SynthCtrl 1 71)
+                         , ("env01Att"    , SynthCtrl 1 73) ]
+
+  }
+-}
+
+-- bfArtic
+--
+-- A synth bracket function for use with a patch/artic by
+--
+--   1. choosing a dest associated with this patch name
+--
+--   2. creating TrRaw control signals to set up the articulation on this
+--      patch
+--
+--   3. converting notes, in which all notes go to this dest, and loudness
+--      becomes a velocity
+--
+--   
+-- type SynthBracketFn = MetaInstr -> Synth -> Loc -> Loc -> Maybe Double ->
+--                      [SNote] -> Tr ([SNote],[TrRaw])
+bfArtic :: String -> String -> SynthBracketFn
+bfArtic = error "foo"
+
+
+-- bf1
+--
+--   Basic demo.
+--
+--   How does note get converted to MIDI?
+--
+-- VelCurve -> (Int,Int) ->
+-- MetaInstr -> Synth -> Loc -> Loc -> Maybe Double -> [SNote] -> Tr [SNote]
+bfArticNotes :: String -> String -> MetaInstr -> Synth -> Loc -> Loc ->
+                Maybe Double -> [SNote] -> Tr [SNote]
+bfArticNotes patchName articName instr synth loc1 loc2 amt notesIn = do
+  let patch = synLookup patchName $ view patches synth
+      artic = synLookup articName $ view artics patch
+      dest = view patchDest patch
+      velC = view velCurve artic
+      doDestAndVel ::SNote -> SNote
+      doDestAndVel sn = sn { snDescr = "bfArtic, doDestAndVel"
+                           , snHistory = sn : snHistory sn
+                           , snDest = dest
+                           , snVel = lookupVel "knr387z" l velC }
+        where
+          l | snLoud sn > 0 = snLoud sn
+      doNote :: SNote -> Tr SNote
+      doNote s = updateLoud (view accentAmt artic) s >>=
+                 updateStac >>= updateEndAlter >>=
+                 return . doDestAndVel
+  error "foo"
+
+ {-
+  let doDestAndVel :: SNote -> SNote
+      doDestAndVel sn = sn { snDescr = "bf1: dest & vel"
+                           , snHistory = sn : snHistory sn
+                           , snDest = dest
+                           , snVel = lookupVel "in bf1(synth)," l velC
+                           , snMods = []}
+        where
+          l | snLoud sn >= 0 = snLoud sn
+      -- doNote
+      --
+      --   Add specifics to basic SNote provided in notesIn. Set the
+      --   following:
+      --
+      --     - loudness based on loudness curves and any accents that are
+      --       present
+      --
+      --     - adjust timing for possible staccato
+      --
+      --     - adjust the end timing for possible legato or separation
+      --
+      doNote :: SNote -> Tr SNote
+      doNote s = updateLoud (syAccentAmt synth) s >>=
+                 updateStac >>= updateEndAlter >>=
+                 return . doDestAndVel
+  notesOut <- mapM doNote notesIn
+  return (notesOut,[])
+-}
+
+
+-- bfArticCtrls
+--
+-- A synth bracket function that sets up a patch by creating controls
+-- with timetags prior to the notes it creates.
+--
+-- type SynthBracketFn = MetaInstr -> Synth -> Loc -> Loc -> Maybe Double ->
+--                      [SNote] -> Tr ([SNote],[TrRaw])
+--
+-- okay this needs to look up patch first. where is that? name is passed as
+-- argument. then it needs to look artic. an artic consists of control values
+-- at string.
+bfArticCtrls :: String -> String -> MetaInstr -> Synth -> Loc ->
+                String -> Tr [TrRaw]
+bfArticCtrls patchName articName instr synth loc1 staffN = do
+  let patch = synLookup patchName $ view patches synth
+  let SynthArtic values _ _ = synLookup articName $ view artics patch  
+  atm <- synLookup staffN <$> gets (view timeMaps) 
+  let t = lookupTime loc1 atm - view ctrlEarly synth
+      -- look up patch:
+      -- where 
+      doOneCtrl :: (String,ControlValues) -> [TrRaw] 
+      doOneCtrl (ctrlName,value) =
+        case synLookup ctrlName (view ctrls patch) of
+            CsAdsr a d s r -> case synLookup ctrlName values of
+                   CvAdsr av dv sv rv ->
+                     [ synValueToRaw staffN t (view patchDest patch) a av
+                     , synValueToRaw staffN t (view patchDest patch) d dv
+                     , synValueToRaw staffN t (view patchDest patch) s sv 
+                     , synValueToRaw staffN t (view patchDest patch) r rv ]
+
+      ctrlsOut = map doOneCtrl $ M.toList values
+  return $ concat ctrlsOut
+
+synValueToRaw :: String -> Double -> (Int,Int) -> Int -> SynValue -> TrRaw
+synValueToRaw staffN t dest controller v = case v of
+  SvRaw n -> TrRaw staffN t dest 0xb0 controller n
+
