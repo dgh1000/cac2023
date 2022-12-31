@@ -74,15 +74,28 @@ instance ShowItemClass TimedXMsrData where
             , SingleLine $ "staff: " ++ show mStaff ]
   showI (TimedXMsrData t (XMDNote xNote)) = 
     Component (printf "[%d] Pitch: %s" t (showXPitch $ xnPitch xNote)) 
-      True [dur,isGrace,isChord,voice,staff,notations]
+      True [dur,isGrace,isChord,voiceStaff,ties,notations]
         where
-          dur = SingleLine $ printf "duration : %d" (xnDuration xNote)
-          isGrace = SingleLine $ printf "isGrace  : %s" (show $ xnIsGrace xNote)
-          isChord = SingleLine $ printf "isChord  : %s" (show $ xnChord xNote)
-          voice = SingleLine $ printf "voice    : %s" (show $ xnVoice xNote)
-          staff = SingleLine $ printf "staff    : %s" (show $ xnStaff xNote)
+          dur = SingleLine $ printf "duration   : %d" (xnDuration xNote)
+          isGrace = SingleLine $ printf "isGrace    : %s" (show $ xnIsGrace xNote)
+          isChord = SingleLine $ printf "isChord    : %s" (show $ xnChord xNote)
+          voi = case xnVoice xNote of 
+            Just v -> show v
+            Nothing -> "absent"
+          sta = case xnStaff xNote of 
+            Just s -> show s
+            Nothing -> "absent"
+          voiceStaff = 
+            SingleLine $ 
+              printf "voice/staff: %s/%s" voi sta
+          ts = case (xnTieStart xNote,xnTieStop xNote) of
+            (False,False) -> "no tie"
+            (False,True)  -> "tie stop"
+            (True,False)  -> "tie start"
+            (True,True)   -> "tie start/stop"
+          ties = SingleLine ts
           notations = SingleLine $ 
-            "Notations: " ++ concatMap (\n -> show n ++ " ") 
+            "Notations  : " ++ concatMap (\n -> show n ++ " ") 
               (xnNotations xNote)
           
 

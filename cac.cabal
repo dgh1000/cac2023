@@ -64,6 +64,7 @@ library
       Score.ScoreExport
       Score.ShowScore
       Score.XmlToScore
+      Score.XmlToScore_ties
       Util.Curve
       Util.Exception
       Util.FileUtil
@@ -137,6 +138,7 @@ executable testCtrl
     , mtl
     , PortMidi
     , random
+    , ilist
   default-language: Haskell2010
 
 test-suite cac-test

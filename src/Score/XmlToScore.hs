@@ -17,6 +17,7 @@ import Score.ParseMarks(computeWordMarks)
 import XmlDoc.XmlDocExport
 import XmlDoc.Process(computeXmlStaves)
 import Score.XmlToScore_grace (splitGrace)
+import Score.XmlToScore_ties
 import Common
 import Util.Exception
 import Util.Map
