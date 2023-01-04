@@ -51,28 +51,28 @@ instance ShowItemClass XMsr where
       txmd :: [TimedXMsrData]
       txmd = filter noRests $ catMaybes $ snd $ toTimedMsrData datas
       noRests :: TimedXMsrData -> Bool
-      noRests (TimedXMsrData _ (XMDNote (XNRest {}))) = False
+      noRests (TimedXMsrData _ (XMDNote XNRest {} _)) = False
       noRests x = True
 
 data TimedXMsrData = TimedXMsrData Int XMsrData
 
 toTimedMsrData :: [XMsrData] -> (Int,[Maybe TimedXMsrData])
-toTimedMsrData xmsrs = mapAccumL step 0 xmsrs
+toTimedMsrData = mapAccumL step 0
   where
     step :: Int -> XMsrData -> (Int,Maybe TimedXMsrData) 
-    step t d@(XMDDirection _ _ _ _) = (t, Just $ TimedXMsrData t d)
-    step t d@(XMDNote n) = (t + xnDuration n, Just $ TimedXMsrData t d)
-    step t d@(XMDBackup b) = (t - b, Nothing)
-    step t d@(XMDForward f) = (t + f, Nothing)
-    step t d@(XMDOther _) = (t, Just $ TimedXMsrData t d)
+    step t d@XMDDirection {} = (t, Just $ TimedXMsrData t d)
+    step t d@(XMDNote n _) = (t + xnDuration n, Just $ TimedXMsrData t d)
+    step t d@(XMDBackup b _) = (t - b, Nothing)
+    step t d@(XMDForward f _) = (t + f, Nothing)
+    step t d@XMDOther {} = (t, Just $ TimedXMsrData t d)
 
 instance ShowItemClass TimedXMsrData where
-  showI (TimedXMsrData t (XMDDirection xdir mOffset mVoice mStaff)) =
-    Component ("[" ++ show t ++ "] " ++ (show xdir))
+  showI (TimedXMsrData t (XMDDirection xdir mOffset mVoice mStaff _)) =
+    Component ("[" ++ show t ++ "] " ++ show xdir)
       True  [ SingleLine $ "offset: " ++ show mOffset
             , SingleLine $ "voice: " ++ show mVoice
             , SingleLine $ "staff: " ++ show mStaff ]
-  showI (TimedXMsrData t (XMDNote xNote)) = 
+  showI (TimedXMsrData t (XMDNote xNote _)) = 
     Component (printf "[%d] Pitch: %s" t (showXPitch $ xnPitch xNote)) 
       True [dur,isGrace,isChord,voiceStaff,ties,notations]
         where
@@ -99,7 +99,7 @@ instance ShowItemClass TimedXMsrData where
               (xnNotations xNote)
           
 
-  showI (TimedXMsrData t (XMDOther s)) = SingleLine $ printf "[%d] XMDOther: %s" t s
+  showI (TimedXMsrData t (XMDOther s _)) = SingleLine $ printf "[%d] XMDOther: %s" t s
 
 showXPitch :: XPitch -> String
 showXPitch (XPitch step alter octave) = printf "%s%s%d" step sAlter octave

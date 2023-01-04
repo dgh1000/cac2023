@@ -44,26 +44,26 @@ import Score.ScoreData
 
 -- splitGrace
 --   xstaff -> (without grace notes, with grace notes)
-splitGrace :: Map Loc [XMsrData] -> 
+splitGrace :: Map Loc [XMsrData] ->
               (Map Loc [XMsrData], Map Loc [XMsrData])
-splitGrace mapIn = 
+splitGrace mapIn =
   (listToLMap l1,listToLMap l2)
   where
     -- Map Loc [XMsrData] -> Map Loc [(Loc,XMsrData)]
     ml = lMapToList mapIn
     isGrace :: (Loc,XMsrData) -> Bool
-    isGrace (_,XMDNote XNNote {xnIsGrace = result}) = isJust result
+    isGrace (_,XMDNote XNNote {xnIsGrace = result} _) = isJust result
     isGrace (_,_                                  ) = False
     l1 = filter (not . isGrace) ml
     l2 = filter isGrace ml
 
 toGraceNote :: XMsrData -> GraceNote
-toGraceNote (XMDNote (XNNote { xnVoice = vn
+toGraceNote (XMDNote XNNote { xnVoice = vn
                              , xnPitch = xpitch
                              , xnTieStart = tieStart
-                             , xnIsGrace = isGrace })) =
+                             , xnIsGrace = isGrace } _) =
   GraceNote (voiceNumber vn) (xPitchToMidiPitch xpitch) tieStart typ
-  where 
+  where
     voiceNumber (Just i) = i
     typ = case isGrace of Just b -> b
 
@@ -140,7 +140,7 @@ xNoteIsGrace XNNote {xnIsGrace = g} = isJust g
 xNoteIsGrace _ = False
 
 explodeDoubleLMap :: (Ord k, Ord j) =>  Map k (Map j [a]) -> [(k,(j,a))]
-explodeDoubleLMap =  foo3 . foo2 . foo1 
+explodeDoubleLMap =  foo3 . foo2 . foo1
   where
     -- foo1 :: (Ord k, Ord j) => Map k (Map j [a]) -> [(k, Map j [a])]
     foo1 = M.toAscList
@@ -195,9 +195,9 @@ xPitchToMidiPitch :: XPitch -> Int
 xPitchToMidiPitch (XPitch stepString alter octave) = midiPitch
   where
     step = case lookup stepString [ ("C",0),("D",1),("E",2),("F",3)
-                                  , ("G",4),("A",5),("B",6)] of 
+                                  , ("G",4),("A",5),("B",6)] of
       Just x -> x
-    pitchClass = 
+    pitchClass =
       case lookup stepString [("C",0),("D",2),("E",4),("F",5),("G",7)
                              ,("A",9),("B",11)] of
         Just x -> x

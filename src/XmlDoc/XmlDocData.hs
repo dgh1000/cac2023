@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
 module XmlDoc.XmlDocData where
 
 import Data.Map(Map) 
@@ -32,12 +34,12 @@ data XMsrAttr = XMsrAttr
 
 -- does every 
 data XMsrData = 
-    XMDDirection XDirection (Maybe Int) (Maybe Int) (Maybe Int)
-       -- <direction> <maybe offset> <maybe voice> <maybe staff>
-  | XMDNote XNote
-  | XMDBackup Int
-  | XMDForward Int
-  | XMDOther String                      -- element name
+    XMDDirection XDirection (Maybe Int) (Maybe Int) (Maybe Int) Int
+       -- <direction> <maybe offset> <maybe voice> <maybe staff> <order>
+  | XMDNote XNote Int -- xnote, order
+  | XMDBackup Int Int -- order
+  | XMDForward Int Int -- order
+  | XMDOther String Int -- element name, order
   deriving(Show)
 
 
@@ -101,7 +103,8 @@ data XNote =
      , xnChord :: Bool
      , xnVoice :: Maybe Int
      , xnStaff :: Maybe Int
-     , xnNotations :: [XNotation] }
+     , xnNotations :: [XNotation]
+     , xnOrder :: Int }
  | XNNote
      { xnDuration :: Int
      , xnIsGrace :: Maybe Bool -- True means 'slash' (acciaccatura, before the beat)
@@ -113,7 +116,8 @@ data XNote =
      , xnTieStart :: Bool
      , xnTieStop :: Bool
      , xnNotations :: [XNotation]
-     , xnNotehead :: Maybe XNotehead }
+     , xnNotehead :: Maybe XNotehead
+     , xnOrder :: Int }
   deriving(Show)
 
 data XNotehead = XNotehead
@@ -187,5 +191,27 @@ data IXPart = IXPart
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+data TieEnd = TieEnd
+  { tePitch :: Pitch
+  , teVoice :: Int
+  , teStaff :: Maybe Int
+  , teEnd   :: Loc
+  }
+
+data TNote = TNote
+  { tnPitch    :: Pitch
+  , tnVoice    :: Int
+  , tnStaff    :: Maybe Int
+  , tnTieStart :: Bool
+  , tnTieStop  :: Bool
+  , tnBegin    :: Loc
+  , tnEnd      :: Loc
+  , tnOrder     :: Int  -- index into the order this note appeared 
+                        -- in the XMsr
+  , tnNotations :: [XNotation]
+  , tnNotehead  :: Maybe XNotehead
+  , tnIsGrace   :: Maybe Bool
+  }
+
 
 data TestPart = TestPart (Map Loc [XMsrData])

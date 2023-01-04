@@ -28,9 +28,9 @@ source-repository head
 library
   exposed-modules:
       Cac.SimpleGen.Data
-      Cac.Markov.Data
-      Cac.Markov.Run
-      Cac.Markov.Util
+      -- Cac.Markov.Data
+      -- Cac.Markov.Run
+      -- Cac.Markov.Util
       Common
       Common.CommonUtil
       Instruments.ShowInstruments
@@ -65,6 +65,7 @@ library
       Score.ShowScore
       Score.XmlToScore
       Score.XmlToScore_ties
+      Score.XmlToScore_grace
       Util.Curve
       Util.Exception
       Util.FileUtil
@@ -81,6 +82,7 @@ library
       XmlDoc.ParseXml
       XmlDoc.Process
       XmlDoc.XmlDocData
+      XmlDoc.ShowXmlDoc
       XmlDoc.XmlDocExport
       Csound.Test
       Configs.GenericShapeMasterFunctions
@@ -90,7 +92,7 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      base >=4.8 && <5
     , deepseq
     , array
     , filepath
@@ -106,6 +108,7 @@ library
     , midi
     , HCodecs
     , cereal
+    , ilist
   default-language: Haskell2010
 
 
@@ -122,6 +125,7 @@ executable spawnMp
     , filepath
     , haskeline
     , process
+    , directory
   default-language: Haskell2010
 
 

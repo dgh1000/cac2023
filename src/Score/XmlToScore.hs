@@ -203,13 +203,13 @@ computeStavesToVoicesAndVoicesToStaves xmsrs = (d4,d6)
 
 
 staffNumOf :: XMsrData -> Maybe Int
-staffNumOf (XMDDirection _ _ _ x) = x
-staffNumOf (XMDNote n) = xnStaff n
+staffNumOf (XMDDirection _ _ _ x _) = x
+staffNumOf (XMDNote n _) = xnStaff n
 staffNumOf _ = Nothing
 
 voiceNumOf :: XMsrData -> Maybe Int
-voiceNumOf (XMDDirection _ _ x _) = x
-voiceNumOf (XMDNote n) = xnVoice n
+voiceNumOf (XMDDirection _ _ x _ _) = x
+voiceNumOf (XMDNote n _) = xnVoice n
 voiceNumOf _ = Nothing
 
 {-
@@ -455,7 +455,7 @@ computeSlurs2 = M.mapMaybe g
 
 
 maybeSlurs :: XMsrData -> [(Bool,Maybe Int)]
-maybeSlurs (XMDNote (XNNote _ _ _ _ _ _ _ _ notations _)) =
+maybeSlurs (XMDNote (XNNote _ _ _ _ _ _ _ _ notations _ _)) =
     mapMaybe maybeNSlur notations
   where
     maybeNSlur :: XNotation -> Maybe (Bool,Maybe Int)
@@ -464,7 +464,7 @@ maybeSlurs (XMDNote (XNNote _ _ _ _ _ _ _ _ notations _)) =
     maybeNSlur _ = Nothing
 maybeSlurs _ = []
 
-maybeSlur (XMDNote (XNNote _ _ _ _ _ _ _ _ notations _)) =
+maybeSlur (XMDNote (XNNote _ _ _ _ _ _ _ _ notations _ _)) =
   not $ null [x | XNSlur x _ <- notations]
 isSlur _ = False
 

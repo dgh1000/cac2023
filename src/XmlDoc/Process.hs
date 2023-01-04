@@ -61,9 +61,9 @@ accumTime = catMaybes . snd . mapAccumL f (TimeState 0 0 Nothing)
   where
     f :: TimeState -> XMsrData -> (TimeState,Maybe (Int,XMsrData))
     f (TimeState prevTime currTime pv) d = case d of
-      XMDBackup d ->  (TimeState currTime (currTime-d) pv, Nothing)
-      XMDForward d -> (TimeState currTime (currTime+d) pv, Nothing)
-      x@(XMDNote n)
+      XMDBackup d _ ->  (TimeState currTime (currTime-d) pv, Nothing)
+      XMDForward d _-> (TimeState currTime (currTime+d) pv, Nothing)
+      x@(XMDNote n _) 
         | xnChord n -> ( TimeState prevTime currTime pv
                        , Just (prevTime, updateChordVoice pv x) )
         | otherwise -> ( TimeState currTime (currTime + xnDuration n)
@@ -76,11 +76,11 @@ accumTime = catMaybes . snd . mapAccumL f (TimeState 0 0 Nothing)
 -- or not it was previously marked. It is marked to equal the first
 -- argument to updateChordVoice and any marking already there is ignored
 updateChordVoice :: Maybe Int -> XMsrData -> XMsrData
-updateChordVoice (Just v) (XMDNote n) = case xnVoice n of
-  Nothing -> XMDNote n { xnVoice = Just v }
+updateChordVoice (Just v) (XMDNote n ord) = case xnVoice n of
+  Nothing -> XMDNote n { xnVoice = Just v } ord
   -- the following case wasn't there with Sibelius playback. It was enforcing
   -- that chord notes be unmarked in their voice numbers
-  Just _  -> XMDNote n { xnVoice = Just v }
+  Just _  -> XMDNote n { xnVoice = Just v } ord
 
 -- DATA
 --
@@ -93,12 +93,16 @@ updateChordVoice (Just v) (XMDNote n) = case xnVoice n of
 -- algorithm: groups XMsrData by loc. this could be useful for extracting
 --    grace notes
 computeMsrDatas :: Map Int IXMsrInfo -> [XMsr] -> Map Loc [XMsrData]
-computeMsrDatas mis msrs 
-  = assertDistinctStaffVoices . UM.listToLMap . map verifyNoteVoiceSet . concatMap f
-    $ msrs
+computeMsrDatas mis 
+  = assertDistinctStaffVoices . UM.listToLMap . map verifyNoteVoiceSet . 
+    concatMap f
+    
   where
     f :: XMsr -> [(Loc,XMsrData)]
-    -- okay so if we can get offset from XMsrData we are good
+    -- This will convert any XMsrData at a valid location to (Loc,XMsrData).
+    -- Not sure why there might be invalid locations or if we have ever
+    -- encountered that.
+    -- accumTime :: [XMsrData] -> [(Int,XMsrData)]
     f m = mapMaybe maybeToLocMsrData $ accumTime $ XD.xmMsrDatas m
     -- f m = map (\(d,x) -> (toLoc (d + getOffset x),x)) . accumTime $ 
     --      XD.xmMsrDatas m
@@ -112,9 +116,9 @@ computeMsrDatas mis msrs
         m2 (divs,xmd) = 
           case divsToLoc mis (XD.xmMsrNum m) divs of
             Just l  -> Just (l,xmd)
-            Nothing -> (printf ("skipping XMsrData at an invalid location;" ++
+            Nothing -> printf ("skipping XMsrData at an invalid location;" ++
                        " number of divisions is %d, \n%s") divs
-                       (show xmd)) `trace` Nothing
+                       (show xmd) `trace` Nothing
 
 
 showAccumTime :: [(Int,XMsrData)] -> String
@@ -125,8 +129,8 @@ showAccumTime ms = unlines $ map g ms
     
 
 getOffset :: XMsrData -> Int
-getOffset (XMDDirection _ Nothing  _ _) = 0
-getOffset (XMDDirection _ (Just i) _ _) = i
+getOffset (XMDDirection _ Nothing  _ _ _) = 0
+getOffset (XMDDirection _ (Just i) _ _ _) = i
 getOffset _                             = 0
 
 
@@ -164,7 +168,7 @@ checkIfSlurs x = x
 --    - notes? yes, need that. write simpler routine
 
 verifyVoiceSet :: (Loc,XMsrData) -> (Loc,XMsrData)
-verifyVoiceSet t@(loc, XMDDirection xd _ v _)
+verifyVoiceSet t@(loc, XMDDirection xd _ v _ _)
   | isJust v = t
   | isNothing v = case xd of 
       XDDynamics _ -> throwMine $ printf ("XDDynamics missing voice number"++
@@ -173,14 +177,14 @@ verifyVoiceSet t@(loc, XMDDirection xd _ v _)
         "bad state--they have a default-y attribute but no voice number")
         (showLoc2 loc)
       _ -> t
-verifyVoiceSet t@(loc, XMDNote n)
+verifyVoiceSet t@(loc, XMDNote n _)
   | isJust . xnVoice $ n = t
   | otherwise = throwMine $ printf ("XMsrData of constructor XMDNote" ++
                 " at %s is missing a voice number") (simpleShowLoc loc)
 verifyVoiceSet x = x
 
 verifyNoteVoiceSet :: (Loc,XMsrData) -> (Loc,XMsrData)
-verifyNoteVoiceSet t@(loc, XMDNote n)
+verifyNoteVoiceSet t@(loc, XMDNote n _)
   | isJust . xnVoice $ n = t
   | otherwise = throwMine $ printf ("XMsrData of constructor XMDNote" ++
                 " at %s is missing a voice number") (simpleShowLoc loc)
@@ -252,11 +256,12 @@ assertDistinctStaffVoices mxs
   where
     xs = concat $ M.elems mxs
     getStaffVoice :: XMsrData -> Maybe (Int,Int)
-    getStaffVoice (XMDDirection xd _ (Just voice) (Just staff)) =
+    getStaffVoice (XMDDirection xd _ (Just voice) (Just staff) _) =
       case xd of 
         (XDWedge _) -> Nothing
         _           -> Just (staff,voice)
-    getStaffVoice (XMDNote n) = case (xnStaff n,xnVoice n) of (Just s, Just v) -> Just (s, v)
+    getStaffVoice (XMDNote n _) = 
+      case (xnStaff n,xnVoice n) of (Just s, Just v) -> Just (s, v)
     getStaffVoice _ = Nothing
     stavesVoices :: [(Int,Int)]
     stavesVoices = mapMaybe getStaffVoice xs
@@ -307,30 +312,30 @@ filterStaffNum msrDatas num = UM.lMapMaybe go msrDatas
 --
 --   (3) it must be set when the algorithm is finished
 hasEssentialVoice :: XMsrData -> Bool
-hasEssentialVoice (XMDNote XNNote {})                      = True
-hasEssentialVoice (XMDDirection XDWords {} _ mVoice _)     = isJust mVoice
-hasEssentialVoice (XMDDirection XDDynamics {} _ _ _)       = True
-hasEssentialVoice (XMDDirection XDOtherDirection {} _ _ _) = True
+hasEssentialVoice (XMDNote XNNote {} _)                    = True
+hasEssentialVoice (XMDDirection XDWords {} _ mVoice _ _)   = isJust mVoice
+hasEssentialVoice (XMDDirection XDDynamics {} _ _ _ _)     = True
+hasEssentialVoice (XMDDirection XDOtherDirection {} _ _ _ _) = True
 -- what remains is forward, backup, "other", XNRest, XDMetronome, XDWedge,
 -- XDPedal
 hasEssentialVoice _                                        = False
 
 getVoice :: XMsrData -> Maybe Int
-getVoice (XMDDirection _ _ v _) = v
-getVoice (XMDNote n)          = XD.xnVoice n
+getVoice (XMDDirection _ _ v _ _) = v
+getVoice (XMDNote n _)          = XD.xnVoice n
 getVoice _                    = Nothing
 
 getStaff :: XMsrData -> Maybe Int
-getStaff (XMDDirection _ _ _ s) = s
-getStaff (XMDNote n)          = XD.xnStaff n
+getStaff (XMDDirection _ _ _ s _) = s
+getStaff (XMDNote n _)          = XD.xnStaff n
 getStaff _                    = Nothing
 
 -- setVoice
 --
 -- Given an input voice V, modify the XMsrData so its voice will be Just V.
 setVoice :: Int -> XMsrData -> XMsrData
-setVoice v (XMDDirection x y _ s) = XMDDirection x y (Just v) s
-setVoice v (XMDNote n) = XMDNote (n { XD.xnVoice = Just v })
+setVoice v (XMDDirection x y _ s ord) = XMDDirection x y (Just v) s ord
+setVoice v (XMDNote n ord) = XMDNote n { XD.xnVoice = Just v } ord
 setVoice _ x = x
 
 -- fixVoices 
@@ -379,7 +384,7 @@ normalizeVoice minVoice d
   | not (hasEssentialVoice d) = d
     where currentV = case getVoice d of {Just x -> x}
 
-quickShowMsrData (XMDDirection _ _ v s) = printf "XMDDirection"
-quickShowMsrData (XMDNote (XNRest {} )) = printf "XNRest"
-quickShowMsrData (XMDNote (XNNote {} )) = printf "XNNote"
+quickShowMsrData (XMDDirection _ _ v s _) = printf "XMDDirection"
+quickShowMsrData (XMDNote (XNRest {} ) _) = printf "XNRest"
+quickShowMsrData (XMDNote (XNNote {} ) _) = printf "XNNote"
 

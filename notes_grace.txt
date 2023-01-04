@@ -105,7 +105,33 @@ CONSIDERING OTHER METHODS OF DOING TIES
     everything that is a tie stop
   - work backwards, convolving with 
 
-- we could preserve 
-etc. etc.
+- when does an end Loc get added to an XMsrData? Apparently when PrelimChords
+  are constructed. one notes are separated by voice, then all notes starting
+  at the same Loc are part of the same chord and have the same end
+
+- but ties are easier to resolve when they are separate notes before they
+  because chords, and grace note ties can be integrated
+
+- what would have to change to implement new tie system?
+  - on line 168 of XmlToScore.hs we would first take xmlStaff, translate 
+    Map Loc [XMsrData] to [TNote] then back to Map Loc [TNote]
+  - we would need xMsrDataToTNote :: Map Int IXMsrInfo -> (Loc,XMsrData) 
+    -> Maybe TNote
+    (and this would set end location)
+
+
+
+
+  - all the following in XmlToScore.hs:
+  - current filtering of XMsrData to just the notes happens in function
+    xMsrDataToNote :: XMsrData -> Maybe XNote
+  - noteMapToChordMap :: Map Int IXMsrInfo -> Loc -> Map Int [XNote] ->
+                         Map Int PrelimChord
+  - notesToChord :: Loc -> Map Int IXMsrInfo -> [XNote] -> PrelimChord
+  - computeEndLoc :: Map Int IXMsrInfo -> Loc -> Int -> Loc
+
+
+
+
 
 

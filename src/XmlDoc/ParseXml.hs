@@ -39,16 +39,16 @@ parseXScore e = XScore { xPartInfos = partInfos
     err _ _ = throwMine "two part names the same"
     partInfos = parsePartList e
     g pid = case M.lookup pid partInfos of {Just (XPartInfo name) -> name}
-    
+
 -- parsePartList
 --    Map <code name> <essentially human-readable name>
 -- 
 parsePartList :: Element -> Map String XPartInfo
-parsePartList e = M.fromList . map parseScorePart . 
+parsePartList e = M.fromList . map parseScorePart .
                   myFindChildren "score-part" $ pl
   where
     pl = case myFindChild "part-list" e of {Just x -> x}
-    
+
 
 -- parseScorePart
 --
@@ -96,9 +96,9 @@ parseMsr eMsr = XMsr num_ attrs datas
       Just n -> case reads n of (i,_):_ -> i
     attrs = myFindChild "attributes" eMsr >>= parseMsrAttr
     datas = mapMaybe parseMsrData . filterChildren (const True) $ eMsr
-    
+
 parseMsrData emd = case (qName . elName $ emd) of
-  "note"       -> Just . XMDNote . parseXNote $ emd
+  "note"       -> Just $ XMDNote (parseXNote emd) 0
   "direction"  -> parseDirection emd
   "backup"     -> Just $ parseBackup emd
   "forward"    -> Just $ parseForward emd
@@ -109,26 +109,26 @@ parseMsrData emd = case (qName . elName $ emd) of
                   "element '%s' in measure element") name
 
 parseBackup e = case myFindChild "duration" e of
-  Just d -> XMDBackup (toInt $ strContent d)
+  Just d -> XMDBackup (toInt $ strContent d) 0
   where
     toInt s = case reads s of {(i,_):_ -> i}
 
 parseForward e = case myFindChild "duration" e of
-  Just d -> XMDForward (toInt $ strContent d)
+  Just d -> XMDForward (toInt $ strContent d) 0
   where
     toInt s = case reads s of {(i,_):_ -> i}
 
 parseXNote :: Element -> XNote
 parseXNote eNote
-  | isRest = XNRest duration chord maybeVoice maybeStaff notations
-  | otherwise = XNNote duration isGrace chord maybeVoice maybeStaff 
-                pitch tieStart tieStop notations notehead
+  | isRest = XNRest duration chord maybeVoice maybeStaff notations 0
+  | otherwise = XNNote duration isGrace chord maybeVoice maybeStaff
+                pitch tieStart tieStop notations notehead 0
   where
     -- traceThrough :: Maybe Int -> a -> a
     -- traceThrough Nothing x = x
     -- traceThrough (Just vn) x = ("traceThrough vn: " ++ show vn) `trace` x
     toInt1 s = case reads s of {(i,_):_ -> i}
-    isRest = maybe False (const True) $ myFindChild "rest" eNote
+    isRest = isJust $ myFindChild "rest" eNote
     isGrace = case myFindChild "grace" eNote of
       Just e -> case myFindAttr "slash" e of
         Just "yes" -> Just True
@@ -140,7 +140,7 @@ parseXNote eNote
       Nothing -> 0 -- this is the case of the grace note. I don't know if there are
                    -- other cases that have a missing duration child element 9/1/22
       Just d -> toInt1 . strContent $ d
-    chord = maybe False (const True) $ myFindChild "chord" eNote
+    chord = isJust $ myFindChild "chord" eNote
     pitch = case myFindChild "pitch" eNote of
       Just p -> parseXPitch p
     maybeVoice = fmap (toInt1 . strContent) . myFindChild "voice" $ eNote
@@ -150,17 +150,15 @@ parseXNote eNote
     maybeStaff = fmap (toInt1 . strContent) . myFindChild "staff" $ eNote
     tieStart = not . null . filterChildren isTieStart $ eNote
     tieStop = not . null . filterChildren isTieStop $ eNote
-    isTieStart e = isTie e && (case myFindAttr "type" e of 
+    isTieStart e = isTie e && (case myFindAttr "type" e of
                                  Just t -> t == "start"
                                  Nothing -> False)
-    isTieStop e = isTie e && (case myFindAttr "type" e of 
+    isTieStop e = isTie e && (case myFindAttr "type" e of
                                  Just t -> t == "stop"
                                  Nothing -> False)
     isTie e = (qName . elName $ e) == "tie"
     notehead = fmap (XNotehead . strContent) . myFindChild "notehead" $ eNote
-    notations = case myFindChild "notations" eNote of
-      Nothing -> []
-      Just ns -> parseNotations ns
+    notations = maybe [] parseNotations (myFindChild "notations" eNote)
 
 parseMsrAttr :: Element -> Maybe XMsrAttr
 parseMsrAttr eMsrAttr
@@ -169,12 +167,12 @@ parseMsrAttr eMsrAttr
   where
     toInt1 s = case reads s of {(i,_):_ -> i}
     divs = fmap (toInt1 . strContent) . myFindChild "divisions" $ eMsrAttr
-    beats = myFindChild "time" eMsrAttr >>= 
+    beats = myFindChild "time" eMsrAttr >>=
             myFindChild "beats" >>= Just . toInt1 . strContent
     beatType = myFindChild "time" eMsrAttr >>=
                myFindChild "beat-type" >>= Just . toInt1 . strContent
 
-    
+
 parseXPitch :: Element -> XPitch
 parseXPitch ePitch = XPitch step alter octave
   where
@@ -258,19 +256,19 @@ parseSlur s = XNSlur type_ mLevel
 
 
 parseDirection :: Element -> Maybe XMsrData
-parseDirection eDir = fmap (\x -> XMDDirection x mOffset mVoice mStaff) xd 
+parseDirection eDir = fmap (\x -> XMDDirection x mOffset mVoice mStaff 0) xd
   where
     xd :: Maybe XDirection
     xd = case myElName eDirType of
       "metronome"       -> Just $ parseMetronome eDirType
       "words"           -> Just $ XDWords (strContent eDirType) defaulty
-        where defaulty = myFindAttr "default-y" eDirType >>= 
+        where defaulty = myFindAttr "default-y" eDirType >>=
                 \s -> case reads s of {(i,_):_ -> Just i}
       "dynamics"        -> Just $ parseDynamics eDirType
       "wedge"           -> Just $ parseWedge eDirType
       "pedal"           -> Just $ parsePedal eDirType
       "octave-shift"    -> Just $ parseOctaveShift eDirType
-      "other-direction" -> Just . XDOtherDirection . strContent $ eDirType 
+      "other-direction" -> Just . XDOtherDirection . strContent $ eDirType
       t -> printf "Warning: unknown direction element type '%s'" t `trace`
         Nothing
     toInt1 s = case reads s of {(i,_):_ -> i}
@@ -295,7 +293,7 @@ parseDirectionType e = case myFindChild "direction-type" e of
   Just dirType -> case allChildren dirType of
     []  -> throwMine "parseDirectionType 1"
     [x] -> x
-    xs | all (\e -> myElName e == "words") xs -> 
+    xs | all (\e -> myElName e == "words") xs ->
            ("Warning, multiple <words> elements found as " ++
             "sub-elements of <direction-type>; will only use first one '" ++
             (strContent . head $ xs) ++ "'") `trace` head xs
@@ -316,10 +314,10 @@ parseMetronome e = case met of
 parseDynamics e = case allChildren e of {[d] -> XDDynamics . myElName $ d}
 
 parseWedge :: Element -> XDirection
-parseWedge e = case myFindAttr "type" e of 
+parseWedge e = case myFindAttr "type" e of
   Just "crescendo"  -> XDWedge WedgeCresc
-  Just "diminuendo" -> XDWedge WedgeDim  
-  Just "stop"       -> XDWedge WedgeStop 
+  Just "diminuendo" -> XDWedge WedgeDim
+  Just "stop"       -> XDWedge WedgeStop
 
 
 parsePedal :: Element -> XDirection
@@ -328,7 +326,7 @@ parsePedal e = case myFindAttr "type" e of
   Just "stop"    -> XDPedal PedalStop   line
   Just "change"  -> XDPedal PedalChange line
   where
-    line = case myFindAttr "line" e of 
+    line = case myFindAttr "line" e of
       Just "yes" -> True
       Just "no"  -> False
 

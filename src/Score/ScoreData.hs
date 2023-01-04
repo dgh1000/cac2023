@@ -1,5 +1,7 @@
 
 {-# LANGUAGE DeriveAnyClass,DeriveGeneric #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module Score.ScoreData where
 
@@ -47,7 +49,7 @@ data Score = Score
   -- cached data related to Marks
   , scMarksByStaff   :: Map String (Map Loc [MarkD])
   , scMarkers        :: Map String Markers
-                        
+
   , scStaves         :: Map String Staff
   -- , scUsedMsrs       :: Array Int Bool
   , scUsedMsrs       :: Set Int
@@ -66,7 +68,7 @@ emptyScore = Score M.empty M.empty M.empty M.empty M.empty
 -- data AcciSeq = AcciSeq [Int]
 -- data AppoSeq = AppoSeq [Int]
 
-data GraceNote = GraceNote 
+data GraceNote = GraceNote
   { gnMidiPitch :: Int
   , gnVoice     :: Int
   , gnTieStart  :: Bool
@@ -98,14 +100,14 @@ data MacroDefn = MacroDefn String Int [MacroDefnChar]
 data MacroDefnChar = MdcChar Char
                    | MdcArg Int
 
-data MacroInstance = MacroInstance String [String]  
+data MacroInstance = MacroInstance String [String]
   -- name of macro to apply, arguments
 
 data Pass1Word = P1MacroDefn MacroDefn
                | P1MacroInstance MacroInstance
                | P1Normal String
                  -- ^ <maybe name of macro defn that was applied> <text>
-               | P1Comment 
+               | P1Comment
 
 
 
@@ -358,7 +360,7 @@ data Note = Note
           deriving(Eq,Ord,Show,NFData,Generic)
 
 
-data ChordKey = ChordKey 
+data ChordKey = ChordKey
   { ckStaffName   :: String
   , ckChordLoc    :: Loc
   , ckVoiceNum    :: Int
@@ -406,7 +408,7 @@ data Hairpin = Hairpin
 data HairpinType = Crescendo | Diminuendo
                  deriving(Show,Eq)
 
-data Text = TechniqueText String 
+data Text = TechniqueText String
           | ExpressionText String
           deriving(Show)
 
@@ -424,7 +426,7 @@ chordTrueEnds (Chord endLoc _ notes _) = case notes of
   NTrill _ s1 s2 ->
     let f s p = case M.lookup p s of
           Just n -> nTrueEnd n
-    in (map (id &&& f s1) $ M.keys s1) ++ (map (id &&& f s2) $ M.keys s2)
+    in map (id &&& f s1) (M.keys s1) ++ map (id &&& f s2) (M.keys s2)
 
 
 
@@ -448,14 +450,14 @@ mapOverNotes_vn :: (NoteKey -> a) -> String -> Loc -> (Int,Chord) ->
 mapOverNotes_vn f staffName loc (vn,chord) =
   map (\i -> (nk i,f $ nk i)) (pitchesOf $ cNotes chord)
   where
-    
+
     contentOf (NSingles m) = Left $ M.keys m
     contentOf (NTrill _ xs ys) = Right (M.keys xs,M.keys ys)
     pitchesOf (NSingles m) = M.keys m
     pitchesOf (NTrill _ xs ys) = M.keys xs ++ M.keys ys
     nk i = NoteKey (ChordKey staffName loc vn (contentOf $ cNotes chord)) i
 
-    
+
 {-
 
 allNoteKeys :: Score -> [NoteKey]
