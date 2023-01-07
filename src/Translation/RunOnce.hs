@@ -272,7 +272,7 @@ readXml = do
       let
             xd = parseXScore e
       in do -- putStrLn "NOT YET writing xml.txt ... "
-            writeFile "xml.txt" $ showIString xd
+            -- writeFile "xml.txt" $ showIString xd
             return $ xmlToScore xd
 
 
