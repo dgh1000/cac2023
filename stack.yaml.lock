@@ -13,7 +13,7 @@ packages:
     hackage: PortMidi-0.2.0.0
 snapshots:
 - completed:
-    size: 586103
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/19.yaml
-    sha256: 32716534fff554b7f90762130fdb985cabf29f157758934dd1c8f3892a646430
-  original: lts-18.19
+    size: 574470
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/1/6.yaml
+    sha256: 46e689380f16683d99a3333b1c216b81e251489229c234fbaba804c55405844a
+  original: nightly-2023-01-06

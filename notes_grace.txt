@@ -120,7 +120,14 @@ CONSIDERING OTHER METHODS OF DOING TIES
     (and this would set end location)
 
 
+- two jobs 
+  (1) labels the order of all data in [XMsrData]
+  (2) look just at the notes to handle ties and form chords
 
+- FUNCTIONS THAT WORK ON [XMsrData]
+
+  - we have to label all the data with an ordering in [XMsrData]
+    because we have to preserve all the data
 
   - all the following in XmlToScore.hs:
   - current filtering of XMsrData to just the notes happens in function

@@ -31,7 +31,7 @@ import Util.Exception
 computeXmlStaves :: XScore -> ( Map Int IXMsrInfo
                               , Map String (Map Loc [XMsrData]) )
 computeXmlStaves (XScore _ parts) 
-  = (mis, M.map g $ parts)
+  = (mis, M.map g parts)
   where
     mis = case M.toList parts of {(_,p):_ -> computeMsrInfos p}
     g :: XPart -> Map Loc [XMsrData]
@@ -95,7 +95,7 @@ updateChordVoice (Just v) (XMDNote n ord) = case xnVoice n of
 computeMsrDatas :: Map Int IXMsrInfo -> [XMsr] -> Map Loc [XMsrData]
 computeMsrDatas mis 
   = assertDistinctStaffVoices . UM.listToLMap . map verifyNoteVoiceSet . 
-    concatMap f
+    concatMap (putOrderInXMsrData . f)
     
   where
     f :: XMsr -> [(Loc,XMsrData)]
@@ -120,6 +120,18 @@ computeMsrDatas mis
                        " number of divisions is %d, \n%s") divs
                        (show xmd) `trace` Nothing
 
+
+putOrderInXMsrData :: [(Loc,XMsrData)] -> [(Loc,XMsrData)]
+putOrderInXMsrData xs = zipWith f xs [1..]
+  where 
+    g :: Int -> XMsrData -> XMsrData
+    g i (XMDDirection a b c d _) = XMDDirection a b c d i
+    g i (XMDNote n _) = XMDNote n i
+    g i (XMDBackup a _) = XMDBackup a i
+    g i (XMDForward a _) = XMDForward a i
+    g i (XMDOther s _) = XMDOther s i
+    f :: (Loc,XMsrData) -> Int -> (Loc,XMsrData)
+    f (loc,x) i = (loc,g i x)
 
 showAccumTime :: [(Int,XMsrData)] -> String
 showAccumTime ms = unlines $ map g ms

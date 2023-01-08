@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 
 module Translation.RunOnce where
 
@@ -52,13 +54,13 @@ data ArgData = PlayCmd Int (Maybe Int) (Maybe String) [String]
 
 -- we want to validate 
 
-runOnce :: RunData -> [String] -> IO ()
-runOnce rd args =
+runOnce2 :: RunData -> [String] -> IO ()
+runOnce2 rd args =
   runOnce_a args rd `catches` handlers2  
 
 
 runOnce_a :: [String] -> RunData -> IO ()
-runOnce_a args rd = do
+runOnce_a args rd =
   case parseArgs args of
     PlayCmd mBeg mEnd mSolo splicePts -> doPlay mBeg mEnd mSolo splicePts rd
     SendCtrl stream chan ctrl value -> doSendCtrl stream chan ctrl value
@@ -272,7 +274,7 @@ readXml = do
       let
             xd = parseXScore e
       in do -- putStrLn "NOT YET writing xml.txt ... "
-            writeFile "xml.txt" $ showIString xd
+            -- writeFile "xml.txt" $ showIString xd
             return $ xmlToScore xd
 
 

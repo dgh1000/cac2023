@@ -5,7 +5,6 @@ import Text.Printf
 import Text.XML.Light
 import Data.Maybe
 import Util.Showable
-import XmlDoc.NewXmlData
 
 data ShowSelectiveElement = ShowSelectiveElement Element
 
@@ -83,6 +82,39 @@ instance Showable Attr where
 
 instance Showable CData where
   showi c = SingleLine $ printf "cdData:%s" (take 50 . cdData $ c)
+
+-- data TNote = TNote
+--   { tnPitch    :: Pitch
+--   , tnVoice    :: Int
+--   , tnStaff    :: Maybe Int
+--   , tnTieStart :: Bool
+--   , tnTieStop  :: Bool
+--   , tnBegin    :: Loc
+--   , tnEnd      :: Loc
+--   , tnOrder     :: Int  -- index into the order this note appeared 
+--                         -- in the XMsr
+--   , tnNotations :: [XNotation]
+--   , tnNotehead  :: Maybe XNotehead
+--   , tnIsGrace   :: Maybe Bool
+--   }
+
+type TNotes = [TNote]
+instance Showable TNotes where
+  showi = Component "TNotes" False . map showT
+    where
+      showT (TNote pitch voice mStaff tieStart tieStop beg 
+        end order nots _ mGrace) =
+          Component (simpleShowLoc beg ++ " " ++ simpleShowLoc end)
+            True [sp, svoist, stie, sord, snots, sgra]
+            where
+              sp = SingleLine . show . midiPitch $ pitch
+              svoist = SingleLine $ printf "voi/staff    : [%d/%s]" 
+                voice (show mStaff)
+              stie = SingleLine $ printf "tie strt/stop: [%s/%s]"
+                (show tieStart) (show tieStop)
+              snots = SingleLine $ show nots
+              sgra = SingleLine $
+                printf "mGrace       : %s" (show mGrace) 
 
 {-
 instance Showable XScore where

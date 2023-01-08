@@ -108,3 +108,23 @@ showXPitch (XPitch step alter octave) = printf "%s%s%d" step sAlter octave
       -1 -> "b"
       0  -> ""
       1  -> "#"
+
+type TNotes = [TNote]
+instance ShowItemClass TNotes where
+  showI = Component "TNotes" False . map showT
+    where
+      showT (TNote pitch voice mStaff tieStart tieStop beg 
+        end order nots _ mGrace) =
+          Component 
+            (printf "%d: %s %s" order (simpleShowLoc beg)
+              (simpleShowLoc end))
+            True [sp, svoist, stie, snots, sgra]
+            where
+              sp = SingleLine . show . midiPitch $ pitch
+              svoist = SingleLine $ printf "voi/staff    : [%d/%s]" 
+                voice (show mStaff)
+              stie = SingleLine $ printf "tie strt/stop: [%s/%s]"
+                (show tieStart) (show tieStop)
+              snots = SingleLine $ show nots
+              sgra = SingleLine $
+                printf "mGrace       : %s" (show mGrace) 

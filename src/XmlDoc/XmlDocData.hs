@@ -42,6 +42,9 @@ data XMsrData =
   | XMDOther String Int -- element name, order
   deriving(Show)
 
+orderOf :: XMsrData -> Int
+orderOf (XMDNote _ i) = i
+
 
 --                      Sibelius and the grand staff
 --

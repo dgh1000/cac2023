@@ -101,14 +101,13 @@ library
     , parsec
     , containers
     , PortMidi
-    , mtl
+    , mtl >=2.2.2
     , random
     , lens
     , xml
     , midi
     , HCodecs
     , cereal
-    , ilist
   default-language: Haskell2010
 
 
@@ -126,6 +125,7 @@ executable spawnMp
     , haskeline
     , process
     , directory
+    , mtl
   default-language: Haskell2010
 
 
@@ -142,7 +142,6 @@ executable testCtrl
     , mtl
     , PortMidi
     , random
-    , ilist
   default-language: Haskell2010
 
 test-suite cac-test
@@ -156,4 +155,5 @@ test-suite cac-test
   build-depends:
       base >=4.7 && <5
     , cac
+    , mtl
   default-language: Haskell2010

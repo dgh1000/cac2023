@@ -5,10 +5,16 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Map(Map)
 import Data.Set(Set)
-import Data.List.Index
-import Common
+import Common ( Pitch(Pitch, midiPitch), Loc(Loc) )
 import XmlDoc.XmlDocData
 import Data.Maybe
+
+doTiesXMsrData :: Map Int IXMsrInfo -> [(Loc,XMsrData)] ->
+  [TNote]
+doTiesXMsrData imix xs = error "foo"
+  where
+    ts :: [TNote]
+    ts = mapMaybe (xMsrDataToTNote imix) xs
 
 
 xMsrDataToTNote :: Map Int IXMsrInfo -> (Loc,XMsrData) -> Maybe TNote
@@ -19,15 +25,14 @@ xMsrDataToTNote mix (begLoc,xmsr) =
       tieStop nots notehead _) -> 
         let 
           voi = case mVoi of {Just x -> x}
-          order = error "foo"
-          endLoc = error "Foo"
-          pitch = error "foo"
+          order = orderOf xmsr
+          -- computeEndLoc :: Map Int IXMsrInfo -> Loc -> Int -> Loc
+          endLoc = computeEndLoc mix begLoc dur
+          pitch = xPitchToPitch xpitch
         in
           Just 
             (TNote pitch voi mStaff tieStart tieStop begLoc endLoc 
               order nots notehead grace)
-
-
 
 
 maybeXNoteNoteType :: XMsrData -> Maybe XNote
@@ -35,6 +40,29 @@ maybeXNoteNoteType (XMDNote x@XNNote {} _) = Just x
 maybeXNoteNoteType _ = Nothing
 
 
+xPitchToPitch (XPitch stepString alter octave) =
+  Pitch midiPitch step alter octave
+  where
+    step = case lookup stepString [ ("C",0),("D",1),("E",2),("F",3)
+                                  , ("G",4),("A",5),("B",6)] of 
+      Just x -> x
+    pitchClass = 
+      case lookup stepString [("C",0),("D",2),("E",4),("F",5),("G",7)
+                             ,("A",9),("B",11)] of
+        Just x -> x
+    midiPitch = (octave+1) * 12 + pitchClass + alter
+
+
+computeEndLoc :: Map Int IXMsrInfo -> Loc -> Int -> Loc
+computeEndLoc xmis (Loc locMsr locBeat) dur = 
+  case M.lookup locMsr xmis of
+    Just (IXMsrInfo dpq numer denom)
+      -- exhausted case means number of divs put end loc past beat 1 of next msr
+      | e == fromIntegral numer + 1 -> Loc (locMsr+1) 1
+      | e <  fromIntegral numer + 1 -> Loc locMsr e
+      where
+        e = locBeat + (fromIntegral denom / 4) *
+            (fromIntegral dur / fromIntegral dpq)
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------

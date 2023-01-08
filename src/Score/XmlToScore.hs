@@ -8,7 +8,7 @@ import qualified Data.Map as M
 import Control.Arrow
 import Debug.Trace
 import Data.Array
-import Data.Maybe
+import Data.Maybe ( listToMaybe, catMaybes, isJust, mapMaybe )
 import Data.Map(Map)
 import Data.Set(Set)
 import Text.Printf
@@ -235,7 +235,7 @@ computeMaxTrueEnd chords =
 
 
 maybeWord :: XMsrData -> Maybe WordDirection
-maybeWord (XMDDirection (XDWords s y) _ _ _) =
+maybeWord (XMDDirection (XDWords s y) _ _ _ _) =
   case y of
     Just jy | jy > -7   -> Just $ WdAbove s
             | otherwise -> if s == "aps:12"
@@ -343,7 +343,7 @@ computePedalEvts :: Map Loc [XMsrData] -> Map Loc PedalEvt
 computePedalEvts = fixPedalEvts . lMapMaybe g
   where
     g :: XMsrData -> Maybe PedalEvt
-    g (XMDDirection (XDPedal type_ hasLine) _ _ _) = Just type_
+    g (XMDDirection (XDPedal type_ hasLine) _ _ _ _) = Just type_
     g _ = Nothing
 
 
@@ -373,7 +373,7 @@ computeSymbols :: Map Loc [XMsrData] -> Map Loc [Symbol]
 computeSymbols = lMapMaybe g
   where
     g :: XMsrData -> Maybe Symbol
-    g (XMDDirection (XDOtherDirection s) _ mVoice _) = case mVoice of
+    g (XMDDirection (XDOtherDirection s) _ mVoice _ _) = case mVoice of
       Just v -> Just $ Symbol s v
     g _ = Nothing
 
@@ -387,7 +387,7 @@ computeText :: Map Loc [XMsrData] -> Map Loc [Text]
 computeText = listToLMap . mapMaybe g . lMapToList
   where
     g (loc,x) = fmap (loc,) $ f x
-    f (XMDDirection (XDWords s defy) _ _ _) = Just $ TechniqueText s
+    f (XMDDirection (XDWords s defy) _ _ _ _) = Just $ TechniqueText s
     f _ = Nothing
 
 
@@ -455,7 +455,7 @@ computeSlurs2 = M.mapMaybe g
 
 
 maybeSlurs :: XMsrData -> [(Bool,Maybe Int)]
-maybeSlurs (XMDNote (XNNote _ _ _ _ _ _ _ _ notations _ _)) =
+maybeSlurs (XMDNote (XNNote _ _ _ _ _ _ _ _ notations _ _) _) =
     mapMaybe maybeNSlur notations
   where
     maybeNSlur :: XNotation -> Maybe (Bool,Maybe Int)
@@ -464,7 +464,7 @@ maybeSlurs (XMDNote (XNNote _ _ _ _ _ _ _ _ notations _ _)) =
     maybeNSlur _ = Nothing
 maybeSlurs _ = []
 
-maybeSlur (XMDNote (XNNote _ _ _ _ _ _ _ _ notations _ _)) =
+maybeSlur (XMDNote (XNNote _ _ _ _ _ _ _ _ notations _ _) _) =
   not $ null [x | XNSlur x _ <- notations]
 isSlur _ = False
 
@@ -484,7 +484,7 @@ metAndSymbolMarks msrData =
 
 -- 
 maybeMetMark :: Loc -> XMsrData -> Maybe MarkD
-maybeMetMark loc (XMDDirection (XDMetronome beatType bpm) _ _ _) =
+maybeMetMark loc (XMDDirection (XDMetronome beatType bpm) _ _ _ _) =
   case beatType of
     "quarter" -> Just $ SetTempo Nothing (fromIntegral bpm) False
     _         -> throwMine $ printf ("don't know metronome marking of " ++
@@ -493,8 +493,9 @@ maybeMetMark _ _ = Nothing
   
 
 maybeSymbol :: XMsrData -> Maybe MarkD
-maybeSymbol (XMDDirection (XDOtherDirection s) _ mVoice _) = case mVoice of
-  Just v -> Just $ SymbolMark s v
+maybeSymbol (XMDDirection (XDOtherDirection s) _ mVoice _ _) = 
+  case mVoice of
+    Just v -> Just $ SymbolMark s v
 maybeSymbol _ = Nothing
 
 
@@ -533,7 +534,7 @@ computeDynamicsOneScoreStaff xmsr = d3
 
 
     f :: Loc -> XMsrData -> Maybe Dynamic
-    f loc (XMDDirection (XDDynamics s) mOffset _ mStaff)
+    f loc (XMDDirection (XDDynamics s) mOffset _ mStaff _)
       = case toDyn s (case mStaff of {Just v -> v}) of
          Nothing -> printf ("Warning, unknown dynamic string %s" ++
                     " at %s") s (simpleShowLoc loc) `trace` Nothing
@@ -570,11 +571,11 @@ filterXMsrDataByStaff xmsrs staffNum = M.map catMaybes . M.map (map (isOnStaff s
 
 isOnStaff :: Int -> XMsrData -> Maybe XMsrData
 isOnStaff x d = case d of
-  a@(XMDDirection _ _ _ mStaff) -> case mStaff of
+  a@(XMDDirection _ _ _ mStaff _) -> case mStaff of
     Just i | i == x    -> Just a
            | otherwise -> Nothing
     Nothing            -> Nothing
-  a@(XMDNote n) -> case xnStaff n of
+  a@(XMDNote n _) -> case xnStaff n of
     Just i | i == x    -> Just a
            | otherwise -> Nothing
     Nothing            -> Nothing
@@ -585,7 +586,8 @@ computeHairpinsOneScoreStaff :: Map Loc [XMsrData] -> Map Loc Hairpin
 computeHairpinsOneScoreStaff = M.fromList . mapMaybe pairUp . L.tails .
                   mapMaybe toWedge . lMapToList
   where
-    toWedge (loc,XMDDirection (XDWedge t) _ _ mStaff) = Just (loc,t,case mStaff of {Just s -> s})
+    toWedge (loc,XMDDirection (XDWedge t) _ _ mStaff _) = 
+      Just (loc,t,case mStaff of {Just s -> s})
     toWedge _ = Nothing
     pairUp ((loc1,WedgeCresc,staffN):(loc2,WedgeStop,_):_) = 
         Just (loc1, Hairpin Crescendo  loc2 staffN)
@@ -626,7 +628,7 @@ computeChords msrInfo =
 -- BUT NOT A LOC
 
 xMsrDataToNote :: XMsrData -> Maybe XNote
-xMsrDataToNote (XMDNote n@XNNote{}) 
+xMsrDataToNote (XMDNote n@XNNote{} _) 
   | isJust $ xnIsGrace n  = Nothing
   | otherwise             = Just n
 xMsrDataToNote _ = Nothing
@@ -642,7 +644,8 @@ groupNotesByVoice = listToLMap . map (\n -> (getVoice n,n))
 -- parameters:
 noteMapToChordMap :: Map Int IXMsrInfo -> Loc -> Map Int [XNote] -> 
                      Map Int PrelimChord
-noteMapToChordMap msrInfo chordBegin = M.map (notesToChord chordBegin msrInfo)
+noteMapToChordMap msrInfo chordBegin = 
+  M.map (notesToChord chordBegin msrInfo)
 
 -- DATA
 --
@@ -713,7 +716,6 @@ toNote XNNote { XD.xnPitch = XPitch stepString alter octave
         Just x -> x
     midiPitch = (octave+1) * 12 + pitchClass + alter
 
-    
 
 -- computeEndLoc
 --
@@ -721,6 +723,8 @@ toNote XNNote { XD.xnPitch = XPitch stepString alter octave
 -- Loc : begin loc of a note
 -- Int : duration of the note in number of divisions per quarter
 --
+{-
+moved to XmlToScore_ties
 computeEndLoc :: Map Int IXMsrInfo -> Loc -> Int -> Loc
 computeEndLoc xmis (Loc locMsr locBeat) dur = case M.lookup locMsr xmis of
   Just (IXMsrInfo dpq numer denom)
@@ -730,7 +734,7 @@ computeEndLoc xmis (Loc locMsr locBeat) dur = case M.lookup locMsr xmis of
     where
       e = locBeat + (fromIntegral denom / 4) *
           (fromIntegral dur / fromIntegral dpq)
-
+-}
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
