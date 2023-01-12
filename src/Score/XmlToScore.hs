@@ -22,6 +22,8 @@ import Common
 import Util.Exception
 import Util.Map
 import Common.CommonUtil
+import Util.Showable
+import XmlDoc.XmlDocData
 
 
 xmlToScore :: XScore -> Score
@@ -230,8 +232,8 @@ computeMaxTrueEnd chords =
     xs@(x:_) -> maximum xs
   where
     ends (NSingles ns) = map nTrueEnd $ M.elems ns
-    ends (NTrill _ ns1 ns2) = (map nTrueEnd $ M.elems ns1) ++
-                              (map nTrueEnd $ M.elems ns2)
+    ends (NTrill _ ns1 ns2) = map nTrueEnd (M.elems ns1) ++
+                              map nTrueEnd (M.elems ns2)
 
 
 maybeWord :: XMsrData -> Maybe WordDirection
@@ -244,43 +246,6 @@ maybeWord (XMDDirection (XDWords s y) _ _ _ _) =
     Nothing -> Just $ WdAbove s
 maybeWord _ = Nothing
 
-
----------------------------------------------------------------------
-----------------------------------------------------------------------
---                compute true ends map
-
-{-
-
-computeTrueEndsMap :: String -> Map Loc (Map Int Chord) -> Map Loc [NoteKey]
-computeTrueEndsMap staffName = listToLMap . map (\nk -> (nkTrueEnd nk,nk)) . 
-                               concatMap chordNoteKeysK .
-                               getChordKeys_chords staffName
--}
-
--- we need way to generate all note keys
-
-
-{-
-                xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-                         JANUARY 2017
-
-           not sure what true ends map used for, lets leave it out
-
-
-computeTrueEndsMap :: Map Loc (Map Int Chord) -> Map Loc [StaffNoteKey]
-computeTrueEndsMap chords = listToLMap xs
-  where
-    xs = concatMap g $ M.toList chords
-    g :: (Loc,Map Int Chord) -> [(Loc,StaffNoteKey)]
-    g (loc,m) = map (h loc) (M.toList m)
-    h :: Loc -> (Int,Chord) -> [(Loc,StaffNoteKey)]
-    h loc (vn,ch) = map (\(p,end) -> (end,StaffNoteKey loc vn p)) $
-                    chordTrueEnds ch 
-
-
-
--}
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
@@ -642,6 +607,11 @@ groupNotesByVoice = listToLMap . map (\n -> (getVoice n,n))
 --
 --
 -- parameters:
+
+-- TNOTE
+noteMapToChordMapTNote :: Map Int IXMsrInfo -> Loc -> Map Int [TNote]
+  -> Map Int PrelimChord
+
 noteMapToChordMap :: Map Int IXMsrInfo -> Loc -> Map Int [XNote] -> 
                      Map Int PrelimChord
 noteMapToChordMap msrInfo chordBegin = 
@@ -1136,3 +1106,57 @@ isCaret AdjustMarker = True
 isCaret _ = False
 -}
 
+-- data XScore = XScore
+--   { xPartInfos :: Map String XPartInfo -- map of id to part human-readable name
+--   , xParts :: Map String XPart         
+--   }
+-- data XPart = XPart
+--   { xpMsrs :: [XMsr]
+--   }
+
+-- xmlToScoreTest :: XScore -> Map String [TNote]
+-- xmlToScoreTest xs = error "foo"
+--   where
+--     parts :: Map String XPart
+--     parts = xParts xs  
+--     toMsrs :: XPart -> [XMsr]
+--     toMsrs = xpMsrs
+
+xmlToScoreTest :: XScore -> [(String,[TNote])]
+xmlToScoreTest xs = m3
+  where
+    imix :: Map Int IXMsrInfo
+    m :: Map String (Map Loc [XMsrData])
+    (imix,m) = computeXmlStaves xs
+    m2 :: (String,Map Loc [XMsrData]) -> (String,[TNote])
+    m2 (s,m_) = (s, xmlToScoreTestStaff imix m_)
+    m3 :: [(String,[TNote])]
+    m3 = map m2 $ M.toAscList m
+
+
+xmlToScoreTestStaff :: Map Int IXMsrInfo -> Map Loc [XMsrData] -> 
+  [TNote]
+xmlToScoreTestStaff imix m = d3
+  where
+    d1 :: [(Loc,[XMsrData])]
+    d1 = M.toAscList m
+    d2 :: [(Loc,XMsrData)]
+    d2 = tmp1 d1
+    d3 :: [TNote]
+    d3 = doTiesXMsrData imix d2
+
+
+-- doTiesXMsrData :: Map Int IXMsrInfo -> [(Loc,XMsrData)] ->
+--   [TNote]
+
+-- computeXmlStaves :: XScore -> ( Map Int IXMsrInfo
+--                               , Map String (Map Loc [XMsrData]) )
+
+tmp1 :: [(a,[b])] -> [(a,b)]
+tmp1 = concatMap g
+  where
+    g :: (a,[b]) -> [(a,b)]
+    g (x,ys) = map (x,) ys
+
+-- doTiesXMsrData :: Map Int IXMsrInfo -> [(Loc,XMsrData)] ->
+--   [TNote]

@@ -109,9 +109,9 @@ showXPitch (XPitch step alter octave) = printf "%s%s%d" step sAlter octave
       0  -> ""
       1  -> "#"
 
-type TNotes = [TNote]
+type TNotes = (String,[TNote])
 instance ShowItemClass TNotes where
-  showI = Component "TNotes" False . map showT
+  showI (s,tns) = Component s False $ map showT tns
     where
       showT (TNote pitch voice mStaff tieStart tieStop beg 
         end order nots _ mGrace) =
@@ -128,3 +128,7 @@ instance ShowItemClass TNotes where
               snots = SingleLine $ show nots
               sgra = SingleLine $
                 printf "mGrace       : %s" (show mGrace) 
+
+type TNotesManyStaves = [(String,[TNote])]
+instance ShowItemClass TNotesManyStaves where
+  showI many = Component "Many staves" True (map showI many)

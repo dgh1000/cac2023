@@ -22,6 +22,13 @@ import Translation.ToMidi
 import Control.DeepSeq
 import Control.Concurrent
 import Sound.PortMidi
+import XmlDoc.XmlDocData
+import Util.FileUtil
+import Text.XML.Light (onlyElems, parseXML, qName, Element (elName))
+import XmlDoc.ParseXml
+import Data.Map (Map)
+import Score.XmlToScore (xmlToScoreTest)
+import Util.Showable
 
 runOnce :: RunData -> [String] -> IO ()
 runOnce rd args =
@@ -31,24 +38,30 @@ runOnce rd args =
 runOnce_a_t :: [String] -> RunData -> IO ()
 runOnce_a_t args rd =
   case parseArgs args of
-    PlayCmd mBeg mEnd mSolo splicePts -> doPlay mBeg mEnd mSolo splicePts rd
+    PlayCmd mBeg mEnd mSolo splicePts -> doPlay_t mBeg mEnd mSolo splicePts rd
     SendCtrl stream chan ctrl value -> doSendCtrl stream chan ctrl value
     SendCtrlSet stream setNum -> doSendCtrlSet stream setNum
 
 doPlay_t :: Int -> Maybe Int -> Maybe String -> [String] -> RunData -> IO ()
 doPlay_t mBeg mEnd mSolo splicePts (RunData metasIn) = do
-  mDev <- findNamedDevice "MidiPipe Input 3"
+  {- mDev <- findNamedDevice "MidiPipe Input 3"
   when (isNothing mDev) (throwMine "MidiPipe Input 3 is not preset")
   mStreams <- startMidi (fromJust mDev) (fromJust mDev+3)
   case mStreams of
     -- Left err -> putStrLn ("boo:" ++ show err) >> return ()
     Left err -> putStrLn ("boo:" ++ show err)
-    Right streams -> do
-      score <- readXml
+    Right streams ->  do -} 
+      -- score :: XScore
+      score <- readXmlTest
+      let x :: [(String,[TNote])]
+          x = xmlToScoreTest score
+      writeFile "tnote.txt" (showIString x)
+      return ()
       {- 
       putStrLn "writing score.txt..."
          >> writeFile "score.txt" (showIString score)
       -}
+      {-
       gen <- newStdGen
       let scoreStaffNs = M.keysSet $ scStaves score
       -- if a meta is solo, do that now
@@ -93,5 +106,13 @@ doPlay_t mBeg mEnd mSolo splicePts (RunData metasIn) = do
           stopMidi streams
           return ()
 
+-}
 
-
+readXmlTest :: IO XScore
+readXmlTest = do
+  buf <- readFileStrictly "/Users/mike/in.musicxml"
+  let topElems = onlyElems . parseXML $ buf
+  case L.find ((=="score-partwise") . qName . elName) topElems of
+    Just e -> return $ parseXScore e
+      -- let xd = parseXScore e
+      -- in return $ xmlToScore xd

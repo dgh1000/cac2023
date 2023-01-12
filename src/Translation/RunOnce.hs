@@ -43,6 +43,7 @@ import XmlDoc.ShowXmlDoc
 import Util.FileUtil
 import Util.Exception
 import Util.Showable
+import XmlDoc.XmlDocData
 
 
 -- <beg msr> <maybe end msr> <maybe solo meta-instr> <splice points>
@@ -76,10 +77,6 @@ doPlay mBeg mEnd mSolo splicePts (RunData metasIn) = do
     Left err -> putStrLn ("boo:" ++ show err) >> return ()
     Right streams -> do
       score <- readXml
-      {- 
-      putStrLn "writing score.txt..."
-         >> writeFile "score.txt" (showIString score)
-      -}
       gen <- newStdGen
       let scoreStaffNs = M.keysSet $ scStaves score
       -- if a meta is solo, do that now
@@ -270,13 +267,9 @@ readXml = do
   buf <- readFileStrictly "/Users/mike/in.musicxml"
   let topElems = onlyElems . parseXML $ buf
   case L.find ((=="score-partwise") . XL.qName . elName) topElems of
-    Just e ->
-      let
-            xd = parseXScore e
-      in do -- putStrLn "NOT YET writing xml.txt ... "
-            -- writeFile "xml.txt" $ showIString xd
-            return $ xmlToScore xd
-
+    Just e -> 
+      let xd = parseXScore e
+      in return $ xmlToScore xd
 
 {-
 openMidiPipeInput2 :: IO DeviceID

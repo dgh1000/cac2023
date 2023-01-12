@@ -1,3 +1,5 @@
+tags in coe GRACE TNOTE
+
 Process
 - WHERE LEFT OFF: see XmlToScore_grace.hs top of file for general list of functions
   we need to work on. left off specifically on splitOutVoices
@@ -120,16 +122,17 @@ CONSIDERING OTHER METHODS OF DOING TIES
     (and this would set end location)
 
 
-- two jobs 
-  (1) labels the order of all data in [XMsrData]
-  (2) look just at the notes to handle ties and form chords
+  -- Map Loc [XMsrData] is called an xmlStaff. This is data for all 
+  -- voices but only on one staff
+  computeStaff :: Map Int IXMsrInfo -> Map Int TimeSig -> String -> 
+                  Map Loc [XMsrData] -> Staff
 
-- FUNCTIONS THAT WORK ON [XMsrData]
+  xmlToScoreTest :: XScore -> [(String,[TNote])]
 
-  - we have to label all the data with an ordering in [XMsrData]
-    because we have to preserve all the data
+  xmlToScoreTestStaff :: Map Int IXMsrInfo -> Map Loc [XMsrData] -> 
+    [TNote]
 
-  - all the following in XmlToScore.hs:
+
   - current filtering of XMsrData to just the notes happens in function
     xMsrDataToNote :: XMsrData -> Maybe XNote
   - noteMapToChordMap :: Map Int IXMsrInfo -> Loc -> Map Int [XNote] ->

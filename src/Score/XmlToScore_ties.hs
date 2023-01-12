@@ -9,9 +9,12 @@ import Common ( Pitch(Pitch, midiPitch), Loc(Loc) )
 import XmlDoc.XmlDocData
 import Data.Maybe
 
+xMsrDataToTNote :: Map Int IXMsrInfo -> [(Loc,XMsrData)]
+ 
+
 doTiesXMsrData :: Map Int IXMsrInfo -> [(Loc,XMsrData)] ->
   [TNote]
-doTiesXMsrData imix xs = error "foo"
+doTiesXMsrData imix xs = doTies ts
   where
     ts :: [TNote]
     ts = mapMaybe (xMsrDataToTNote imix) xs
@@ -78,17 +81,18 @@ doTies tns = catMaybes mTns
   where
     (_,mTns) = L.mapAccumR step1 M.empty (L.sortBy compareTNote tns)
 
+-- compare Loc, then grace, then order
 compareTNote :: TNote -> TNote -> Ordering
 compareTNote
   (TNote _ _ _ _ _ beg1 _ order1 _ _ grace1)
   (TNote _ _ _ _ _ beg2 _ order2 _ _ grace2) =
-    case (grace1,grace2) of
-        (Nothing, Just  _) -> LT
-        (Just _ , Nothing) -> GT
-        _                  ->
-          if beg1 /= beg2 
-            then compare beg1 beg2
-            else compare order1 order2
+    case compare beg1 beg2 of
+      LT -> LT
+      GT -> GT
+      _  -> case (grace1,grace2) of
+        (Nothing, Just  _) -> GT
+        (Just _ , Nothing) -> LT
+        _                  -> compare order1 order2
 
 
 step1 :: Map Loc [TieEnd] -> TNote -> (Map Loc [TieEnd], Maybe TNote)
