@@ -609,8 +609,8 @@ groupNotesByVoice = listToLMap . map (\n -> (getVoice n,n))
 -- parameters:
 
 -- TNOTE
-noteMapToChordMapTNote :: Map Int IXMsrInfo -> Loc -> Map Int [TNote]
-  -> Map Int PrelimChord
+-- noteMapToChordMapTNote :: Map Int IXMsrInfo -> Loc -> Map Int [TNote]
+--   -> Map Int PrelimChord
 
 noteMapToChordMap :: Map Int IXMsrInfo -> Loc -> Map Int [XNote] -> 
                      Map Int PrelimChord

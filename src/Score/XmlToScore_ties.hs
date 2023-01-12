@@ -9,8 +9,8 @@ import Common ( Pitch(Pitch, midiPitch), Loc(Loc) )
 import XmlDoc.XmlDocData
 import Data.Maybe
 
-xMsrDataToTNote :: Map Int IXMsrInfo -> [(Loc,XMsrData)]
- 
+-- xMsrDataToTNote :: Map Int IXMsrInfo -> [(Loc,XMsrData)]
+
 
 doTiesXMsrData :: Map Int IXMsrInfo -> [(Loc,XMsrData)] ->
   [TNote]
