@@ -121,6 +121,10 @@ CONSIDERING OTHER METHODS OF DOING TIES
     -> Maybe TNote
     (and this would set end location)
 
+  - we need to produce Map Loc (Map Int Chord) eventually. From [TNote]
+    should grace go in separate data? we can have multiple notes at
+    same Loc. As long as some are marked 'grace' and they are marked
+    with 
 
   -- Map Loc [XMsrData] is called an xmlStaff. This is data for all 
   -- voices but only on one staff
@@ -130,6 +134,9 @@ CONSIDERING OTHER METHODS OF DOING TIES
   xmlToScoreTest :: XScore -> [(String,[TNote])]
 
   xmlToScoreTestStaff :: Map Int IXMsrInfo -> Map Loc [XMsrData] -> 
+    [TNote]
+
+  doTiesXMsrData :: Map Int IXMsrInfo -> [(Loc,XMsrData)] ->
     [TNote]
 
 
