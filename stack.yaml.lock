@@ -7,13 +7,13 @@ packages:
 - completed:
     hackage: PortMidi-0.2.0.0@sha256:0671e36ec72e95138bf396234b205864a8a6d0ee353e09e01cbfd57004c56f40,2383
     pantry-tree:
-      size: 1818
       sha256: c9936666afc390560319024c25ecb184e2518ae4d3be5ae14081231091c1f073
+      size: 1818
   original:
     hackage: PortMidi-0.2.0.0
 snapshots:
 - completed:
-    size: 527775
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2020/9/2.yaml
-    sha256: 92ec78ae38830f06ec9307c5ce346ae93982fab6179eb10dec9d57d5069c7f14
-  original: nightly-2020-09-02
+    sha256: 46e689380f16683d99a3333b1c216b81e251489229c234fbaba804c55405844a
+    size: 574470
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/1/6.yaml
+  original: nightly-2023-01-06
