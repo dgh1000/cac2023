@@ -15,6 +15,7 @@ import Debug.Trace
 import System.Directory
 import Util.Exception
 import qualified Data.ByteString as B
+import System.FilePath (addTrailingPathSeparator)
 
 
 
@@ -23,7 +24,7 @@ import qualified Data.ByteString as B
 --                 convert Strings to strict bytestrings for
 --               wrint to files
 writeFileStrictly :: FilePath -> String -> IO ()
-writeFileStrictly fn s = B.writeFile fn . B.pack . map (fromIntegral . ord) $ s
+writeFileStrictly fn = B.writeFile fn . B.pack . map (fromIntegral . ord)
 
 readFileStrictly :: FilePath -> IO String
 readFileStrictly fn = do
@@ -43,7 +44,7 @@ readFileStrictly fn = do
 --  This will find the most recent xml file.
 mostRecentFile :: FilePath -> String -> IO FilePath
 mostRecentFile path ext = do
-  let pathSlash = path ++ "/"
+  let pathSlash = addTrailingPathSeparator path
   fs <- getDirectoryContents path
   let ffs = filter g fs
       g s = drop (length s - length ext) s == ext
@@ -61,7 +62,7 @@ mostRecentFile path ext = do
 
 mostRecentFileNDirs :: [FilePath] -> String -> IO FilePath
 mostRecentFileNDirs paths ext = do
-  allFileTimes <- concat `liftM` mapM (directoryFileTimes ext) paths
+  allFileTimes <- concat `fmap` mapM (directoryFileTimes ext) paths
   case allFileTimes of
     [] -> throwMine $ printf ("In mostRecentFileNDirs, no file of extension "++
           "'%s' in any of the given directories") ext
@@ -80,13 +81,13 @@ directoryFileTimes ext path = do
   let extMatches s = takeExtension s == "." ++ ext
       getFileTime name =
         if extMatches name 
-          then do let fullFilename = path ++ "/" ++ name
+          then do let fullFilename = path </> name
                   t <- getModificationTime fullFilename
                   return $ Just (t,fullFilename)
           else return Nothing
   flag <- doesDirectoryExist path
   if flag then do fs <- getDirectoryContents path
-                  catMaybes `liftM` mapM getFileTime fs
+                  catMaybes `fmap` mapM getFileTime fs
           else return []
 
 
@@ -95,7 +96,7 @@ directoryFileTimes ext path = do
 
 treeFiles :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
 treeFiles pred fp = do
-  contents  <- map (\f -> joinPath [fp,f]) `liftM` listDirectory fp
+  contents  <- map (\f -> joinPath [fp,f]) `fmap` listDirectory fp
   fileFlags <- mapM doesFileExist contents
   dirFlags  <- mapM doesDirectoryExist contents
   let files = map snd . filter (pred . snd) . filter fst $
@@ -128,7 +129,7 @@ availableFilename path prefix ext = do
   fs <- getDirectoryContents path
   let ls = catMaybes . map (avfn_help prefix ext) $ fs
   let currentMax = maximum $ 0 : ls
-      newFn = prefix ++ show (currentMax + 1) ++ "." ++ ext
+      newFn = prefix ++ show (currentMax + 1) <.> ext
   when (newFn `elem` fs) (throwMine "987sdf")
   return newFn
 

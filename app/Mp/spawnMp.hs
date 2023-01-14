@@ -1,4 +1,5 @@
 
+import System.Environment
 import System.IO
 import System.Process
 import System.FilePath
@@ -14,6 +15,7 @@ import Text.Parsec
 import Text.Parsec.String
 import Util.FileUtil
 import Translation.SendControl
+import System.Directory (exeExtension)
 -- import Language.Haskell.Interpreter
 
 
@@ -73,34 +75,54 @@ loopIO l mProcHand = do
 -- prepareRun
 --
 
+compDirectory :: IO FilePath
+compDirectory = do
+  e <- lookupEnv "COMPUTER_SYSTEM"
+  case e of
+    Just _  -> return "/Users/Mike/Sync/music/comp"
+    Nothing -> return "c:\\Users\\micha\\Sync\\music\\comp"
+
+
+homeDirectory :: IO FilePath
+homeDirectory = do
+  e <- lookupEnv "COMPUTER_SYSTEM"
+  case e of
+    Just _  -> return "/Users/Mike/"
+    Nothing -> return "c:\\Users\\micha\\"
+
+
 isSibOrMscz f = e == ".sib" || e == ".mscz"
   where
     e = takeExtension f
 
 prepareRun :: Maybe ProcessHandle -> RunOnceArg -> IO (Maybe ProcessHandle)
 prepareRun mProcHand arg = do
-  treeFs <- treeFiles isSibOrMscz "/Users/Mike/Sync/music/comp"
+  compD <- compDirectory
+  treeFs <- treeFiles isSibOrMscz compD
   fp <- mostRecentFileL treeFs 
   -- let fpNoExt = takeDirectory fp ++ "/" ++ takeBaseName fp
   let fpNoExt = dropExtension fp
   -- copyFile (fp -<.> ".musicxml") "/Users/Mike/in.musicxml"
   -- MUSESCORE
   prepareInXml fp
-  flag <- compile (fp -<.> ".hs")
+  print $ "bncas: " ++ fp
+  flag <- compile (fp -<.> "hs")
   if flag
     then do
       doStop mProcHand
-      ph <- spawn fpNoExt arg
+      ph <- spawn (fpNoExt ++ exeExtension) arg
       return $ Just ph
     else return mProcHand
 
 
 prepareInXml :: FilePath -> IO ()
 prepareInXml fp = do
-  let localXmlFp = fp -<.> ".musicxml"
-      outXmlFp = "/Users/Mike/out.musicxml"
+  let localXmlFp = fp <.> "musicxml"
+  homeD <- homeDirectory
+  let outXmlFp = homeD </> "out.musicxml"
   -- if either does not exist, use the other
   -- if both exist use the most recent one
+  print $ "abcd: " ++ homeD
   localXmlExists <- doesFileExist localXmlFp
   outXmlExists <- doesFileExist outXmlFp
   which <- case (localXmlExists,outXmlExists) of
@@ -112,14 +134,14 @@ prepareInXml fp = do
     (False,True) -> return 2
     _            -> error "neither out.musicxml nor local musicxml files exist"
   if which == 1 
-    then copyFile localXmlFp "/Users/Mike/in.musicxml"
-    else copyFile outXmlFp "/Users/Mike/in.musicxml"
+    then copyFile localXmlFp $ homeD </> "in.musicxml"
+    else copyFile outXmlFp $ homeD </> "in.musicxml"
 
 
 prepareCalib :: Maybe ProcessHandle -> IO (Maybe ProcessHandle)
 prepareCalib mProcHand = do
   let fpNoExt = "/Users/Mike/Sync/stack/cac/app/CalibrateSampler/calib"
-  flag <- compile $ fpNoExt ++ ".hs"
+  flag <- compile $ fpNoExt <.> "hs"
   if flag
     then do
       doStop mProcHand
@@ -150,10 +172,20 @@ doStop mProcHand = case mProcHand of
       Nothing -> "case interrupt" `trace` interruptProcessGroupOf h >> return ()
   
  
+-- printf "ghc --make -i/Users/Mike/Sync/stack/cac/src -package mtl %s" fp
+cacSrc :: IO FilePath
+cacSrc = do
+  e <- lookupEnv "COMPUTER_SYSTEM"
+  case e of
+    Just _  -> return "/Users/Mike/Sync/stack/cac/src"
+    Nothing -> return "c:\\Users\\micha\\Sync\\stackw\\cac\\src"
+
+
+
 compile :: FilePath -> IO Bool
 compile fp = do
-  --
-  let c = printf "ghc --make -i/Users/Mike/Sync/stack/cac/src -package mtl %s" fp
+  srcPath <- cacSrc
+  let c = printf "ghc --make -i%s -package mtl %s" srcPath fp
   -- let c = printf "stack ghc --stack-yaml $DB/stack/cac/stack.yaml --package cac2 %s" fp
   (_,_,_,h) <- createProcess (shell c)
   exit <- waitForProcess h

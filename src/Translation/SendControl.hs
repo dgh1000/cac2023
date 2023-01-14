@@ -29,8 +29,9 @@ doSendParsedControls streamNum = do
 
 myInitMidi :: IO [PMStream]
 myInitMidi = do
-  mDev <- findNamedDevice "MidiPipe Input 3"
-  when (isNothing mDev) (throwMine "MidiPipe Input 3 is not preset")
+  -- mDev <- findNamedDevice "MidiPipe Input 3"
+  -- when (isNothing mDev) (throwMine "MidiPipe Input 3 is not preset")
+  mDev <- findSystemDevice
   mStreams <- startMidi (fromJust mDev) (fromJust mDev+3)
   case mStreams of
     Left err -> error ("boo:" ++ show err)
