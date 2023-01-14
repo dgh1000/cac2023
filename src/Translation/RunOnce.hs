@@ -13,6 +13,7 @@ import qualified Text.XML.Light as XL
 import Debug.Trace
 import Sound.PortMidi hiding (name,initialize)
 import System.Random
+import System.Environment
 import Control.Exception
 import Control.Arrow
 import Control.Monad
@@ -64,14 +65,25 @@ runOnce_a args rd = do
     SendCtrl stream chan ctrl value -> doSendCtrl stream chan ctrl value
     SendCtrlSet stream setNum -> doSendCtrlSet stream setNum
 
+{-
+MOVED TO interface.hs
+findDevice :: IO (Maybe DeviceID)
+findDevice = do
+  e <- lookupEnv "COMPUTER_SYSTEM"
+  dev <- case e of
+    Just _  -> findNamedDevice False "MidiPipe Input 3"
+    Nothing -> findNamedDevice True "port2"
+  when (isNothing dev) (throwMine "MidiPipe Input 3 or port2 is not present")
+  return dev
+-}
 
 doPlay :: Int -> Maybe Int -> Maybe String -> [String] -> RunData -> IO ()
 doPlay mBeg mEnd mSolo splicePts (RunData metasIn) = do
-  mDev <- findNamedDevice "MidiPipe Input 3"
-  when (isNothing mDev) (throwMine "MidiPipe Input 3 is not preset")
+  mDev <- findSystemDevice
+  -- when (isNothing mDev) (throwMine "MidiPipe Input 3 or port2 is not present")
   mStreams <- startMidi (fromJust mDev) (fromJust mDev+3)
   case mStreams of
-    Left err -> putStrLn ("boo:" ++ show err) >> return ()
+    Left err -> putStrLn ("boo:" ++ show err)
     Right streams -> do
       score <- readXml
       {- 
@@ -265,7 +277,10 @@ stopMidi streams = do
 
 readXml :: IO Score
 readXml = do
-  buf <- readFileStrictly "/Users/mike/in.musicxml"
+  env <- lookupEnv "COMPUTER_SYSTEM"
+  buf <- case env of
+    Just _  -> readFileStrictly "/Users/mike/in.musicxml"
+    Nothing -> readFileStrictly "c:\\Users\\micha\\in.musicxml"
   let topElems = onlyElems . parseXML $ buf
   case L.find ((=="score-partwise") . XL.qName . elName) topElems of
     Just e ->
@@ -311,8 +326,8 @@ openOutputDevice devNum = do
 
 doSendCtrl :: Int -> Int -> Int -> Int -> IO ()
 doSendCtrl str chan ctrl val = do
-  mDev <- findNamedDevice "MidiPipe Input 3"
-  when (isNothing mDev) (throwMine "MidiPipe Input 3 is not preset")
+  mDev <- findSystemDevice
+  -- when (isNothing mDev) (throwMine "MidiPipe Input 3 is not preset")
   mStreams <- startMidi (fromJust mDev) (fromJust mDev+3)
   case mStreams of
     Left err -> putStrLn ("boo:" ++ show err) >> return ()
@@ -334,11 +349,11 @@ doSendCtrlSet :: Int -> Int -> IO ()
 doSendCtrlSet str setNum = do
   let sendOneCtrl theStream ((chan,ctrlNum),value) =
         writeShort theStream $ toPMEvent (0xB0+chan-1,ctrlNum,value)
-  mDev <- findNamedDevice "MidiPipe Input 3"
-  when (isNothing mDev) (throwMine "MidiPipe Input 3 is not preset")
+  mDev <- findSystemDevice
+  -- when (isNothing mDev) (throwMine "MidiPipe Input 3 is not preset")
   mStreams <- startMidi (fromJust mDev) (fromJust mDev+3)
   case mStreams of
-    Left err -> putStrLn ("boo:" ++ show err) >> return ()
+    Left err -> putStrLn ("boo:" ++ show err)
     Right streams -> do
       let theStr | str >= length streams =
                      throwMine $ printf ("index %d into " ++
