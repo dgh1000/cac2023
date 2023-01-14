@@ -146,6 +146,7 @@ parseArgs _ = throwMine $ "more than one arg in executing script " ++
                           "that calls RunOnce"
 
 
+inputArg :: ParsecT String () Identity ArgData
 inputArg = sendCtrl <|> playCmd <|> sendCtrlSet
 
 sendCtrl :: Parser ArgData
@@ -159,8 +160,7 @@ sendCtrl = do
   char ':'
   ctrlNum <- r
   char ':'
-  ctrlData <- r
-  return $ SendCtrl stream chan ctrlNum ctrlData
+  SendCtrl stream chan ctrlNum <$> r
 
 sendCtrlSet :: Parser ArgData
 sendCtrlSet = do
@@ -169,8 +169,7 @@ sendCtrlSet = do
   char 't'
   stream <- r
   char ':'
-  setNum <- r
-  return $ SendCtrlSet stream setNum
+  SendCtrlSet stream <$> r
 
 
 splicePoint = many1 alphaNum
