@@ -102,7 +102,7 @@ findNamedDevice enforceOutput name = do
                   let flag = not enforceOutput || output info
                   return $ SP.name info == name && flag
   tests <- mapM test [0..c-1]
-  return $ fmap snd $ L.find fst (zip tests [0..c-1])
+  return $ snd <$> L.find fst (zip tests [0..c-1])
     
 
 findSystemDevice :: IO (Maybe DeviceID)
@@ -110,8 +110,8 @@ findSystemDevice = do
   e <- lookupEnv "COMPUTER_SYSTEM"
   dev <- case e of
     Just _  -> findNamedDevice False "MidiPipe Input 3"
-    Nothing -> findNamedDevice True "port2"
-  when (isNothing dev) (throwMine "MidiPipe Input 3 or port2 is not present")
+    Nothing -> findNamedDevice True "port3"
+  when (isNothing dev) (throwMine "MidiPipe Input 3 or port3 is not present")
   return dev
 
 ----------------------------------------------------------------------
