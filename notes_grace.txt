@@ -133,6 +133,8 @@ CONSIDERING OTHER METHODS OF DOING TIES
 
   xmlToScoreTest :: XScore -> [(String,[TNote])]
 
+  tNoteToVoicesLocs :: [TNote] -> Map Loc (Map Int [TNote])
+
   xmlToScoreTestStaff :: Map Int IXMsrInfo -> Map Loc [XMsrData] -> 
     [TNote]
 
