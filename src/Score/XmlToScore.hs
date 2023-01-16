@@ -1122,8 +1122,17 @@ isCaret _ = False
 --     toMsrs :: XPart -> [XMsr]
 --     toMsrs = xpMsrs
 
-xmlToScoreTest :: XScore -> [(String,[TNote])]
-xmlToScoreTest xs = m3
+
+xmlToScoreTest :: XScore -> [(String,Map Loc (Map Int [TNote]))]
+xmlToScoreTest xs = error "foo"
+  where
+    staves = xmlToScoreTest2 xs
+    f1 :: (String,[TNote]) -> (String,Map Loc (Map Int [TNote]))
+    f1 (s,tns) = (s,tNotesToVoicesLocs tns)
+
+
+xmlToScoreTest2 :: XScore -> [(String,[TNote])]
+xmlToScoreTest2 xs = m3
   where
     imix :: Map Int IXMsrInfo
     m :: Map String (Map Loc [XMsrData])

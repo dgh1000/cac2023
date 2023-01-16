@@ -111,7 +111,8 @@ showXPitch (XPitch step alter octave) = printf "%s%s%d" step sAlter octave
 
 type TNotes = (String,[TNote])
 instance ShowItemClass TNotes where
-  showI (s,tns) = Component s False $ map showT tns
+  showI (s,tns) = Component s False $ map showI tns
+    {-
     where
       showT (TNote pitch voice mStaff tieStart tieStop beg 
         end order nots _ mGrace) =
@@ -128,7 +129,49 @@ instance ShowItemClass TNotes where
               snots = SingleLine $ show nots
               sgra = SingleLine $
                 printf "mGrace       : %s" (show mGrace) 
+    -}
+
+instance ShowItemClass TNote where
+  showI (TNote pitch voice mStaff tieStart tieStop beg 
+    end order nots _ mGrace) =
+      Component 
+        (printf "%d: %s %s" order (simpleShowLoc beg)
+          (simpleShowLoc end))
+        True [sp, svoist, stie, snots, sgra]
+        where
+          sp = SingleLine . show . midiPitch $ pitch
+          svoist = SingleLine $ printf "voi/staff    : [%d/%s]" 
+            voice (show mStaff)
+          stie = SingleLine $ printf "tie strt/stop: [%s/%s]"
+            (show tieStart) (show tieStop)
+          snots = SingleLine $ show nots
+          sgra = SingleLine $
+            printf "mGrace       : %s" (show mGrace) 
+
 
 type TNotesManyStaves = [(String,[TNote])]
 instance ShowItemClass TNotesManyStaves where
   showI many = Component "Many staves" True (map showI many)
+
+type TNoteLocManyStaves = [(String,Map Loc (Map Int [TNote]))]
+
+type TNoteLocOneStaff = (String,Map Loc (Map Int [TNote]))
+
+instance ShowItemClass TNoteLocOneStaff where
+  showI (name,m) = Component name True [showI m]
+
+instance ShowItemClass TNoteLocManyStaves where
+  showI xs = Component "Xml Doc" True (map showI xs)
+
+type TNoteLocStaff = Map Loc (Map Int [TNote])
+instance ShowItemClass TNoteLocStaff where
+  showI m = Component "many Locs" True (map showI $ M.toAscList m)
+
+type TNoteLoc = (Loc,Map Int [TNote])
+instance ShowItemClass TNoteLoc where
+  showI (loc,m) = Component (simpleShowLoc loc) True (map showI $ M.toAscList m)
+
+type TNoteVoice = (Int,[TNote])
+
+instance ShowItemClass TNoteVoice where
+  showI (vn,tns) = Component ("vn: " ++ show vn) True (map showI tns)

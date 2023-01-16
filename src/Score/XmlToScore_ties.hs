@@ -11,6 +11,21 @@ import Data.Maybe
 
 -- xMsrDataToTNote :: Map Int IXMsrInfo -> [(Loc,XMsrData)]
 
+tNotesToVoicesLocs :: [TNote] -> Map Loc (Map Int [TNote])
+tNotesToVoicesLocs tns = f5
+  where
+    -- tnVoice
+    -- tnBegin
+    f1 :: TNote -> (Loc,[TNote])
+    f1 n = (tnBegin n, [n])
+    f2 :: Map Loc [TNote]
+    f2 = M.fromListWith (++) . map f1 $ tns
+    f3 :: TNote -> (Int,[TNote])
+    f3 n = (tnVoice n, [n])
+    f4 :: [TNote] -> Map Int [TNote]
+    f4 = M.fromListWith (++) . map f3
+    f5 = M.map f4 f2
+
 
 doTiesXMsrData :: Map Int IXMsrInfo -> [(Loc,XMsrData)] ->
   [TNote]
