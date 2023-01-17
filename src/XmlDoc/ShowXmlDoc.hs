@@ -153,12 +153,13 @@ type TNotesManyStaves = [(String,[TNote])]
 instance ShowItemClass TNotesManyStaves where
   showI many = Component "Many staves" True (map showI many)
 
-type TNoteLocManyStaves = [(String,Map Loc (Map Int [TNote]))]
 
 type TNoteLocOneStaff = (String,Map Loc (Map Int [TNote]))
 
 instance ShowItemClass TNoteLocOneStaff where
   showI (name,m) = Component name True [showI m]
+
+type TNoteLocManyStaves = [(String,Map Loc (Map Int [TNote]))]
 
 instance ShowItemClass TNoteLocManyStaves where
   showI xs = Component "Xml Doc" True (map showI xs)

@@ -1124,7 +1124,7 @@ isCaret _ = False
 
 
 xmlToScoreTest :: XScore -> [(String,Map Loc (Map Int [TNote]))]
-xmlToScoreTest xs = error "foo"
+xmlToScoreTest xs = map f1 staves
   where
     staves = xmlToScoreTest2 xs
     f1 :: (String,[TNote]) -> (String,Map Loc (Map Int [TNote]))

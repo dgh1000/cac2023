@@ -14,6 +14,8 @@ import qualified Data.Map as M
 import qualified Data.List as L
 import qualified Data.Set as S
 import Score.ScoreData
+import Score.XmlToScore
+import Score.XmlToScore_ties
 import Text.Printf
 import Control.Arrow ((&&&))
 import Control.Monad.State
@@ -27,6 +29,7 @@ import Util.FileUtil
 import Text.XML.Light (onlyElems, parseXML, qName, Element (elName))
 import XmlDoc.ParseXml
 import Data.Map (Map)
+import Common(Loc)
 import Score.XmlToScore (xmlToScoreTest)
 import Util.Showable
 
@@ -53,7 +56,7 @@ doPlay_t mBeg mEnd mSolo splicePts (RunData metasIn) = do
     Right streams ->  do -} 
       -- score :: XScore
       score <- readXmlTest
-      let x :: [(String,[TNote])]
+      let x :: [(String,Map Loc (Map Int [TNote]))]
           x = xmlToScoreTest score
       writeFile "tnote.txt" (showIString x)
       return ()
