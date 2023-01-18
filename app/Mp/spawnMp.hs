@@ -105,7 +105,6 @@ prepareRun mProcHand arg = do
   -- copyFile (fp -<.> ".musicxml") "/Users/Mike/in.musicxml"
   -- MUSESCORE
   prepareInXml fp
-  print $ "bncas: " ++ fp
   flag <- compile (fp -<.> "hs")
   if flag
     then do
@@ -122,7 +121,6 @@ prepareInXml fp = do
   let outXmlFp = homeD </> "out.musicxml"
   -- if either does not exist, use the other
   -- if both exist use the most recent one
-  print $ "abcd: " ++ homeD
   localXmlExists <- doesFileExist localXmlFp
   outXmlExists <- doesFileExist outXmlFp
   which <- case (localXmlExists,outXmlExists) of
