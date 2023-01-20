@@ -66,8 +66,9 @@ parsePartList e = M.fromList . map parseScorePart .
 parseScorePart :: Element -> (String,XPartInfo)
 parseScorePart e = case myFindChild "part-name" e of
   Just epn -> (id_, XPartInfo $ strContent epn)
+  Nothing  -> error "foo"
   where
-    id_ = case myFindAttr "id" e of {Just x -> x}
+    id_ = case myFindAttr "id" e of {Just x -> x; Nothing->error"foo"}
 
 
 -- Map <code name> XPart (XPart [XMsr])
@@ -81,7 +82,7 @@ parseParts = M.fromList . map g . myFindChildren "part"
       where
         -- e is one <part>
         -- e is "id" attribute, the "code name" of a part
-        id_ = case myFindAttr "id" e of {Just x -> x}
+        id_ = case myFindAttr "id" e of {Just x -> x; Nothing -> error "foo"}
         ms = map parseMsr . myFindChildren "measure" $ e
 
 -- eMsr is <measure>
