@@ -283,11 +283,11 @@ readXml = do
   let topElems = onlyElems . parseXML $ buf
   case L.find ((=="score-partwise") . XL.qName . elName) topElems of
     Just e ->
-      let
-            xd = parseXScore e
-      in do -- putStrLn "NOT YET writing xml.txt ... "
-            -- writeFile "xml.txt" $ showIString xd
-            return $ xmlToScore xd
+      let xd = parseXScore e
+      in  do putStrLn "Writing xml.txt ... "
+             writeFile "xml.txt" $ showIString xd
+             return $ xmlToScore xd
+    Nothing  -> error "foo"
 
 
 {-
