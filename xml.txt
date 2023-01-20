@@ -1,212 +1,93 @@
 XScore
 Parts:
-  Part name: Piano
+  Part name: B
     measure num: 1
-      [0] XDWords "ext@5" (Just 20)
+      [0] XDWords "trn@5" (Just 48)
         offset: Nothing
         voice: Just 1
         staff: Just 1
-      [256] XDWords "stac@7" (Just 40)
+      [0] XDWords "stac@7" (Just 20)
         offset: Nothing
         voice: Just 1
         staff: Just 1
-      [768] XDWords "T=90" (Just 20)
+      [512] XDWords "ext@8" (Just 20)
         offset: Nothing
         voice: Just 1
         staff: Just 1
     measure num: 2
-      [0] Pitch: G4
-        duration : 256
+    measure num: 3
+      [0] XDDynamics "pp"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: A2
+        duration : 512
         isGrace  : Nothing
         isChord  : False
         voice    : Just 1
         staff    : Just 1
         Notations: 
-    measure num: 3
-      [0] XDPedal PedalStart False
-        offset: Nothing
-        voice: Just 1
-        staff: Just 2
-      [0] XDPedal PedalStart True
-        offset: Nothing
-        voice: Just 1
-        staff: Just 2
-      [0] XDDynamics "mp"
-        offset: Nothing
-        voice: Just 2
-        staff: Just 2
-      [0] Pitch: A2
-        duration : 128
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
-      [128] Pitch: F3
-        duration : 128
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
-      [256] Pitch: E4
-        duration : 128
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
-      [384] Pitch: C4
-        duration : 128
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
-      [512] Pitch: Bb3
+      [512] Pitch: F3
         duration : 512
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
-    measure num: 4
-      [512] XDPedal PedalChange True
-        offset: Just (-256)
-        voice: Just 1
-        staff: Just 2
-      [0] Pitch: Bb3
-        duration : 512
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
-      [512] Pitch: A2
-        duration : 85
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
-      [597] Pitch: F3
-        duration : 128
         isGrace  : Nothing
         isChord  : True
         voice    : Nothing
-        staff    : Just 2
+        staff    : Just 1
         Notations: 
-      [725] Pitch: E4
-        duration : 85
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
-      [810] Pitch: Bb3
-        duration : 86
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
-      [896] Pitch: Bb3
-        duration : 256
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
+    measure num: 4
     measure num: 5
-      [0] Pitch: Bb3
-        duration : 256
-        isGrace  : Nothing
-        isChord  : False
-        voice    : Just 2
-        staff    : Just 2
-        Notations: 
     measure num: 6
     measure num: 7
-    measure num: 8
-    measure num: 9
-    measure num: 10
-    measure num: 11
-    measure num: 12
-    measure num: 13
-    measure num: 14
-    measure num: 15
-    measure num: 16
-    measure num: 17
-    measure num: 18
-    measure num: 19
-    measure num: 20
-    measure num: 21
-    measure num: 22
-    measure num: 23
-    measure num: 24
-    measure num: 25
-    measure num: 26
-    measure num: 27
-    measure num: 28
-    measure num: 29
-    measure num: 30
-    measure num: 31
-    measure num: 32
-    measure num: 33
-    measure num: 34
-    measure num: 35
-    measure num: 36
-    measure num: 37
-    measure num: 38
-    measure num: 39
-    measure num: 40
-    measure num: 41
-    measure num: 42
-    measure num: 43
-    measure num: 44
-    measure num: 45
-    measure num: 46
-    measure num: 47
-    measure num: 48
-    measure num: 49
-    measure num: 50
-    measure num: 51
-    measure num: 52
-    measure num: 53
-    measure num: 54
-    measure num: 55
-    measure num: 56
-    measure num: 57
-    measure num: 58
-    measure num: 59
-    measure num: 60
-    measure num: 61
-    measure num: 62
-    measure num: 63
-    measure num: 64
-    measure num: 65
-    measure num: 66
-    measure num: 67
-    measure num: 68
-    measure num: 69
-    measure num: 70
-    measure num: 71
-    measure num: 72
-    measure num: 73
-    measure num: 74
-    measure num: 75
-    measure num: 76
-    measure num: 77
-    measure num: 78
-    measure num: 79
-    measure num: 80
-    measure num: 81
-    measure num: 82
-    measure num: 83
-    measure num: 84
-    measure num: 85
-    measure num: 86
-    measure num: 87
-    measure num: 88
-    measure num: 89
-    measure num: 90
+  Part name: T
+    measure num: 1
+      [0] XDWords "trn@5" (Just 20)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] XDWords "stac@7" (Just 48)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [512] XDWords "ext@8" (Just 20)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [512] XDWords "arp@10" (Just 66)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+    measure num: 2
+    measure num: 3
+      [512] XDDynamics "f"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [512] Pitch: Bb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [1024] Pitch: C5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: 
+      [1536] Pitch: E5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: 
+    measure num: 4
+      [0] XDWords "T=90" (Just 20)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+    measure num: 5
+    measure num: 6
+    measure num: 7

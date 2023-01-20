@@ -40,12 +40,12 @@ parseXScore e = XScore { xPartInfos = partInfos
   where
     err _ _ = throwMine "two part names the same"
     partInfos = parsePartList e
-    g pid = case M.lookup pid partInfos of {Just (XPartInfo name) -> name}
+    g pid = 
+      case M.lookup pid partInfos of
+        {Just(XPartInfo name)->name;Nothing->error"foo"}
     
-parseSoftware :: Element -> String
-parseSoftware e 
-  | flag      = "Sibelius"
-  | otherwise = "MuseScore"
+parseIsSib :: Element -> Bool
+parseIsSib e = flag
   where 
     -- indentification section
     iden :: Element
