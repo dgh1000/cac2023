@@ -21,6 +21,7 @@ import Common
 import Util.Exception
 import Util.Map
 import Common.CommonUtil
+import XmlDoc.ParseXml (parseIsSib)
 
 
 xmlToScore :: XScore -> Score
@@ -35,6 +36,7 @@ xmlToScore xscore =
                         M.elems $ staves
    }
   where
+    
     result1 = computeXmlStaves xscore
     xmlStaves:: Map String (Map Loc [XMsrData])
     xmlStaves = snd result1
@@ -52,7 +54,8 @@ xmlToScore xscore =
     -- we need to compute Map Loc (Map String [Mark]
     
     allMarks'    = computeWordMarks stavesWords
-    staves       = M.mapWithKey (computeStaff xMsrInfo timeSigs) $ xmlStaves
+    staves       = M.mapWithKey 
+      (computeStaff xMsrInfo timeSigs) $ xmlStaves
     allMarks     = foldInMetSymbolMarks staves allMarks'
     marksByStaff = computeMarksByStaff (M.keys staves) allMarks
 
@@ -610,19 +613,25 @@ computeHairpinsOneScoreStaff = M.fromList . mapMaybe pairUp . L.tails .
 computeChords :: Map Int IXMsrInfo -> Map Loc [XMsrData] -> 
                  Map Loc (Map Int PrelimChord)
 computeChords msrInfo =
-  M.mapWithKey (noteMapToChordMap msrInfo) . M.map groupNotesByVoice . 
-    lMapMaybe xMsrDataToNote
+  M.mapWithKey (noteMapToChordMap msrInfo) . M.map groupNotesByVoice
+  . lMapMaybe xMsrDataToNote
 
--- data PrelimChord = PrelimChord
---   { prcEndLoc     :: Loc
---   , prcModifiers  :: Set ChordModifier
---   , prcNotes      :: [Note]
---   }
+{-
+sibeliusVoiceNumbers :: Bool -> Map Loc [XNote] -> Map Loc [XNote]
+sibeliusVoiceNumbers isSib m 
+  | isSib     = M.map (map replace) m
+  | otherwise = m
+  where
+    -- here we need to replace every note voice number by 4 times staff number
+    -- + voice number
+    replace :: XNote -> XNote
+    replace n@(XNNote {}) = n {xnVoice = Just ((st-1)*4 + v)}
+      where
+        v = case xnVoice n of {Just v -> v; Nothing -> error "foo"}
+        st = case xnStaff n of {Just s -> s; Nothing -> error "foo"}
+    replace _ = error "foo"
+-}
 
-
--- should we not convert grace notes to note
--- XNote has a duration, voice, staff, pitce,  tie, notations, notehead
--- BUT NOT A LOC
 
 xMsrDataToNote :: XMsrData -> Maybe XNote
 xMsrDataToNote (XMDNote n@XNNote{}) 

@@ -31,15 +31,46 @@ simpleName s = QName s Nothing Nothing
 -- parseXScore
 --
 --   Parse the two components of an XScore, the part infos and the parts.
---   The whole score XML element 'e' is passed both to parseParts and parsePartList
+--   Input element e is <score-partwise>
+--   The whole score XML element 'e' is passed both to parseParts and 
+--   parsePartList
 parseXScore :: Element -> XScore
 parseXScore e = XScore { xPartInfos = partInfos
-                       , xParts = M.mapKeysWith err g . parseParts $ e }
+                       , xParts = M.mapKeysWith err g . parseParts $ e 
+                       , xIsSib = parseIsSib e }
   where
     err _ _ = throwMine "two part names the same"
     partInfos = parsePartList e
-    g pid = case M.lookup pid partInfos of {Just (XPartInfo name) -> name}
+    g pid = 
+      case M.lookup pid partInfos of
+        {Just(XPartInfo name)->name;Nothing->error"foo"}
     
+parseIsSib :: Element -> Bool
+parseIsSib e = ("kd984 " ++ show flag) `trace` flag
+  where
+    -- indentification section
+    iden :: Element
+    iden = case myFindChild "identification" e of
+      Just e  -> e
+      Nothing -> error "foo"
+    encod = case myFindChild "encoding" iden of
+      Just e  -> e
+      Nothing -> error "foo"
+    softwares :: [Element]
+    softwares = myFindChildren "software" encod
+    softwaresC :: [Content]
+    softwaresC = concatMap elContent softwares
+    softwareText :: Content -> Maybe String
+    softwareText (Text t) = Just . cdData $ t
+    softwareText _        = Nothing
+    containsSibelius :: String -> Bool
+    containsSibelius s = take 8 s == "Sibelius"
+    flag :: Bool
+    flag = any containsSibelius . mapMaybe softwareText $ softwaresC
+
+myShowList :: Show a => [a] -> String
+myShowList xs = L.intercalate "\n" (map show xs) ++ "\n"
+
 -- parsePartList
 --    Map <code name> <essentially human-readable name>
 -- 
@@ -47,7 +78,7 @@ parsePartList :: Element -> Map String XPartInfo
 parsePartList e = M.fromList . map parseScorePart . 
                   myFindChildren "score-part" $ pl
   where
-    pl = case myFindChild "part-list" e of {Just x -> x}
+    pl = case myFindChild "part-list" e of {Just x -> x;Nothing->error"foo"}
     
 
 -- parseScorePart
