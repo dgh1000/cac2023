@@ -5,7 +5,8 @@ import Common
 
 data XScore = XScore
   { xPartInfos :: Map String XPartInfo -- map of id to part human-readable name
-  , xParts :: Map String XPart         
+  , xParts :: Map String XPart   
+  , xIsSib  :: Bool      
   }
 
 data XPartInfo = XPartInfo

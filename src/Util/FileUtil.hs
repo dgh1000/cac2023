@@ -48,9 +48,8 @@ mostRecentFile path ext = do
   fs <- getDirectoryContents path
   let ffs = filter g fs
       g s = drop (length s - length ext) s == ext
-  if null ffs 
-    then error "In mostRecentFile: no file of given extension in given dir"
-    else return ()
+  when (null ffs)
+    (error "In mostRecentFile: no file of given extension in given dir")
   ts <- mapM (getModificationTime . (pathSlash++)) ffs
   -- pathSlash: the path to directory we are examining with a slash added
   -- ts: [Timestamp or someting]  list of times
