@@ -102,7 +102,6 @@ prepareRun mProcHand arg = do
   treeFs <- treeFiles isSibOrMscz compD
   fp <- mostRecentFileL treeFs 
   -- MUSESCORE
-  putStrLn ("oit74 fp: " ++ show fp)
   -- let fpNoExt = takeDirectory fp ++ "/" ++ takeBaseName fp
   let fpNoExt = dropExtension fp
   -- copyFile (fp -<.> ".musicxml") "/Users/Mike/in.musicxml"
@@ -121,8 +120,6 @@ prepareInXml fp = do
   let localXmlFp = fp <.> "musicxml"
   homeD <- homeDirectory
   let outXmlFp = homeD </> "out.musicxml"
-  putStrLn $ printf "d19x localXmlFp: %s outXmlFp: %s" (show localXmlFp)
-    (show outXmlFp)
   -- if either does not exist, use the other
   -- if both exist use the most recent one
   localXmlExists <- doesFileExist localXmlFp
@@ -135,7 +132,6 @@ prepareInXml fp = do
     (True,False) -> return 1
     (False,True) -> return 2
     _            -> error "neither out.musicxml nor local musicxml files exist"
-  putStrLn $ "scv87 which: " ++ show which
   if which == 1 
     then copyFile localXmlFp $ homeD </> "in.musicxml"
     else copyFile outXmlFp $ homeD </> "in.musicxml"
