@@ -64,7 +64,6 @@ library
       Score.ScoreExport
       Score.ShowScore
       Score.XmlToScore
-      Score.XmlToScore_ties
       Score.XmlToScore_grace
       Util.Curve
       Util.Exception
@@ -84,6 +83,7 @@ library
       XmlDoc.XmlDocData
       XmlDoc.ShowXmlDoc
       XmlDoc.XmlDocExport
+      XmlDoc.ShowXmlDoc
       Csound.Test
       Configs.GenericShapeMasterFunctions
       Lib
@@ -125,7 +125,6 @@ executable spawnMp
     , haskeline
     , process
     , directory
-    , mtl
   default-language: Haskell2010
 
 

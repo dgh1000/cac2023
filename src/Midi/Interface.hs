@@ -25,6 +25,7 @@ where
 
 module Midi.Interface  where
 
+import System.Environment
 import qualified Sound.PortMidi as SP
 import qualified Data.List as L
 import Text.Printf
@@ -33,6 +34,7 @@ import Control.Concurrent
 import Control.Monad
 import Data.Either
 import Debug.Trace
+import Data.Maybe
 import Data.Function
 import Data.Bits
 import Data.List(sortBy)
@@ -93,14 +95,24 @@ showMidiDevice x = do
 decideInputOrOutput di = if input di then "Input :" else "Output:"
 
 
-findNamedDevice :: String -> IO (Maybe DeviceID)
-findNamedDevice name = do
+findNamedDevice :: Bool -> String -> IO (Maybe DeviceID)
+findNamedDevice enforceOutput name = do
   c <- countDevices
   let test n = do info <- getDeviceInfo n
-                  return $ SP.name info == name
+                  let flag = not enforceOutput || output info
+                  return $ SP.name info == name && flag
   tests <- mapM test [0..c-1]
-  return $ fmap snd $ L.find fst (zip tests [0..c-1])
+  return $ snd <$> L.find fst (zip tests [0..c-1])
     
+
+findSystemDevice :: IO (Maybe DeviceID)
+findSystemDevice = do
+  e <- lookupEnv "COMPUTER_SYSTEM"
+  dev <- case e of
+    Just _  -> findNamedDevice False "MidiPipe Input 3"
+    Nothing -> findNamedDevice True "port3"
+  when (isNothing dev) (throwMine "MidiPipe Input 3 or port3 is not present")
+  return dev
 
 ----------------------------------------------------------------------
 --           notes off utilities

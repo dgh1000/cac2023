@@ -12,7 +12,7 @@ import XmlDoc.XmlDocExport
 import XmlDoc.Process(computeXmlStaves)
 import Common
 import Util.Exception
-import Util.Map
+import Util.Map ( fromListWithPlusPlus, lMapToList, listToLMap )
 import Common.CommonUtil
 import Score.ScoreData
 

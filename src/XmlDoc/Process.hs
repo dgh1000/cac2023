@@ -30,12 +30,12 @@ import Util.Exception
 -- data XMsrData: directions, notes, backup, forward
 computeXmlStaves :: XScore -> ( Map Int IXMsrInfo
                               , Map String (Map Loc [XMsrData]) )
-computeXmlStaves (XScore _ parts) 
+computeXmlStaves (XScore _ parts isSib) 
   = (mis, M.map g parts)
   where
     mis = case M.toList parts of {(_,p):_ -> computeMsrInfos p}
     g :: XPart -> Map Loc [XMsrData]
-    g (XPart msrs) = computeMsrDatas mis msrs
+    g (XPart msrs) = computeMsrDatas isSib mis msrs
 
 computeMsrInfos :: XPart -> Map Int IXMsrInfo
 computeMsrInfos (XPart msrs) = 
@@ -92,11 +92,10 @@ updateChordVoice (Just v) (XMDNote n ord) = case xnVoice n of
 --
 -- algorithm: groups XMsrData by loc. this could be useful for extracting
 --    grace notes
-computeMsrDatas :: Map Int IXMsrInfo -> [XMsr] -> Map Loc [XMsrData]
-computeMsrDatas mis 
-  = assertDistinctStaffVoices . UM.listToLMap . map verifyNoteVoiceSet . 
-    concatMap (putOrderInXMsrData . f)
-    
+computeMsrDatas :: Bool -> Map Int IXMsrInfo -> [XMsr] -> Map Loc [XMsrData]
+computeMsrDatas isSib mis
+  = assertDistinctStaffVoices . UM.listToLMap 
+    . map verifyNoteVoiceSet . fixSibeliusVoices isSib . concatMap f
   where
     f :: XMsr -> [(Loc,XMsrData)]
     -- This will convert any XMsrData at a valid location to (Loc,XMsrData).
@@ -106,8 +105,7 @@ computeMsrDatas mis
     f m = mapMaybe maybeToLocMsrData $ accumTime $ XD.xmMsrDatas m
     -- f m = map (\(d,x) -> (toLoc (d + getOffset x),x)) . accumTime $ 
     --      XD.xmMsrDatas m
-      where
-     
+      where 
         maybeToLocMsrData :: (Int,XMsrData) -> Maybe (Loc,XMsrData)
         maybeToLocMsrData (divs,xmd) = m2 (realDivs,xmd)
           where
@@ -119,6 +117,25 @@ computeMsrDatas mis
             Nothing -> printf ("skipping XMsrData at an invalid location;" ++
                        " number of divisions is %d, \n%s") divs
                        (show xmd) `trace` Nothing
+
+
+fixSibeliusVoices :: Bool -> [(Loc,XMsrData)] -> [(Loc,XMsrData)]
+fixSibeliusVoices isSib 
+  | isSib     = map g
+  | otherwise = id
+  where
+    g :: (Loc,XMsrData) -> (Loc,XMsrData)
+    g (l,x) = (l,h x)
+    fixVoice :: Maybe Int -> Maybe Int -> Maybe Int
+    fixVoice Nothing _ = Nothing
+    fixVoice (Just v) Nothing =  Just v
+    fixVoice (Just v) (Just s) = Just $ (s-1)*4 + v
+    h :: XMsrData -> XMsrData
+    h (XMDDirection xd mOff mV mSt) = XMDDirection xd mOff (fixVoice mV mSt) mSt
+    h (XMDNote xn) = case xn of
+      n@XNNote {} -> XMDNote $ n {xnVoice = fixVoice (xnVoice n) (xnStaff n)}
+      r@XNRest {} -> XMDNote $ r {xnVoice = fixVoice (xnVoice r) (xnStaff r)}
+    h x = x
 
 
 putOrderInXMsrData :: [(Loc,XMsrData)] -> [(Loc,XMsrData)]
