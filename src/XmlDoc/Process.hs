@@ -131,10 +131,10 @@ fixSibeliusVoices isSib
     fixVoice (Just v) Nothing =  Just v
     fixVoice (Just v) (Just s) = Just $ (s-1)*4 + v
     h :: XMsrData -> XMsrData
-    h (XMDDirection xd mOff mV mSt) = XMDDirection xd mOff (fixVoice mV mSt) mSt
-    h (XMDNote xn) = case xn of
-      n@XNNote {} -> XMDNote $ n {xnVoice = fixVoice (xnVoice n) (xnStaff n)}
-      r@XNRest {} -> XMDNote $ r {xnVoice = fixVoice (xnVoice r) (xnStaff r)}
+    h (XMDDirection xd mOff mV mSt cnt) = XMDDirection xd mOff (fixVoice mV mSt) mSt cnt
+    h (XMDNote xn cnt) = case xn of
+      n@XNNote {} -> XMDNote (n {xnVoice = fixVoice (xnVoice n) (xnStaff n)}) cnt
+      r@XNRest {} -> XMDNote (r {xnVoice = fixVoice (xnVoice r) (xnStaff r)}) cnt
     h x = x
 
 

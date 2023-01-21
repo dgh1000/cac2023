@@ -65,6 +65,7 @@ library
       Score.ShowScore
       Score.XmlToScore
       Score.XmlToScore_grace
+      Score.XmlToScore_ties
       Util.Curve
       Util.Exception
       Util.FileUtil
@@ -81,7 +82,6 @@ library
       XmlDoc.ParseXml
       XmlDoc.Process
       XmlDoc.XmlDocData
-      XmlDoc.ShowXmlDoc
       XmlDoc.XmlDocExport
       XmlDoc.ShowXmlDoc
       Csound.Test
