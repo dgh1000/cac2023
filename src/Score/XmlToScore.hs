@@ -912,46 +912,12 @@ findTrueEnd staff end vn noteIn
 ----------------------------------------------------------------------
 --                  double tremolos
 
--- to convert PrelimChord to Chord, doing trills at same time
---
--- basically map through each PrelimChord, changing to Chord or maybe
--- eliminating it
---
--- what do we do to decide what should be done with a PrelimChord?
---
---   first see if it's marked as a doub tremolo start
---
---     if so, we need to find the chord that ends it, grab those pitches and
---     include them.
---
---   or consider if it's a doub trem stop. then remove it
---
---   if none of the above, then check if it's a trill, and evaluate pitches if
---   so
 
 
--- we creat a function that takes a Loc and a sub-prelim chord, and converts
--- it to a sub-chord. voila! now just run this over everything and we'll be
--- done.
+-- prelimChord2Chord
 --
--- problem is broken down by mapping with key over sub-chords at dififerent
--- Locs. so the setup is ~~~~ you have a Loc ~~~~> and you get the submap,
--- Maybe
---
---    this is function pc2c_loc. now we can pass that over ever key in our big
---    map
---
---    so pc2c_loc has to work on the Ints of sub-maps with the help of
---
---       pc2c_vn: here now that we receiving the vn as an input, we can
---       finally full idified ctbwo: chord ctobwo, or called c1 donw there.
---
---          easy cases: if it's a marked double tremolo stop, don't sound it,
---          remove it from the score.
---
---          next easy case: set up a Trill
-
-
+-- Map Loc [MarkD] :: used to find a trill symbol
+-- Map Loc (Map Int PrelimChord) :: input PrelimChords
 prelimChord2Chord :: Map Loc [MarkD] -> Map Loc (Map Int PrelimChord) ->
                      Map Loc (Map Int Chord)
 prelimChord2Chord symbols staff = M.mapMaybeWithKey pc2c_loc staff
