@@ -46,7 +46,7 @@ parseXScore e = XScore { xPartInfos = partInfos
         {Just(XPartInfo name)->name;Nothing->error"foo"}
     
 parseIsSib :: Element -> Bool
-parseIsSib e = ("kd984 " ++ show flag) `trace` flag
+parseIsSib e = flag
   where
     -- indentification section
     iden :: Element
@@ -125,11 +125,12 @@ parseMsr eMsr = XMsr num_ attrs datas
   where
     --
     num_ = case myFindAttr "number" eMsr of
-      Just n -> case reads n of (i,_):_ -> i
+      Just n  -> case reads n of {(i,_):_ -> i; _ -> error "foo"}
+      Nothing -> error "foo"
     attrs = myFindChild "attributes" eMsr >>= parseMsrAttr
     datas = mapMaybe parseMsrData . filterChildren (const True) $ eMsr
     
-parseMsrData emd = case (qName . elName $ emd) of
+parseMsrData emd = case qName . elName $ emd of
   "note"       -> Just . XMDNote . parseXNote $ emd
   "direction"  -> parseDirection emd
   "backup"     -> Just $ parseBackup emd
