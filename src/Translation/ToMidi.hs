@@ -54,7 +54,7 @@ analyzePcRepetition = do
       allChords ::  [Chord]
       allChords = concatMap M.elems f3
       fc :: Chord -> [Int]
-      fc (Chord _ _ (NSingles m) _) = map (midiPitch . nPitch) $ M.elems m
+      fc (Chord _ _ (NSingles m) _ _) = map (midiPitch . nPitch) $ M.elems m
       allPitches = concatMap fc allChords
       countPitch :: Int -> [Int] -> Int
       countPitch pc ps = length $ filter ((==pc) . flip mod 12) ps

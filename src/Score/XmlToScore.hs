@@ -17,6 +17,7 @@ import Score.ParseMarks(computeWordMarks)
 import XmlDoc.XmlDocExport
 import XmlDoc.Process(computeXmlStaves)
 import Score.XmlToScore_grace (splitGrace)
+import Score.XmlToScore_tnote
 import Score.XmlToScore_ties
 import Common
 import Util.Exception
@@ -621,6 +622,7 @@ groupNotesByVoice = listToLMap . map (\n -> (getVoice n,n))
 -- noteMapToChordMapTNote :: Map Int IXMsrInfo -> Loc -> Map Int [TNote]
 --   -> Map Int PrelimChord
 
+
 noteMapToChordMap :: Map Int IXMsrInfo -> Loc -> Map Int [XNote] -> 
                      Map Int PrelimChord
 noteMapToChordMap msrInfo chordBegin = 
@@ -639,7 +641,10 @@ noteMapToChordMap msrInfo chordBegin =
 --   uses toNote to convert an XNote to a Note
 --   computes chord modifier data. seems to be filtering [XNotation] to
 --     find things relevant to chords
+
 notesToChord :: Loc -> Map Int IXMsrInfo -> [XNote] -> PrelimChord
+notesToChord = error "foo"
+{-
 notesToChord chordBegin msrInfo notesIn = 
     PrelimChord endingLoc modifierData notesOut
   where
@@ -648,32 +653,8 @@ notesToChord chordBegin msrInfo notesIn =
   modifierData = S.fromList . concatMap getChordModifiers $ notesIn
   -- notesOut = M.fromList . zip [1..] . map toNote $ notesIn
   notesOut = map toNote notesIn
+-}
 
-
-getChordModifiers :: XNote -> [ChordModifier]
-getChordModifiers n@XNNote {XD.xnNotations=notations} = concatMap g notations
-  where
-  g :: XNotation -> [ChordModifier]
-  g (XNArticulations arts) = concatMap artToMod arts
-  g (XNOrnaments orns)     = mapMaybe ornToMod orns
-  g XNFermata              = [Fermata]
-  g XNArpeggiate           = [Arpeggiate]
-  g (XNTechnical techs)    = map techToMod techs
-  g (XNSlur _ _)           = []
-  artToMod XAStaccato       = [Staccato]
-  artToMod XAStaccatissimo  = [Staccatissimo]
-  artToMod XAAccent         = [Accent]
-  artToMod XAStrongAccent   = [StrongAccent]
-  artToMod XATenuto         = [Tenuto]
-  artToMod XADetachedLegato = [Staccato,Tenuto]
-  ornToMod (Tremolo type_ nBars) = Just $ case type_ of
-    TremoloSingle  -> SingTrem      nBars
-    TremoloStart   -> DoubTremStart nBars
-    TremoloStop    -> DoubTremStop  nBars
-  ornToMod _ = Nothing
-  techToMod XTOpenString = OpenString
-  techToMod XTDownBow    = DownBow
-  techToMod XTUpBow      = UpBow
 
 -- DATA
 -- data XNote = rest, note, grace. nothing about timing
@@ -944,7 +925,7 @@ prelimChord2Chord symbols staff = M.mapMaybeWithKey pc2c_loc staff
 pc2c_main_case :: PrelimChord -> Chord
 pc2c_main_case (PrelimChord end mods ns) =
   -- GRACENOTES
-  Chord end mods (NSingles $ M.fromList $ map (nmp &&& id) ns) []
+  Chord end mods (NSingles $ M.fromList $ map (nmp &&& id) ns) False []
   where
     nmp = midiPitch . nPitch
                      
@@ -965,7 +946,7 @@ pc2c_trill_case atLoc upperAlter c1 =
        new1 = M.fromList [(midi1,note1)]
        new2 = M.fromList [(midi2,note2)]
    in Just $ Chord (prcEndLoc c1) (prcModifiers c1)
-             (NTrill (TtnTrill trillDiff) new1 new2) []
+             (NTrill (TtnTrill trillDiff) new1 new2) False []
 
 
 mkNoteMap :: [Note] -> Map Int Note
@@ -975,10 +956,10 @@ pc2c_dt_case :: Map Loc (Map Int PrelimChord) -> Loc -> Int -> PrelimChord ->
                 Chord
 pc2c_dt_case staff atLoc vn c1@(PrelimChord end1 mods1 ns1) = case mns2 of
     Just (end2,ns2) -> Chord end2 mods1 (NTrill TtnTremolo (mkNoteMap ns1)
-                                                        (mkNoteMap ns2) ) []
+                                                        (mkNoteMap ns2) ) False []
     Nothing -> printf "warning, no chord follows doub.tremolo at %s"
                (showLoc2 atLoc) `trace` Chord end1 mods1
-                                        (NSingles (mkNoteMap ns1)) []
+                                        (NSingles (mkNoteMap ns1)) False []
   where
     -- find the following chord if it exists, at end1
     a :: Maybe PrelimChord

@@ -184,86 +184,6 @@ data CtrlShapeContent a = CscLeft String [a]
                         deriving(Show,Eq,Ord)
 
 
-{-
-
--- Mark2: mark definitions when first read from the score, before replacing
--- NumVars and locating boundaries and regions for marks that operate over
--- regions
---
--- things that are deprecated here: (1) splice marks
-data Mark2 = SymbolMark2 String Int
-           | SetTempo2 NumVar
-           | SetVar2   String NumVar -- *
-           | ArpDelta2  Double        -- *
-           | StacDur2   Double        -- *
-           | Trunc2     Double -- *
-           | LTrunc2    Double -- *
-           | Extend2    Double -- *
-           | AbsWarp2   WarpSide NumVar -- *
-           | Pause2     NumVar
-           | PostPause2 NumVar
-           -- | Adjust12   (Maybe NumVar) NumVar Double Bool
-           -- | Adjust1Marker2
-           | W2 -- *
-           -- | CrescDescr2  NumVar NumVar
-           -- | EndCrescDescr2
-           -- | EndDescrCresc2
-           | RampBeg2  NumVar -- *
-           | RampEndBeg2  NumVar NumVar -- *
-           | RampEnd2     NumVar  -- *
-           | RitAccel2  -- *
-           | TrillShapeMark2 TrillShape  -- *
-           | TremShapeMark2  TrillShape  -- *
-           | Artic2          String      -- *
-           | Patch2          String      -- *
-           | BracketL2       String      -- *
-           | BracketR2       String      -- *
-           | Boundary22      (Maybe NumVar)
-             -- <immediately prior adjustment>
-           | Adjust22        Bool Double NumVar
-           | Comment2
-           | MidiCtrl2        Int NumVar
-           | GenericShape2  GsContent2
-          
-             -- <global flag> <direction multiplier, 1 or -1> <amt>
-           deriving (Show,Eq,Ord)
-
--}
-
-{-
-data Mark3 = SymbolMark3 String Int
-           | SetTempo3   Double
-           | ArpDelta3   Double
-           | StacDur3    Double
-           | Trunc3      Double
-           | LTrunc3     Double
-           | Extend3     Double
-           | AbsWarp3    WarpSide Double
-           | Pause3      Double
-           | PostPause3  Double
-           | W3
-           | RampBeg3    Double
-           | RampEndBeg3 Double Double
-           | RampEnd3    Double
-           | RitAccel3
-           | TrillShapeMark3 TrillShape
-           | TremShapeMark3  TrillShape
-           | Artic3          String
-           | Patch3          String
-           | BracketL3       String      -- *
-           | BracketR3       String      -- *
-           | Boundary23      (Maybe Double)
-           | Adjust23        Bool Double  -- global flag
-           | MidiCtrl3       Int Int
-           | GenericShape3   GsContent3
-           deriving(Show)
-
-
-data GsContent3 = GsLeft3 Char | GsCenter3 Char (Maybe Double) | GsRight3 Char
-  deriving(Show)
-
--}
-
 data TempoModify = TmRamp      Double Double
                  | TmRampParab Double Double Bool
                    -- parabolic ramp shape. bool = true means steepest slope
@@ -296,7 +216,8 @@ data Chord = Chord
   { cEndLoc        :: Loc
   , cModifiers     :: Set ChordModifier
   , cNotes         :: Notes
-  , cGraces        :: [GNote]
+  , cGraceType     :: Bool
+  , cGraces        :: [TNote]
   }
            deriving(Eq,Ord,Show,NFData,Generic)
 
@@ -418,7 +339,7 @@ data OctaveLine = OctaveLine Int Loc   -- <# octaves shift>, <end loc>
 
 
 chordTrueEnds :: Chord -> [(Int,Loc)]
-chordTrueEnds (Chord endLoc _ notes _) = case notes of
+chordTrueEnds (Chord endLoc _ notes _  _) = case notes of
   NSingles noteMap ->
     let f p = case M.lookup p noteMap of
           Just n -> nTrueEnd n

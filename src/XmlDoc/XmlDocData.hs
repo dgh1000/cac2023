@@ -1,9 +1,13 @@
+{-# LANGUAGE DeriveAnyClass,DeriveGeneric #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module XmlDoc.XmlDocData where
 
 import Data.Map(Map) 
 import Common
+import GHC.Generics hiding(Meta)
+import Control.DeepSeq
+
 
 data XScore = XScore
   { xPartInfos :: Map String XPartInfo -- map of id to part human-readable name
@@ -126,7 +130,7 @@ data XNote =
 
 data XNotehead = XNotehead
   { xnhType :: String }
-  deriving(Show)
+             deriving(Eq,Ord,Show,NFData,Generic)
 
 data XNotation =
  --  XNTied String         -- string is type, "start" or "stop"
@@ -136,7 +140,7 @@ data XNotation =
  | XNFermata
  | XNArpeggiate
  | XNTechnical [XTechnical]
- deriving(Show,Eq)
+ deriving(Show,Eq,Ord,NFData,Generic)
 
 data XArticulation =
    XAStaccato
@@ -145,22 +149,22 @@ data XArticulation =
  | XAStrongAccent
  | XATenuto
  | XADetachedLegato
- deriving(Show,Eq)
+ deriving(Show,Eq,Ord,NFData,Generic)
 
 data XOrnament =
    TrillMark
  | Tremolo TremoloType Int    -- number of bars
- deriving(Show,Eq)
+ deriving(Show,Eq,Ord,NFData,Generic)
 
 data XTechnical = XTOpenString
                 | XTDownBow
                 | XTUpBow
-                deriving(Show,Eq)
+                deriving(Show,Eq,Ord,NFData,Generic)
 
 data TremoloType = TremoloSingle
                  | TremoloStart
                  | TremoloStop
-  deriving(Show,Eq)
+  deriving(Show,Eq,Ord,NFData,Generic)
 
 data XPitch = XPitch 
   { xStep :: String 
@@ -216,6 +220,8 @@ data TNote = TNote
   , tnNotehead  :: Maybe XNotehead
   , tnIsGrace   :: Maybe Bool
   }
+             deriving(Eq,Ord,Show,NFData,Generic)
+
 
 
 data TestPart = TestPart (Map Loc [XMsrData])
