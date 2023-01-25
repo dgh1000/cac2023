@@ -133,7 +133,7 @@ instance ShowItemClass TNotes where
 
 instance ShowItemClass TNote where
   showI (TNote pitch voice mStaff tieStart tieStop beg 
-    end order nots _ mGrace) =
+    end _ order nots _ mGrace) =
       Component 
         (printf "%d: %s %s" order (simpleShowLoc beg)
           (simpleShowLoc end))

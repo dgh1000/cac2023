@@ -50,7 +50,7 @@ xMsrDataToTNote mix (begLoc,xmsr) =
         in
           Just 
             (TNote pitch voi mStaff tieStart tieStop begLoc endLoc 
-              order nots notehead grace)
+              endLoc order nots notehead grace)
 
 
 maybeXNoteNoteType :: XMsrData -> Maybe XNote
@@ -99,8 +99,8 @@ doTies tns = catMaybes mTns
 -- compare Loc, then grace, then order
 compareTNote :: TNote -> TNote -> Ordering
 compareTNote
-  (TNote _ _ _ _ _ beg1 _ order1 _ _ grace1)
-  (TNote _ _ _ _ _ beg2 _ order2 _ _ grace2) =
+  (TNote _ _ _ _ _ beg1 _ _ order1 _ _ grace1)
+  (TNote _ _ _ _ _ beg2 _ _ order2 _ _ grace2) =
     case compare beg1 beg2 of
       LT -> LT
       GT -> GT

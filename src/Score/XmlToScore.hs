@@ -714,7 +714,9 @@ computeChordEndsMap m = listToLMap $ concatMap g $ M.toList m
     g (atLoc,m) = map (\(i,p) -> (prcEndLoc p,(atLoc,i))) $ M.toList m
 
 
+processTies = error "foo"
 
+{-
 -- processTies
 --
 -- Set true end of tied notes, and eliminate notes and chords that are
@@ -888,13 +890,14 @@ findTrueEnd staff end vn noteIn
     maybeNote :: Maybe ((Int,Loc),Note)
     maybeNote = c >>= L.find (\(_,n) -> midiIn == (midiPitch $ nPitch n))
    
-
+-}
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 --                  double tremolos
 
+prelimChord2Chord = error "foo"
 
-
+{-
 -- prelimChord2Chord
 --
 -- Map Loc [MarkD] :: used to find a trill symbol
@@ -1004,7 +1007,7 @@ mTrill vn (SymbolMark s vTest) | vTest /= vn = Nothing
                                    _               -> Nothing
 
 mTrill _ _ = Nothing
-
+-}
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 --              Computing blank measures

@@ -14,8 +14,8 @@ import Debug.Trace ( trace )
 import Data.Function ( on )
 
 
-tNotesToChords :: Map Loc [MarkD] -> Map Loc (Map Int [TNote]) -> Map Loc (Map Int Chord) 
-tNotesToChords m = error "foo"
+tNotesToPrelimChords :: Map Loc (Map Int [TNote]) -> Map Loc (Map Int PrelimChord) 
+tNotesToPrelimChords = M.map (M.map tNotesToChords2)
 
 -- data Chord = Chord
 --   { cEndLoc        :: Loc
@@ -30,9 +30,9 @@ tNotesToChords m = error "foo"
 --              -- for a trill with an upper note x steps above the base note
 --              deriving(Eq,Ord,Show,NFData,Generic)
 
-tNotesToChords2 :: [TNote] -> Chord
+tNotesToChords2 :: [TNote] -> PrelimChord
 tNotesToChords2 tns = 
-    Chord endLoc modifiers (NSingles $ tNotesToNoteMap reg) type_ gracesSorted
+    PrelimChord endLoc modifiers reg type_ gracesSorted
     where
         (graces,reg) = tNotesSeparateGraces tns
         (type_,gracesSorted) = case graces of
@@ -40,7 +40,9 @@ tNotesToChords2 tns =
             xs -> (graceType xs,sortGraces xs)
         modifiers :: Set ChordModifier
         modifiers = S.fromList $ concatMap (getChordModifiers . tnNotations) reg
-        endLoc = earliestEndLoc reg
+        endLoc = case reg of
+          x:_ -> tnOrigEnd x
+          _   -> error "foo"
 
 -- tNotesSeparateGraces
 --
@@ -107,33 +109,3 @@ getChordModifiers = concatMap g
   techToMod XTDownBow    = DownBow
   techToMod XTUpBow      = UpBow
 
--- data XNotehead = XNotehead
---   { xnhType :: String }
---   deriving(Show)
-
--- data Notehead = NormalHead
---               | DiamondHead
---                 deriving(Eq,Ord,Show,NFData,Generic)
-
--- data Note = Note
---   { nPitch    :: Pitch
---   , nIsTied   :: Bool
---   , nTrueEnd  :: Loc
---   , nNotehead :: Notehead
---   }
---           deriving(Eq,Ord,Show,NFData,Generic)
-
--- data TNote = TNote
---   { tnPitch    :: Pitch
---   , tnVoice    :: Int
---   , tnStaff    :: Maybe Int
---   , tnTieStart :: Bool
---   , tnTieStop  :: Bool
---   , tnBegin    :: Loc
---   , tnEnd      :: Loc
---   , tnOrder     :: Int  -- index into the order this note appeared 
---                         -- in the XMsr
---   , tnNotations :: [XNotation]
---   , tnNotehead  :: Maybe XNotehead
---   , tnIsGrace   :: Maybe Bool
---   }

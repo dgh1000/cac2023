@@ -42,11 +42,34 @@ instance ShowItemClass XMsr where
         Just a -> printf "dpq:%s beats:%s beat-type:%s" (show $ xaDpq a)
           (show $ xaNumer a) (show $ xaDenom a)
 
+-- data XNote = 
+--    XNRest
+--      { xnDuration :: Int
+--      , xnChord :: Bool
+--      , xnVoice :: Maybe Int
+--      , xnStaff :: Maybe Int
+--      , xnNotations :: [XNotation]
+--      , xnOrder :: Int }
+--  | XNNote
+--      { xnDuration :: Int
+--      , xnIsGrace :: Maybe Bool -- True means 'slash' (acciaccatura, before the beat)
+--      --  , xnGraceOrder :: Int
+--      , xnChord :: Bool
+--      , xnVoice :: Maybe Int
+--      , xnStaff :: Maybe Int
+--      , xnPitch :: XPitch
+--      , xnTieStart :: Bool
+--      , xnTieStop :: Bool
+--      , xnNotations :: [XNotation]
+--      , xnNotehead :: Maybe XNotehead
+--      , xnOrder :: Int }
+--   deriving(Show)
+
 instance ShowItemClass XMsrData where
-  showI (XMDNote (XNRest dur ch v s nots)) = 
+  showI (XMDNote (XNRest dur ch v s nots _) _) = 
     Component (printf "rest: dur:%d chord:%s voice:%s staff:%s" dur (show ch) 
                        (show v) (show s)) True (map showI nots)
-  showI (XMDNote (XNNote dur isGra ch v st pit tieStart tieStop nots _)) = 
+  showI (XMDNote (XNNote dur isGra ch v st pit tieStart tieStop nots _ _) _) = 
     Component (printf ("note dur:%d stp:%s alt:%d oct:%d tie:%s %s") 
                dur (xStep pit)
                (xAlter pit) (xOctave pit) (show tieStart) (show tieStop))
@@ -55,7 +78,7 @@ instance ShowItemClass XMsrData where
         secondLine = SingleLine 
                      (printf "   grace:%s chord:%s voice:%s staff:%s" 
                      (show isGra) (show ch) (show v) (show st))
-  showI (XMDDirection dir offset mVoice mStaff) = 
+  showI (XMDDirection dir offset mVoice mStaff _) = 
       SingleLine (printf "%s %s %s %s" (show dir) m voice staff)
     where
       m = case offset of 
@@ -65,9 +88,9 @@ instance ShowItemClass XMsrData where
         Nothing -> ""
         Just v -> printf "voice:%d" v
       staff = case mStaff of {Nothing -> ""; Just s -> "staff:" ++ (show s)}
-  showI (XMDBackup dur) = SingleLine (printf "backup: %d" dur)
-  showI (XMDForward dur) = SingleLine (printf "forward: %d" dur)
-  showI (XMDOther s) = SingleLine (printf "other: %s" s)
+  showI (XMDBackup dur _) = SingleLine (printf "backup: %d" dur)
+  showI (XMDForward dur _) = SingleLine (printf "forward: %d" dur)
+  showI (XMDOther s _) = SingleLine (printf "other: %s" s)
 
 instance ShowItemClass XNotation where
   showI (XNSlur s l) = SingleLine $ printf "Slur: %s %s" s ml

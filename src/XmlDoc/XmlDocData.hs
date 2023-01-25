@@ -214,11 +214,12 @@ data TNote = TNote
   , tnTieStop  :: Bool
   , tnBegin    :: Loc
   , tnEnd      :: Loc
-  , tnOrder     :: Int  -- index into the order this note appeared 
+  , tnOrigEnd  :: Loc
+  , tnOrder    :: Int  -- index into the order this note appeared 
                         -- in the XMsr
-  , tnNotations :: [XNotation]
-  , tnNotehead  :: Maybe XNotehead
-  , tnIsGrace   :: Maybe Bool
+  , tnNotations:: [XNotation]
+  , tnNotehead :: Maybe XNotehead
+  , tnIsGrace  :: Maybe Bool
   }
              deriving(Eq,Ord,Show,NFData,Generic)
 

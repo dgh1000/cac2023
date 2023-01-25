@@ -266,7 +266,9 @@ data InterNote = InterNote
 data PrelimChord = PrelimChord
   { prcEndLoc     :: Loc
   , prcModifiers  :: Set ChordModifier
-  , prcNotes      :: [Note]
+  , prcNotes      :: [TNote]
+  , prcGraceType  :: Bool
+  , prcGraces     :: [TNote]
   }
 
 
