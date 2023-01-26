@@ -50,6 +50,7 @@ tNotesToChords2 tns =
 tNotesSeparateGraces :: [TNote] -> ([TNote],[TNote])
 tNotesSeparateGraces = L.partition (isJust . tnIsGrace)
 
+{-
 tNotesToNoteMap :: [TNote] -> Map Int Note
 tNotesToNoteMap tns = M.fromList notes
   where
@@ -57,7 +58,7 @@ tNotesToNoteMap tns = M.fromList notes
     notes = map g tns
     g :: TNote -> (Int,Note)
     g t = (midiPitch $ tnPitch t,tNoteToNote t)
-
+-}
 
 sortGraces :: [TNote] -> [TNote]
 sortGraces = L.sortBy (compare `on` tnOrder)
@@ -73,15 +74,6 @@ earliestEndLoc :: [TNote] -> Loc
 earliestEndLoc tns = case map tnEnd tns of
     [] -> error "foo"
     xs -> minimum xs
-
-
-tNoteToNote :: TNote -> Note
-tNoteToNote tn = Note (tnPitch tn) (tnTieStart tn) (tnEnd tn) (mNotehead $ tnNotehead tn)
-
-
-mNotehead :: Maybe XNotehead -> Notehead
-mNotehead (Just n) = "warning: hardcoded normal head" `trace` NormalHead
-mNotehead Nothing  = NormalHead
 
 
 getChordModifiers :: [XNotation] -> [ChordModifier]

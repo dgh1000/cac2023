@@ -6,6 +6,8 @@ import qualified Data.Set as S
 import Data.Maybe
 import Data.Set(Set)
 import qualified Data.Map as M
+import XmlDoc.XmlDocData
+import Debug.Trace
 
 prelimChordsToChords :: Map Loc [MarkD] -> Map Loc (Map Int PrelimChord) -> 
     Map Loc (Map Int Chord)
@@ -35,7 +37,17 @@ oneChordTrillCase loc vn ch = error "foo"
 
 
 oneChordMainCase :: Loc -> Int -> PrelimChord -> Chord
-oneChordMainCase beg vn ch = error "foo"
+oneChordMainCase beg vn (PrelimChord end mods notes grType graces) = error "foo"
+
+
+tNoteToNote :: TNote -> Note
+tNoteToNote tn = Note (tnPitch tn) (tnTieStart tn) (tnEnd tn) (mNotehead $ tnNotehead tn)
+
+
+mNotehead :: Maybe XNotehead -> Notehead
+mNotehead (Just n) = "warning: hardcoded normal head" `trace` NormalHead
+mNotehead Nothing  = NormalHead
+
 
 
 -- data Notes = NSingles (Map Int Note)
