@@ -13,7 +13,6 @@ import Score.ScoreData
 import Debug.Trace ( trace )
 import Data.Function ( on )
 
-
 tNotesToPrelimChords :: Map Loc (Map Int [TNote]) -> Map Loc (Map Int PrelimChord) 
 tNotesToPrelimChords = M.map (M.map tNotesToChords2)
 

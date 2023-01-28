@@ -16,6 +16,7 @@ import Data.List(mapAccumL)
 
 
 
+
 instance ShowItemClass XScore where
   
   showI doc =
@@ -176,3 +177,5 @@ type TNoteVoice = (Int,[TNote])
 
 instance ShowItemClass TNoteVoice where
   showI (vn,tns) = Component ("vn: " ++ show vn) True (map showI tns)
+
+

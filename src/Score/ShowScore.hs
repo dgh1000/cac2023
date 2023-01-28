@@ -10,6 +10,7 @@ import Score.ScoreData
 import Common
 import Common.CommonUtil(simpleShowLoc,showLoc2)
 import Util.Showable
+import XmlDoc.ShowXmlDoc
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
@@ -84,6 +85,36 @@ myTransformMap m f = ShowMap d1
 
     d1 :: Map a (ShowMap b d)
     d1 = m3 m
+
+type VoicePrelimChord = (Int,PrelimChord)
+instance ShowItemClass VoicePrelimChord where
+  showI (vn,PrelimChord end mods notes grType graces) =
+    Component (printf "PrelimChord vn:%d end:%s" vn (simpleShowLoc end)) 
+      True [sNotes,sGrace,sMods]
+      where
+        sNotes = Component "Notes" True (map showI notes)
+        sGrace = case graces of
+          [] -> SingleLine "No grace notes."
+          gs -> Component (printf "Grace type: %s" (show grType)) True
+            (map showI graces)
+        sMods = SingleLine $ show mods
+
+type LocVoicePrelimChord = (Loc,Map Int PrelimChord)
+instance ShowItemClass LocVoicePrelimChord where
+  showI (loc,m) = Component (printf "beg: %s" (simpleShowLoc loc)) True
+    (map showI $ M.toAscList m)
+
+type MapLocVoicePrelimChord = Map Loc (Map Int PrelimChord)
+instance ShowItemClass MapLocVoicePrelimChord where
+  showI m = Component "staff" True (map showI $ M.toAscList m)
+
+type ListMapLocVoicePrelimChord = [(String,Map Loc (Map Int PrelimChord))]
+instance ShowItemClass ListMapLocVoicePrelimChord where
+  showI ms = Component "doc" False (map g ms)
+    where
+      g (s,m) = Component s True xs
+        where
+          Component _ _ xs = showI m
 
 
 {-

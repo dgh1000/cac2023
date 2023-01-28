@@ -56,7 +56,7 @@ doPlay_t mBeg mEnd mSolo splicePts (RunData metasIn) = do
     Right streams ->  do -} 
       -- score :: XScore
       score <- readXmlTest
-      let x :: [(String,Map Loc (Map Int [TNote]))]
+      let x :: [(String,Map Loc (Map Int PrelimChord))]
           x = xmlToScoreTest score
       writeFile "tnote.txt" (showIString x)
       return ()

@@ -66,6 +66,7 @@ library
       Score.XmlToScore
       Score.XmlToScore_grace
       Score.XmlToScore_ties
+      Score.XmlToScore_tnote
       Util.Curve
       Util.Exception
       Util.FileUtil

@@ -1082,12 +1082,16 @@ isCaret _ = False
 --     toMsrs = xpMsrs
 
 
-xmlToScoreTest :: XScore -> [(String,Map Loc (Map Int [TNote]))]
-xmlToScoreTest xs = map f1 staves
+
+xmlToScoreTest :: XScore -> [(String,Map Loc (Map Int PrelimChord))]
+xmlToScoreTest xs = map (f2 . f1) staves
   where
     staves = xmlToScoreTest2 xs
     f1 :: (String,[TNote]) -> (String,Map Loc (Map Int [TNote]))
     f1 (s,tns) = (s,tNotesToVoicesLocs tns)
+    f2 :: (String,Map Loc (Map Int [TNote])) -> 
+          (String,Map Loc (Map Int PrelimChord))
+    f2 (s,tns) = (s, tNotesToPrelimChords tns)
 
 
 xmlToScoreTest2 :: XScore -> [(String,[TNote])]
