@@ -32,6 +32,7 @@ import Data.Map (Map)
 import Common(Loc)
 import Score.XmlToScore (xmlToScoreTest)
 import Util.Showable
+import System.Environment (lookupEnv)
 
 runOnce :: RunData -> [String] -> IO ()
 runOnce rd args =
@@ -56,8 +57,8 @@ doPlay_t mBeg mEnd mSolo splicePts (RunData metasIn) = do
     Right streams ->  do -} 
       -- score :: XScore
       score <- readXmlTest
-      let x :: [(String,Map Loc (Map Int PrelimChord))]
-          x = xmlToScoreTest score
+      let x :: [(String,[TNote])]
+          x = xmlToScoreTest2 score
       writeFile "tnote.txt" (showIString x)
       return ()
       {- 
@@ -113,9 +114,13 @@ doPlay_t mBeg mEnd mSolo splicePts (RunData metasIn) = do
 
 readXmlTest :: IO XScore
 readXmlTest = do
-  buf <- readFileStrictly "/Users/mike/in.musicxml"
+  env <- lookupEnv "COMPUTER_SYSTEM"
+  buf <- case env of
+    Just _  -> readFileStrictly "/Users/mike/in.musicxml"
+    Nothing -> readFileStrictly "c:\\Users\\micha\\in.musicxml"
   let topElems = onlyElems . parseXML $ buf
   case L.find ((=="score-partwise") . qName . elName) topElems of
-    Just e -> return $ parseXScore e
+    Just e  -> return $ parseXScore e
+    Nothing -> error "foo"
       -- let xd = parseXScore e
       -- in return $ xmlToScore xd

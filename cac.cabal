@@ -45,6 +45,7 @@ library
       Translation.GenericShape
       Translation.InstrUtils
       Translation.RunOnce
+      Translation.RunOnceTest
       Translation.SendControl
       Translation.Splice2
       Translation.TimeMap

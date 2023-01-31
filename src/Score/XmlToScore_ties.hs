@@ -8,6 +8,7 @@ import Data.Set(Set)
 import Common ( Pitch(Pitch, midiPitch), Loc(Loc) )
 import XmlDoc.XmlDocData
 import Data.Maybe
+import Debug.Trace
 
 -- xMsrDataToTNote :: Map Int IXMsrInfo -> [(Loc,XMsrData)]
 
@@ -29,7 +30,8 @@ tNotesToVoicesLocs tns = f5
 
 doTiesXMsrData :: Map Int IXMsrInfo -> [(Loc,XMsrData)] ->
   [TNote]
-doTiesXMsrData imix xs = doTies ts
+-- doTiesXMsrData imix xs = doTies ts
+doTiesXMsrData imix xs = "not doing ties! " `trace` ts
   where
     ts :: [TNote]
     ts = mapMaybe (xMsrDataToTNote imix) xs
@@ -42,7 +44,7 @@ xMsrDataToTNote mix (begLoc,xmsr) =
     Just (XNNote dur grace _ mVoi mStaff xpitch tieStart 
       tieStop nots notehead _) -> 
         let 
-          voi = case mVoi of {Just x -> x}
+          voi = case mVoi of {Just x -> x;Nothing->error"foo"}
           order = orderOf xmsr
           -- computeEndLoc :: Map Int IXMsrInfo -> Loc -> Int -> Loc
           endLoc = computeEndLoc mix begLoc dur
@@ -51,6 +53,7 @@ xMsrDataToTNote mix (begLoc,xmsr) =
           Just 
             (TNote pitch voi mStaff tieStart tieStop begLoc endLoc 
               endLoc order nots notehead grace)
+    _ -> error "Foo"
 
 
 maybeXNoteNoteType :: XMsrData -> Maybe XNote

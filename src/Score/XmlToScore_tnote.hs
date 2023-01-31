@@ -39,9 +39,10 @@ tNotesToChords2 tns =
             xs -> (graceType xs,sortGraces xs)
         modifiers :: Set ChordModifier
         modifiers = S.fromList $ concatMap (getChordModifiers . tnNotations) reg
-        endLoc = case reg of
-          x:_ -> tnOrigEnd x
-          _   -> error "foo"
+        endLoc = case (reg,graces) of
+          (x:_,_) -> tnOrigEnd x
+          (_,x:_) -> tnOrigEnd x
+          _       -> error "foo"
 
 -- tNotesSeparateGraces
 --

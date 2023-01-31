@@ -46,7 +46,7 @@ parseXScore e = XScore { xPartInfos = partInfos
         {Just(XPartInfo name)->name;Nothing->error"foo"}
     
 parseIsSib :: Element -> Bool
-parseIsSib e = ("kd984 " ++ show flag) `trace` flag
+parseIsSib e = ("Is Sibelius: " ++ show flag) `trace` flag
   where
     -- indentification section
     iden :: Element

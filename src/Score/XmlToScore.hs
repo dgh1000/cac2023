@@ -1106,6 +1106,14 @@ xmlToScoreTest2 xs = m3
     m3 = map m2 $ M.toAscList m
 
 
+xmlToScoreTest3 :: XScore -> [(String,[TNote])]
+xmlToScoreTest3 xs = map m2 $ M.toAscList m
+  where
+    (imix,m) = computeXmlStaves xs
+    m2 (s,m_) = (s, xmlToScoreTestStaff imix m_)
+
+    
+
 xmlToScoreTestStaff :: Map Int IXMsrInfo -> Map Loc [XMsrData] -> 
   [TNote]
 xmlToScoreTestStaff imix m = d3
