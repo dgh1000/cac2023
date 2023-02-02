@@ -95,7 +95,8 @@ updateChordVoice (Just v) (XMDNote n ord) = case xnVoice n of
 computeMsrDatas :: Bool -> Map Int IXMsrInfo -> [XMsr] -> Map Loc [XMsrData]
 computeMsrDatas isSib mis
   = assertDistinctStaffVoices . UM.listToLMap 
-    . map verifyNoteVoiceSet . fixSibeliusVoices isSib . concatMap f
+    . map verifyNoteVoiceSet . putOrderInXMsrData
+    . fixSibeliusVoices isSib . concatMap f
   where
     f :: XMsr -> [(Loc,XMsrData)]
     -- This will convert any XMsrData at a valid location to (Loc,XMsrData).

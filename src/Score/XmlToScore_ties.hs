@@ -30,8 +30,7 @@ tNotesToVoicesLocs tns = f5
 
 doTiesXMsrData :: Map Int IXMsrInfo -> [(Loc,XMsrData)] ->
   [TNote]
--- doTiesXMsrData imix xs = doTies ts
-doTiesXMsrData imix xs = "not doing ties! " `trace` ts
+doTiesXMsrData imix xs = doTies ts
   where
     ts :: [TNote]
     ts = mapMaybe (xMsrDataToTNote imix) xs
