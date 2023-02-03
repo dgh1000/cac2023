@@ -3,6 +3,7 @@ import Data.Map (Map)
 import Common
 import Score.ScoreData
 import qualified Data.Set as S
+import Control.Arrow
 import Data.Maybe
 import Data.Set(Set)
 import qualified Data.Map as M
@@ -13,7 +14,8 @@ prelimChordsToChords :: Map Loc [MarkD] -> Map Loc (Map Int PrelimChord) ->
     Map Loc (Map Int Chord)
 prelimChordsToChords = error "foo"
 
-oneChord :: Map Loc (Map Int PrelimChord) -> Map Loc [MarkD] -> (Loc,(Int,PrelimChord)) -> Maybe Chord
+oneChord :: Map Loc (Map Int PrelimChord) -> Map Loc [MarkD] -> 
+            (Loc,(Int,PrelimChord)) -> Maybe (Loc,(Int,Chord))
 oneChord chords marks (begLoc,(vn,p@(PrelimChord endLoc mods notes type_ graces)))
     | isJust isTrillResult       = Just $ oneChordTrillCase isTrillResult begLoc vn p
     | isJust doubTremStartResult = oneChordDoubTremCase chords begLoc vn p
@@ -28,16 +30,28 @@ oneChord chords marks (begLoc,(vn,p@(PrelimChord endLoc mods notes type_ graces)
         doubTremStopResult = findDoubTremStop mods
 
 
-oneChordDoubTremCase :: Map Loc (Map Int PrelimChord) -> Loc -> Int -> PrelimChord -> Maybe Chord
+oneChordDoubTremCase :: Map Loc (Map Int PrelimChord) -> Loc -> Int -> 
+                        PrelimChord -> Maybe (Loc,(Int,Chord))
 oneChordDoubTremCase chords beg vn ch = error "foo"
 
 
-oneChordTrillCase :: Maybe Int -> Loc -> Int -> PrelimChord -> Chord
+oneChordTrillCase :: Maybe Int -> Loc -> Int -> PrelimChord -> (Loc,(Int,Chord))
 oneChordTrillCase loc vn ch = error "foo"
 
 
-oneChordMainCase :: Loc -> Int -> PrelimChord -> Chord
-oneChordMainCase beg vn (PrelimChord end mods notes grType graces) = error "foo"
+oneChordMainCase :: Loc -> Int -> PrelimChord -> (Loc,(Int,Chord))
+oneChordMainCase beg vn (PrelimChord end mods notes grType graces) = 
+  (beg,(vn,Chord end mods (NSingles $ M.fromList notesList) graces))
+  where
+    notesList :: [(Int,Note)]
+    notesList = map ((\n -> (midiPitch . nPitch $ n,n)) . tNoteToNote) notes
+
+-- data Notes = NSingles (Map Int Note)
+--            | NTrill TrillTremNote (Map Int Note) (Map Int Note)
+--              -- Bool is trill diff flag: Nothing for tremolo, Just x
+--              -- for a trill with an upper note x steps above the base note
+--              deriving(Eq,Ord,Show,NFData,Generic)
+
 
 
 tNoteToNote :: TNote -> Note

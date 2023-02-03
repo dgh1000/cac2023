@@ -7,7 +7,7 @@ Piano
           69
           voi/staff    : [1/Just 1]
           tie strt/stop: [True/False]
-          []
+          []f
           mGrace       : Nothing
       No grace notes.
       fromList []

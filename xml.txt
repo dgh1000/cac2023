@@ -1,0 +1,2642 @@
+XScore
+Parts:
+  Part name: Piano
+    measure num: 1
+      [0] XDWords "trn@5" (Just 20)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] XDWords "stac@7" (Just 48)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] XDWords "ext@8" (Just 20)
+        offset: Just 512
+        voice: Just 1
+        staff: Just 1
+      [0] XDWords "arp@10" (Just 66)
+        offset: Just 512
+        voice: Just 1
+        staff: Just 1
+      [0] XDWords "T=100" (Just 39)
+        offset: Just 768
+        voice: Just 1
+        staff: Just 1
+    measure num: 2
+      [0] XDDynamics "p"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [0] Pitch: G2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArticulations [XAAccent] 
+      [512] Pitch: G2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 3
+      [0] Pitch: G2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: A3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: G2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 4
+      [0] XDDynamics "p"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: E4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: A3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: G2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: G2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 5
+      [512] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [512] Pitch: F#4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Just 2
+        staff: Just 2
+      [0] Pitch: G2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: G2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 6
+      [0] Pitch: F#4
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: C3
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1024] Pitch: A3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: G2
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [1280] Pitch: G2
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 7
+      [0] Pitch: F#4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: G4
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: A3
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: C3
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 8
+      [0] Pitch: G4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: A3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: C3
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArticulations [XAAccent] 
+    measure num: 9
+      [0] Pitch: C3
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 10
+      [0] Pitch: G4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: A4
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: F#3
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: C3
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 11
+      [0] Pitch: C3
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArticulations [XAAccent] 
+    measure num: 12
+      [0] Pitch: B4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: E5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: B4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: G3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [256] Pitch: A3
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: C3
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 13
+      [0] Pitch: B4
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: A3
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: C3
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 14
+      [0] Pitch: B4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: A4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C4
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: F3
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 15
+      [0] XDWedge WedgeStop
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: B4
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] XDWedge WedgeStop
+        offset: Nothing
+        voice: Just 2
+        staff: Just 2
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 16
+      [0] XDDynamics "mf"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: B4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: A4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [0] XDDynamics "mf"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 17
+      [0] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: D5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: F4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 18
+      [0] Pitch: D5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: F4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 19
+      [0] Pitch: B4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: A4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: B4
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [544] Pitch: A4
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [576] Pitch: B4
+        duration : 192
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [768] Pitch: B4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: G4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArticulations [XATenuto] 
+      [512] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 20
+      [0] Pitch: B4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArticulations [XATenuto] 
+    measure num: 21
+      [0] Pitch: B4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArticulations [XATenuto] 
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArticulations [XATenuto] 
+    measure num: 22
+      [256] Pitch: A4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArticulations [XATenuto] 
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArticulations [XATenuto] 
+    measure num: 23
+      [0] XDWedge WedgeStop
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: B4
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [32] Pitch: A4
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [64] Pitch: B4
+        duration : 192
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: B4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] XDDynamics "f"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [512] Pitch: E5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] XDWedge WedgeStop
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] XDDynamics "f"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [512] Pitch: G4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 24
+      [0] Pitch: B4
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [32] Pitch: A4
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [64] Pitch: B4
+        duration : 192
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: B4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: G5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: B4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 25
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArticulations [XATenuto] 
+    measure num: 26
+      [0] XDDynamics "ff"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: F5
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [768] Pitch: A5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: 
+      [1280] Pitch: F5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [1792] Pitch: A5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: 
+      [1024] XDDynamics "ff"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [1024] Pitch: Bb4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1280] Pitch: Bb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1792] Pitch: Bb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 27
+      [0] Pitch: Bb1
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: Bb1
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [1024] Pitch: E2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 28
+      [0] Pitch: C3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: D3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: Bb1
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: E2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+      [1024] Pitch: F2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 29
+      [0] Pitch: Bb1
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 30
+      [0] Pitch: D3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: E3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: Bb1
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [768] Pitch: A2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 31
+      [0] Pitch: Bb1
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: A2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 32
+      [0] Pitch: E3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: Bb1
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [768] Pitch: Bb2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 33
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: Bb1
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: Bb2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 34
+      [0] Pitch: F3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: G3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C3
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: Bb1
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 35
+      [0] Pitch: Bb1
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 36
+      [0] XDDynamics "f"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: G3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: A3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] XDDynamics "f"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [0] Pitch: F2
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [768] Pitch: C3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 37
+      [0] Pitch: A3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: F2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: C3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 38
+      [256] Pitch: D4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: B3
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: F3
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [768] Pitch: A3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 39
+      [0] Pitch: D4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: B3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [0] XDDynamics "mf"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [0] Pitch: F2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: C3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 40
+      [0] XDDynamics "mf"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: B3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: C4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: F2
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: C3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 41
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 42
+      [0] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: B3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: D4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: G3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [0] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 43
+      [0] Pitch: D4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: E4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 44
+      [0] Pitch: E4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 45
+      [0] Pitch: B3
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [32] Pitch: D4
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [64] Pitch: D4
+        duration : 192
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] XDWedge WedgeStop
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [256] Pitch: D4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] XDWedge WedgeStop
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: G3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 46
+      [0] XDDynamics "f"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: D4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: A4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: 
+      [512] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [512] XDDynamics "f"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [512] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1024] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 47
+      [0] Pitch: D4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: A4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1024] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 48
+      [0] Pitch: E5
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [32] Pitch: D5
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [64] Pitch: E5
+        duration : 192
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: E5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: G4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 49
+      [0] XDWedge WedgeStop
+        offset: Just 511
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: B4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] XDWedge WedgeStop
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 50
+      [0] XDDynamics "ff"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: E5
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [32] Pitch: D5
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [64] Pitch: E5
+        duration : 192
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: E5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] XDDynamics "ff"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: G4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 51
+      [0] Pitch: D5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 52
+      [0] Pitch: G5
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [32] Pitch: F5
+        duration : 32
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [64] Pitch: G5
+        duration : 192
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: G5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: G4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 53
+      [0] XDDynamics "pp"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: A5
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] XDWedge WedgeCresc
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [0] XDDynamics "pp"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [0] Pitch: Bb4
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: Eb4
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 54
+      [0] Pitch: Bb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: Eb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArticulations [XAAccent] 
+    measure num: 55
+      [0] Pitch: A5
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: XNArticulations [XATenuto] 
+      [0] Pitch: Bb4
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: Eb4
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArticulations [XATenuto] 
+    measure num: 56
+      [0] Pitch: Bb5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: C6
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: A4
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: Eb4
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 57
+      [0] Pitch: C6
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: A4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: Eb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 58
+      [256] Pitch: D6
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: G5
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: Bb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: Eb4
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 59
+      [0] Pitch: A6
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: F6
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [640] Pitch: Eb6
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: G5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: A5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [512] XDWedge WedgeStop
+        offset: Just 255
+        voice: Just 1
+        staff: Just 2
+      [0] Pitch: C5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: D5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: Eb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: Eb4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 60
+      [0] XDDynamics "mp"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] XDWedge WedgeStop
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: A6
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: G5
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [0] XDDynamics "mp"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [0] Pitch: C5
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: Eb4
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 61
+      [0] XDDynamics "pp"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: Bb5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: C6
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] XDDynamics "pp"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [256] Pitch: A4
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [0] Pitch: Eb4
+        duration : 1024
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 62
+      [0] XDDynamics "mf"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: Bb3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: XNArticulations [XAAccent] 
+      [128] Pitch: C4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: D4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: Eb4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [640] Pitch: F4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [768] XDWords "arp@5" (Just 20)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [768] XDDynamics "p"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [768] Pitch: G4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [768] Pitch: C4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [768] XDPedal PedalStart False
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [768] XDPedal PedalStart True
+        offset: Nothing
+        voice: Just 2
+        staff: Just 2
+      [0] XDDynamics "mp"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [256] Pitch: Eb3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArticulations [XAAccent] 
+      [384] Pitch: F3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: G3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [768] XDDynamics "p"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [768] Pitch: Ab3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArpeggiate 
+      [0] Pitch: Ab2
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [256] Pitch: Ab2
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: Ab2
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [768] Pitch: Eb3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArpeggiate 
+    measure num: 63
+      [0] Pitch: Bb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [0] Pitch: D4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [512] XDPedal PedalStop True
+        offset: Just 256
+        voice: Just 2
+        staff: Just 2
+      [0] Pitch: Eb3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArpeggiate 
+    measure num: 64
+      [512] XDDynamics "f"
+        offset: Just 128
+        voice: Just 1
+        staff: Just 1
+      [640] Pitch: Ab3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: XNArticulations [XAAccent] 
+      [0] XDDynamics "f"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [256] Pitch: C3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArticulations [XAAccent] 
+      [384] Pitch: D3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArticulations [XAAccent] 
+      [512] Pitch: Eb3
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArticulations [XAAccent] 
+      [0] Pitch: F2
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArticulations [XAAccent] 
+      [128] Pitch: G2
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: XNArticulations [XAAccent] 
+      [256] Pitch: Ab2
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: F2
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 4
+        staff    : Just 2
+        Notations: 
+    measure num: 65
+      [512] XDDynamics "pp"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [512] Pitch: D5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [768] Pitch: D5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [1024] Pitch: F5
+        duration : 256
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [256] Pitch: Bb3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: XNArticulations [XAAccent] 
+      [384] Pitch: C4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: XNArticulations [XAAccent] 
+      [512] Pitch: C4
+        duration : 192
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [768] Pitch: Ab4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [1024] Pitch: G4
+        duration : 256
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [768] XDPedal PedalStart False
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [768] XDPedal PedalStart True
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [256] Pitch: F3
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 66
+      [0] Pitch: D5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: F5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: G4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 2
+        staff    : Just 1
+        Notations: 
+      [1280] XDPedal PedalStop True
+        offset: Nothing
+        voice: Just 1
+        staff: Just 2
+      [1280] Pitch: D3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1408] Pitch: F3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 67
+      [0] XDDynamics "ff"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: Bb3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [128] Pitch: C4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] XDWords "1=" (Just 20)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [256] Pitch: D4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [384] Pitch: E4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] XDWords "=.9" (Just 20)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [512] XDWords "ps.1" (Just 45)
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [512] Pitch: D5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: G3
+        duration : 384
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [384] Pitch: C4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: G4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1024] Pitch: Bb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 68
+      [0] Pitch: G5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [768] Pitch: D5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [896] Pitch: E5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: C4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: Eb4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+      [1280] Pitch: Bb3
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1408] Pitch: C4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 69
+      [0] Pitch: F5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [128] Pitch: D5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: Eb5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [384] Pitch: F5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] Pitch: F5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [0] Pitch: D4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [128] Pitch: Eb4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [256] Pitch: F4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [384] Pitch: G4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [512] Pitch: D4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1024] Pitch: A4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 70
+      [0] XDDynamics "p"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [0] Pitch: F5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [512] Pitch: Bb5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: XNArpeggiate 
+      [1024] XDDynamics "ff"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [1024] Pitch: G5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [1152] Pitch: A5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [1280] Pitch: Bb5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [1408] Pitch: G5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [512] XDDynamics "p"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [512] Pitch: D4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: XNArpeggiate 
+      [1024] Pitch: A4
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: XNArpeggiate 
+      [1536] XDDynamics "ff"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [1536] Pitch: A4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1664] Pitch: Bb4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1792] Pitch: C5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1920] Pitch: A4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+    measure num: 71
+      [0] Pitch: A5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [128] Pitch: Bb5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: C6
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [768] Pitch: F6
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: 
+      [1280] Pitch: C6
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [1408] Pitch: F6
+        duration : 128
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 1
+        Notations: 
+      [1536] XDDynamics "p"
+        offset: Nothing
+        voice: Just 1
+        staff: Just 1
+      [1536] Pitch: D6
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [640] Pitch: Bb4
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [768] Pitch: C5
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [896] Pitch: D5
+        duration : 768
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [1664] Pitch: A5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 72
+      [0] Pitch: E6
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [128] Pitch: F6
+        duration : 128
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] Pitch: G6
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 1
+        staff    : Just 1
+        Notations: 
+      [256] XDDynamics "p"
+        offset: Nothing
+        voice: Just 3
+        staff: Just 2
+      [256] Pitch: Db5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : False
+        voice    : Just 3
+        staff    : Just 2
+        Notations: 
+      [768] Pitch: Ab5
+        duration : 512
+        isGrace  : Nothing
+        isChord  : True
+        voice    : Nothing
+        staff    : Just 2
+        Notations: 
+    measure num: 73

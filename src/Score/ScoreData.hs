@@ -216,7 +216,6 @@ data Chord = Chord
   { cEndLoc        :: Loc
   , cModifiers     :: Set ChordModifier
   , cNotes         :: Notes
-  , cGraceType     :: Bool
   , cGraces        :: [TNote]
   }
            deriving(Eq,Ord,Show,NFData,Generic)
@@ -271,6 +270,9 @@ data PrelimChord = PrelimChord
   , prcGraces     :: [TNote]
   }
 
+data PrelimChordTremolo = PrelimChordTremolo
+  { pctChord :: PrelimChord
+  , pctOther :: Maybe PrelimChord }
 
 -- Note has pitch, tied, true end (is that after ties), notehead. is this
 -- missing anything? voice? 
@@ -341,14 +343,16 @@ data OctaveLine = OctaveLine Int Loc   -- <# octaves shift>, <end loc>
 
 
 chordTrueEnds :: Chord -> [(Int,Loc)]
-chordTrueEnds (Chord endLoc _ notes _  _) = case notes of
+chordTrueEnds (Chord endLoc _ notes _) = case notes of
   NSingles noteMap ->
     let f p = case M.lookup p noteMap of
           Just n -> nTrueEnd n
+          Nothing -> error "foo"
     in  map (id &&& f) $ M.keys noteMap
   NTrill _ s1 s2 ->
     let f s p = case M.lookup p s of
           Just n -> nTrueEnd n
+          Nothing -> error "foo"
     in map (id &&& f s1) (M.keys s1) ++ map (id &&& f s2) (M.keys s2)
 
 
