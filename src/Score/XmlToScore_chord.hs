@@ -9,6 +9,9 @@ import Data.Set(Set)
 import qualified Data.Map as M
 import XmlDoc.XmlDocData
 import Debug.Trace
+import Text.Printf
+import Common.CommonUtil
+import Util.Exception
 
 prelimChordsToChords :: Map Loc [MarkD] -> Map Loc (Map Int PrelimChord) -> 
     Map Loc (Map Int Chord)
@@ -17,7 +20,8 @@ prelimChordsToChords = error "foo"
 oneChord :: Map Loc (Map Int PrelimChord) -> Map Loc [MarkD] -> 
             (Loc,(Int,PrelimChord)) -> Maybe (Loc,(Int,Chord))
 oneChord chords marks (begLoc,(vn,p@(PrelimChord endLoc mods notes type_ graces)))
-    | isJust isTrillResult       = Just $ oneChordTrillCase isTrillResult begLoc vn p
+    | isJust isTrillResult       = 
+        Just $ oneChordTrillCase (fromMaybe 0 isTrillResult) begLoc vn p
     | isJust doubTremStartResult = oneChordDoubTremCase chords begLoc vn p
     | isJust doubTremStopResult  = Nothing
     | otherwise                  = Just $ oneChordMainCase begLoc vn p
@@ -32,11 +36,43 @@ oneChord chords marks (begLoc,(vn,p@(PrelimChord endLoc mods notes type_ graces)
 
 oneChordDoubTremCase :: Map Loc (Map Int PrelimChord) -> Loc -> Int -> 
                         PrelimChord -> Maybe (Loc,(Int,Chord))
-oneChordDoubTremCase chords beg vn ch = error "foo"
+oneChordDoubTremCase 
+  chords 
+  beg 
+  vn 
+  before@(PrelimChord end mods notes _ _) = out
+  where
+    mAfter :: Maybe PrelimChord
+    mAfter = M.lookup end chords >>= M.lookup vn
+    out = case mAfter of
+      Nothing -> printf ("warning, no chord follows doub. tremolo " ++ 
+        "at %s") (showLoc2 end) `trace` Nothing
+      Just after -> Just $ doubTremCase beg vn before after
 
 
-oneChordTrillCase :: Maybe Int -> Loc -> Int -> PrelimChord -> (Loc,(Int,Chord))
-oneChordTrillCase loc vn ch = error "foo"
+doubTremCase :: Loc -> Int -> PrelimChord -> PrelimChord -> (Loc,(Int,Chord))
+doubTremCase = error "foo"
+
+
+oneChordTrillCase :: Int -> Loc -> Int -> PrelimChord -> (Loc,(Int,Chord))
+oneChordTrillCase upperAlter loc vn ch =
+  let msg = printf ("something wrong; a trill chord has more than " ++
+                    "one note at %s") (showLoc2 loc)
+      note1 :: Note
+      note1 = case prcNotes ch of
+        [x] -> tNoteToNote x
+        _   -> throwMine msg
+      pitch1 = nPitch note1
+      midi1 = midiPitch pitch1
+      (midi2,pitch2) = computeTrillPitch upperAlter pitch1
+      trillDiff = midi2-midi1
+      note2 = note1 {nPitch=pitch2}
+      new1 = M.fromList [(midi1,note1)]
+      new2 = M.fromList [(midi2,note2)]
+  in (loc,(vn, 
+        Chord (prcEndLoc ch) (prcModifiers ch) 
+          (NTrill (TtnTrill trillDiff) new1 new2) []))
+
 
 
 oneChordMainCase :: Loc -> Int -> PrelimChord -> (Loc,(Int,Chord))
@@ -52,6 +88,13 @@ oneChordMainCase beg vn (PrelimChord end mods notes grType graces) =
 --              -- for a trill with an upper note x steps above the base note
 --              deriving(Eq,Ord,Show,NFData,Generic)
 
+computeTrillPitch :: Int -> Pitch -> (Int,Pitch)
+computeTrillPitch upperAlter (Pitch _ step1 alter1 octave1) = (newMidi,pitch2)
+  where
+    step2 = (step1+1) `mod` 7
+    octave2 = if step1 == 6 then octave1+1 else octave1
+    newMidi = stepAlterOctToMidi step2 upperAlter octave2
+    pitch2 = Pitch newMidi step2 upperAlter octave2
 
 
 tNoteToNote :: TNote -> Note

@@ -315,8 +315,8 @@ arpCount staffNames loc pitch = do
 arpPitches :: Loc -> String -> Tr [Int]
 arpPitches loc staffName = do
   sc <- gets $ view score
-  let chordPitches (Chord _ mods (NSingles ps) _ _) = M.keys ps
-      chordPitches (Chord _ mods (NTrill _ ps1 ps2) _ _) = M.keys ps1 ++ M.keys ps2
+  let chordPitches (Chord _ mods (NSingles ps) _) = M.keys ps
+      chordPitches (Chord _ mods (NTrill _ ps1 ps2) _) = M.keys ps1 ++ M.keys ps2
       cp c | Arpeggiate `elem` cModifiers c = chordPitches c
            | otherwise = []
       chordLookup :: Loc -> Map Loc (Map Int Chord) -> Map Int Chord
@@ -341,7 +341,7 @@ iuLookup s k m = case M.lookup k m of
 
 ----------------------------------------------------------------------
 isShort :: Chord -> Bool
-isShort (Chord _ mods _ _ _) = Staccato `elem` mods
+isShort (Chord _ mods _ _) = Staccato `elem` mods
 
 
 ----------------------------------------------------------------------
