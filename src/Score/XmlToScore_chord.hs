@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 module Score.XmlToScore_chord where
 import Data.Map (Map)
 import Common
@@ -15,7 +16,24 @@ import Util.Exception
 
 prelimChordsToChords :: Map Loc [MarkD] -> Map Loc (Map Int PrelimChord) -> 
     Map Loc (Map Int Chord)
-prelimChordsToChords = error "foo"
+prelimChordsToChords marks chords = error "foo"
+  where
+    g :: (a,[(b,c)]) -> [(a,(b,c))]
+    g (a,xs) = map (a,) xs
+    h :: [(a,[(b,c)])] -> [(a,(b,c))]
+    h = concatMap g
+    v1 :: Map Loc [(Int,PrelimChord)]
+    v1 = M.map M.toAscList chords
+    v2 :: [(Loc,[(Int,PrelimChord)])]
+    v2 = M.toAscList v1
+    v3 :: [(Loc,(Int,PrelimChord))]
+    v3 = h v2
+    v4 :: [(Loc,(Int,Chord))]
+    v4 = mapMaybe (oneChord chords marks) v3
+    v5 :: [(Loc,[(Int,Chord)])]
+    v5 = 
+
+    -- [(Loc,(Int,PrelimChord))]
 
 oneChord :: Map Loc (Map Int PrelimChord) -> Map Loc [MarkD] -> 
             (Loc,(Int,PrelimChord)) -> Maybe (Loc,(Int,Chord))
@@ -51,7 +69,18 @@ oneChordDoubTremCase
 
 
 doubTremCase :: Loc -> Int -> PrelimChord -> PrelimChord -> (Loc,(Int,Chord))
-doubTremCase = error "foo"
+doubTremCase beg vn ch1 ch2 = (beg,(vn,out))
+  where
+    notes1 :: [Note]
+    notes1 = map tNoteToNote $ prcNotes ch1
+    notes2 :: [Note]
+    notes2 = map tNoteToNote $ prcNotes ch2
+    map1 :: Map Int Note
+    map1 = M.fromList $ map (\n -> ((midiPitch . nPitch) n, n)) notes1
+    map2 :: Map Int Note
+    map2 = M.fromList $ map (\n -> ((midiPitch . nPitch) n, n)) notes2
+    out = Chord (prcEndLoc ch2) (prcModifiers ch1) 
+      (NTrill TtnTremolo map1 map2) []
 
 
 oneChordTrillCase :: Int -> Loc -> Int -> PrelimChord -> (Loc,(Int,Chord))
