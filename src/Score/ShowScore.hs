@@ -190,16 +190,17 @@ instance ShowItemClass LocOctLines where
   showI (loc,OctaveLine n end) = SingleLine $ printf "%s n:%3d end:%s" 
          (simpleShowLoc loc) n (simpleShowLoc end)
 
+-}
 
 instance ShowListClass (Map Int Chord) where
   showL = map g . M.toAscList
     where
       g :: (Int,Chord) -> ShowItem
-      g (vn,Chord endLoc mods notes) = 
+      g (vn,Chord endLoc mods notes graces) = 
           Component (printf "Voi %d chord: end:%s %s"
                      vn (showLoc2 endLoc)
                      (concatMap (\m -> " " ++ show m) $ S.toList mods))
-          True [sNotes]
+          True [sNotes,sGraces]
         where
           sNotes = case notes of
             NSingles m -> Component "NSingles" True (map showI $ M.toAscList m)
@@ -207,7 +208,10 @@ instance ShowListClass (Map Int Chord) where
                [ Component "m1" True (map showI $ M.toAscList m1)
                , Component "m2" True (map showI $ M.toAscList m2)
                ]
-          prepend s1 (SingleLine s2) = SingleLine $ s1 ++ s2
+          sGraces = case graces of 
+            [] -> SingleLine "No grace notes."
+            xs -> Component "Grace notes: " True (map showI graces)
+          -- prepend s1 (SingleLine s2) = SingleLine $ s1 ++ s2
 
 
 
@@ -220,6 +224,7 @@ instance ShowItemClass IndexNote where
     where yesno True = "Yes"
           yesno False = "No"
 
+{-
 type TimeMapSlice = (Loc,(Rational,Double))
 instance ShowItemClass TimeMapSlice where
   showI (loc,(sliceDur,t)) = SingleLine $ printf "%s %10s %9.3f" 

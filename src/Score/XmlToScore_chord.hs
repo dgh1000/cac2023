@@ -9,6 +9,7 @@ import Data.Maybe
 import Data.Set(Set)
 import qualified Data.Map as M
 import XmlDoc.XmlDocData
+    ( TNote(tnPitch, tnTieStart, tnEnd, tnNotehead), XNotehead )
 import Debug.Trace
 import Text.Printf
 import Common.CommonUtil
@@ -16,7 +17,7 @@ import Util.Exception
 
 prelimChordsToChords :: Map Loc [MarkD] -> Map Loc (Map Int PrelimChord) -> 
     Map Loc (Map Int Chord)
-prelimChordsToChords marks chords = error "foo"
+prelimChordsToChords marks chords = v7
   where
     g :: (a,[(b,c)]) -> [(a,(b,c))]
     g (a,xs) = map (a,) xs
@@ -30,10 +31,11 @@ prelimChordsToChords marks chords = error "foo"
     v3 = h v2
     v4 :: [(Loc,(Int,Chord))]
     v4 = mapMaybe (oneChord chords marks) v3
-    v5 :: [(Loc,[(Int,Chord)])]
-    v5 = 
+    v6 :: Map Loc [(Int,Chord)]
+    v6 = M.fromListWith (++) $ map (\(l,v) -> (l,[v])) v4
+    v7 :: Map Loc (Map Int Chord)
+    v7 = M.map M.fromList v6
 
-    -- [(Loc,(Int,PrelimChord))]
 
 oneChord :: Map Loc (Map Int PrelimChord) -> Map Loc [MarkD] -> 
             (Loc,(Int,PrelimChord)) -> Maybe (Loc,(Int,Chord))
