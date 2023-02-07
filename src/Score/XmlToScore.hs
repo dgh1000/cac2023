@@ -1,4 +1,5 @@
 {-# LANGUAGE TupleSections, ScopedTypeVariables #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module Score.XmlToScore where
 
 import qualified Data.List as L
@@ -82,7 +83,7 @@ addAnotherMsr ts = case M.maxViewWithKey ts of
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
---                   mark computations
+--                   mark computationsd
 
 computeMarksByStaff :: [String] -> Map Loc (Map String [MarkD]) ->
                        Map String (Map Loc [MarkD])
@@ -146,7 +147,7 @@ computeStaff msrInfo timeSigs staffName xmlStaff1 =
           , stHairpins       = computeHairpins staffNums xmlStaff
           , stPedalEvts      = computePedalEvts xmlStaff
           , stMetSymMarks    = metSym
-          , stMaxTrueEnd     = computeMaxTrueEnd chords
+          , stMaxTrueEnd     = computeMaxTrueEnd (error "foo") -- chords
           , stUsedMsrs       = S.fromList . map msrNum . M.keys $ prelimChords
           , stSlurs          = computeSlurs xmlStaff
           , stChords         = error "foo" 
@@ -754,6 +755,7 @@ computeUsedMsrs s = listArray (1,maxMsr) (repeat False) //
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+{-
 findDoubTremStart :: PrelimChord -> Maybe Int
 findDoubTremStart chord = 
   listToMaybe [n | DoubTremStart n <- S.toList $ prcModifiers chord]
@@ -762,7 +764,7 @@ findDoubTremStart chord =
 findDoubTremStop :: PrelimChord -> Maybe Int
 findDoubTremStop chord = 
   listToMaybe [n | DoubTremStop n <- S.toList $ prcModifiers chord]
-
+-}
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 --                   compute Markers
@@ -788,11 +790,21 @@ xmlToScoreTest :: XScore -> [(String,Map Loc (Map Int PrelimChord))]
 xmlToScoreTest xs = map (f2 . f1) staves
   where
     staves = xmlToScoreTest2 xs
+    xmlStaves :: Map String (Map Loc [XMsrData])
+    (imix,xmlStaves) = computeXmlStaves xs
+    staveWords = M.map (lMapMaybe maybeWord) xmlStaves
+    allMarks' = computeWordMarks stavesWords
     f1 :: (String,[TNote]) -> (String,Map Loc (Map Int [TNote]))
     f1 (s,tns) = (s,tNotesToVoicesLocs tns)
     f2 :: (String,Map Loc (Map Int [TNote])) -> 
           (String,Map Loc (Map Int PrelimChord))
     f2 (s,tns) = (s, tNotesToPrelimChords tns)
+    stavesWords :: Map String (Map Loc [WordDirection])
+    stavesWords = M.map (lMapMaybe maybeWord) xmlStaves
+    
+    f3 :: (String,Map Loc (Map Int PrelimChord)) ->
+          (String,Map Loc (Map Int Chord))
+    f3 (s,pcs) = error "foo"
 
 
 xmlToScoreTest2 :: XScore -> [(String,[TNote])]
