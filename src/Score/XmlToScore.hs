@@ -786,8 +786,8 @@ isW _ = False
 
 
 
-xmlToScoreTest :: XScore -> [(String,Map Loc (Map Int PrelimChord))]
-xmlToScoreTest xs = map (f2 . f1) staves
+xmlToPrelimChords :: XScore -> [(String,Map Loc (Map Int PrelimChord))]
+xmlToPrelimChords xs = map (f2 . f1) staves
   where
     staves = xmlToScoreTest2 xs
     xmlStaves :: Map String (Map Loc [XMsrData])
