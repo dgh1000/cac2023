@@ -27,6 +27,7 @@ import Common.CommonUtil
 import XmlDoc.ParseXml (parseIsSib)
 import Util.Showable
 import XmlDoc.XmlDocData
+import Score.XmlToScore_chord
 
 
 xmlToScore :: XScore -> Score
@@ -70,8 +71,6 @@ xmlToScore xscore =
     insertBrackets :: Map String [(Loc,Loc)] -> Staff -> Staff
     insertBrackets m s = s {stBrackets = m}
     -}
-
-
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
@@ -143,14 +142,15 @@ computeStaff :: Map Int IXMsrInfo -> Map Int TimeSig -> String ->
                 Map Loc [XMsrData] -> Staff
 computeStaff msrInfo timeSigs staffName xmlStaff1 =
     Staff { stName           = staffName
-          , stDynamics       = computeDynamics staffNums xmlStaff
-          , stHairpins       = computeHairpins staffNums xmlStaff
-          , stPedalEvts      = computePedalEvts xmlStaff
+          , stDynamics       = computeDynamics staffNums xmlStaff1
+          , stHairpins       = computeHairpins staffNums xmlStaff1
+          , stPedalEvts      = computePedalEvts xmlStaff1
           , stMetSymMarks    = metSym
-          , stMaxTrueEnd     = computeMaxTrueEnd (error "foo") -- chords
-          , stUsedMsrs       = S.fromList . map msrNum . M.keys $ prelimChords
-          , stSlurs          = computeSlurs xmlStaff
-          , stChords         = error "foo" 
+          , stMaxTrueEnd     = computeMaxTrueEnd chords 
+          , stUsedMsrs       = S.fromList . map msrNum . M.keys 
+                               $ prelimChords
+          , stSlurs          = computeSlurs xmlStaff1
+          , stChords         = chords
           --  stGrace        :: Map Loc (Map Int GraceNoteSeq)
           , stGrace          = M.empty -- toGraceNoteSeq graces
           , stVoiceToStaff   = d2 
@@ -164,15 +164,15 @@ computeStaff msrInfo timeSigs staffName xmlStaff1 =
     -- toGraceNoteSeq :: Map Loc [GraceNote] -> Map Loc GraceNoteSeq
     -- toGraceNoteSeq = M.map toGraceNoteSeq2
 
-    (xmlStaff,graces) = splitGrace xmlStaff1
+    -- (xmlStaff,graces) = splitGrace xmlStaff1
     allXmlData :: [XMsrData]
-    allXmlData = concat $ M.elems xmlStaff
+    allXmlData = concat $ M.elems xmlStaff1
     staffNums :: [Int]
     staffNums = S.toAscList . S.fromList . mapMaybe staffNumOf $ allXmlData
-    (d1,d2) = computeStavesToVoicesAndVoicesToStaves xmlStaff
-    metSym = metAndSymbolMarks xmlStaff
+    (d1,d2) = computeStavesToVoicesAndVoicesToStaves xmlStaff1
+    metSym = metAndSymbolMarks xmlStaff1
     -- this looks at what XMsrData? XMDNote will have grace notes
-    prelimChords = computeChords msrInfo xmlStaff
+    prelimChords = computeChords msrInfo xmlStaff1
     chordEndsMap = computeChordEndsMap prelimChords
     -- exploring 9/1/22: the two things that get us from a prelimChord to a Chord is
     --   processing which needs a chordEndsMap (not sure what a chord ends map is
@@ -180,7 +180,57 @@ computeStaff msrInfo timeSigs staffName xmlStaff1 =
     -- so we don't include grace notes
     -- chords       = prelimChord2Chord metSym $
     --                processTies chordEndsMap prelimChords
+    chords = toChords msrInfo xmlStaff1
     -- graceNotes = computeGrace msrInfo xmlStaff 
+
+toTNotes :: Map Int IXMsrInfo -> Map Loc [XMsrData] -> [TNote]
+toTNotes imix m = d3
+  where
+    d1 :: [(Loc,[XMsrData])]
+    d1 = M.toAscList m
+    d2 :: [(Loc,XMsrData)]
+    d2 = tmp1 d1
+    d3 :: [TNote]
+    d3 = doTiesXMsrData imix d2
+
+toPrelimChords :: [TNote] -> Map Loc (Map Int PrelimChord)
+toPrelimChords tnotes = tNotesToPrelimChords d1
+  where
+    d1 :: Map Loc (Map Int [TNote])
+    d1 = tNotesToVoicesLocs tnotes
+
+toChords :: Map Int IXMsrInfo -> Map Loc [XMsrData] -> 
+            Map Loc (Map Int Chord)
+toChords imix xmsr = prelimChordsToChords marks d2
+  where
+    d1 :: [TNote]
+    d1 = toTNotes imix xmsr 
+    d2 :: Map Loc (Map Int PrelimChord)
+    d2 = toPrelimChords d1
+    marks :: Map Loc [MarkD]
+    marks = metAndSymbolMarks xmsr
+
+{-
+xmlToPrelimChords :: XScore -> [(String,Map Loc (Map Int PrelimChord))]
+xmlToPrelimChords xs = map (f2 . f1) staves
+  where
+    staves = xmlToScoreTest2 xs
+    xmlStaves :: Map String (Map Loc [XMsrData])
+    (imix,xmlStaves) = computeXmlStaves xs
+    staveWords = M.map (lMapMaybe maybeWord) xmlStaves
+    allMarks' = computeWordMarks stavesWords
+    f1 :: (String,[TNote]) -> (String,Map Loc (Map Int [TNote]))
+    f1 (s,tns) = (s,tNotesToVoicesLocs tns)
+    f2 :: (String,Map Loc (Map Int [TNote])) -> 
+          (String,Map Loc (Map Int PrelimChord))
+    f2 (s,tns) = (s, tNotesToPrelimChords tns)
+    stavesWords :: Map String (Map Loc [WordDirection])
+    stavesWords = M.map (lMapMaybe maybeWord) xmlStaves
+    
+    f3 :: (String,Map Loc (Map Int PrelimChord)) ->
+          (String,Map Loc (Map Int Chord))
+    f3 (s,pcs) = error "foo"
+-}
 
 
 computeStavesToVoicesAndVoicesToStaves :: Map Loc [XMsrData] -> (Map Int [Int],Map Int Int)
@@ -786,25 +836,6 @@ isW _ = False
 
 
 
-xmlToPrelimChords :: XScore -> [(String,Map Loc (Map Int PrelimChord))]
-xmlToPrelimChords xs = map (f2 . f1) staves
-  where
-    staves = xmlToScoreTest2 xs
-    xmlStaves :: Map String (Map Loc [XMsrData])
-    (imix,xmlStaves) = computeXmlStaves xs
-    staveWords = M.map (lMapMaybe maybeWord) xmlStaves
-    allMarks' = computeWordMarks stavesWords
-    f1 :: (String,[TNote]) -> (String,Map Loc (Map Int [TNote]))
-    f1 (s,tns) = (s,tNotesToVoicesLocs tns)
-    f2 :: (String,Map Loc (Map Int [TNote])) -> 
-          (String,Map Loc (Map Int PrelimChord))
-    f2 (s,tns) = (s, tNotesToPrelimChords tns)
-    stavesWords :: Map String (Map Loc [WordDirection])
-    stavesWords = M.map (lMapMaybe maybeWord) xmlStaves
-    
-    f3 :: (String,Map Loc (Map Int PrelimChord)) ->
-          (String,Map Loc (Map Int Chord))
-    f3 (s,pcs) = error "foo"
 
 
 xmlToScoreTest2 :: XScore -> [(String,[TNote])]
