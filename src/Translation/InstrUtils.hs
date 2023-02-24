@@ -178,6 +178,7 @@ doSplitTrill staffN loc vn ch ttn ns1 ns2 = do
            
 ---------------------------------------------------------------------
 -- acciaccatura and appogiatura
+{-
 doAcciAppo :: String -> Tr ()
 doAcciAppo staffN = do
   graces <- (stGrace . iuLookup "aaa" staffN . scStaves) `liftM`
@@ -187,7 +188,7 @@ doAcciAppo staffN = do
 data SNoteModInstr  = SNMITruncate Loc Double
                     | SNMIDecapitate Loc Double
 
-{-
+
 oneLocAcciAppo :: String -> Int -> AbsTimeMap -> (Loc,(AcciSeq,AppoSeq)) -> 
                   ([SNote],[SNoteModInstr])
 oneLocAcciAppo staffN vn atm (loc,(acciSeq,appoSeq)) = error "foo"

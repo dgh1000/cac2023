@@ -151,8 +151,6 @@ computeStaff msrInfo timeSigs staffName xmlStaff1 =
                                $ prelimChords
           , stSlurs          = computeSlurs xmlStaff1
           , stChords         = chords
-          --  stGrace        :: Map Loc (Map Int GraceNoteSeq)
-          , stGrace          = M.empty -- toGraceNoteSeq graces
           , stVoiceToStaff   = d2 
           , stStaffToVoice   = d1
 
@@ -172,16 +170,13 @@ computeStaff msrInfo timeSigs staffName xmlStaff1 =
     (d1,d2) = computeStavesToVoicesAndVoicesToStaves xmlStaff1
     metSym = metAndSymbolMarks xmlStaff1
     -- this looks at what XMsrData? XMDNote will have grace notes
-    prelimChords = computeChords msrInfo xmlStaff1
-    chordEndsMap = computeChordEndsMap prelimChords
-    -- exploring 9/1/22: the two things that get us from a prelimChord to a Chord is
-    --   processing which needs a chordEndsMap (not sure what a chord ends map is
-    --   or why it is needed) and needing metronome marks and symbols
-    -- so we don't include grace notes
-    -- chords       = prelimChord2Chord metSym $
-    --                processTies chordEndsMap prelimChords
-    chords = toChords msrInfo xmlStaff1
-    -- graceNotes = computeGrace msrInfo xmlStaff 
+    -- prelimChords = computeChords msrInfo xmlStaff1
+    tNotes :: [TNote]
+    tNotes = toTNotes msrInfo xmlStaff1
+    prelimChords :: Map Loc (Map Int PrelimChord)
+    prelimChords = toPrelimChords tNotes
+    chords :: Map Loc (Map Int Chord)
+    chords = prelimChordsToChords metSym prelimChords
 
 toTNotes :: Map Int IXMsrInfo -> Map Loc [XMsrData] -> [TNote]
 toTNotes imix m = d3

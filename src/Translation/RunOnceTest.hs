@@ -30,7 +30,6 @@ import Text.XML.Light (onlyElems, parseXML, qName, Element (elName))
 import XmlDoc.ParseXml
 import Data.Map (Map)
 import Common(Loc)
-import Score.XmlToScore (xmlToScoreTest)
 import Util.Showable
 import System.Environment (lookupEnv)
 
@@ -57,10 +56,10 @@ doPlay_t mBeg mEnd mSolo splicePts (RunData metasIn) = do
     Right streams ->  do -} 
       -- score :: XScore
       score <- readXmlTest
-      let x :: [(String,Map Loc (Map Int PrelimChord))]
-          x = xmlToScoreTest score
+      let x :: Score
+          x = xmlToScore score
       putStrLn "Writing tnote.txt ... "
-      writeFile "tnote.txt" (showIString x)
+      writeFile "score.txt" (showIString x)
       return ()
       {- 
       putStrLn "writing score.txt..."

@@ -1,4 +1,6 @@
 {-#  LANGUAGE TypeSynonymInstances, FlexibleInstances, ScopedTypeVariables #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use :" #-}
 module Score.ShowScore where
 
 import qualified Common as CD
@@ -139,24 +141,33 @@ instance Showable LocMergedNumTechnique where
 --                        Staff
 
 
-
+-}
 
 instance ShowListClass Staff where
-  showL (Staff _ dyns hairp ped metMarks maxEnd _ slurs chords) =
-    [ Component "Dynamics"  True [showI $  WrappedMap dyns]
-    , showI ("Hairpins",     map (SingleLineTup 20 20) $ M.toAscList hairp)
-    , showI ("Pedal events", map (SingleLineTup 20 20) $ M.toAscList ped)
-    , SingleLine $ printf "max true end: %s" (showLoc2 maxEnd)
+  showL (Staff _ dyns hairp ped metMarks maxEnd _ slurs chords _ _) =
+    [ -- Component "Dynamics"  True [showI $  WrappedMap dyns]
+    -- , showI ("Hairpins",     map (SingleLineTup 20 20) $ M.toAscList hairp)
+    -- , showI ("Pedal events", map (SingleLineTup 20 20) $ M.toAscList ped)
+      SingleLine $ printf "max true end: %s" (showLoc2 maxEnd)
     -- , Component "True ends"    True (map showI . M.toAscList $ trEnds)
     -- , Component "Time map"     True (map showI . M.toAscList $ timeMap)
-    , Component "slurs" True $ map showI $ M.toAscList slurs
+    -- , Component "slurs" True $ map showI $ M.toAscList slurs
     -- , Component "brackets" True $ map showBr $ M.toAscList brackets
-    ] ++ showL (WrappedMap chords) 
+    ] ++ map showLocChord (M.toAscList chords)
     where
+      showLocChord :: (Loc,Map Int Chord) -> ShowItem
+      showLocChord (loc,chords)= Component (showLoc2 loc) True (map showIntChord $ M.toAscList chords)
+      showIntChord :: (Int,Chord) -> ShowItem
+      showIntChord (vn,ch) = Component ("vn: " ++ show vn) True [showI ch]
       showBr (name,locPairs) = Component name True (map g locPairs)
         where
           g (loc1,loc2) = SingleLine $ showLoc2 loc1 ++ " " ++ showLoc2 loc2
 
+
+instance ShowItemClass Chord where
+  showI = error "foo"
+
+{-
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 --                      PedalEvt

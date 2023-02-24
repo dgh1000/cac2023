@@ -88,7 +88,6 @@ data Staff = Staff
   , stUsedMsrs     :: Set Int
   , stSlurs        :: Map Loc Loc
   , stChords       :: Map Loc (Map Int Chord)
-  , stGrace        :: Map Loc (Map Int GraceNoteSeq)
   -- map of voice number to staff number it resides on
   , stVoiceToStaff :: Map Int Int
   , stStaffToVoice :: Map Int [Int]
