@@ -179,9 +179,9 @@ computePedal pno2 metaPre staffNs = do
             toPedalEvt (loc,pe) = out
               where
                 t = lookupTime loc atm
-                t1 = t-0.012
+                t1 = t-0.05
                 -- t2 = t+pno2PedalChangeDelta pno2
-                t2 = t+0.1
+                t2 = t+0.2
                 out = case pe of
                   PedalStart  -> [ TrRaw staffN t  dest 0xB0 64 127 ]
                   PedalStop   -> [ TrRaw staffN t  dest 0xB0 64 0   ]
