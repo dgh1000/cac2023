@@ -101,6 +101,7 @@ prepareRun mProcHand arg = do
   compD <- compDirectory
   treeFs <- treeFiles isSibOrMscz compD
   fp <- mostRecentFileL treeFs 
+  putStrLn $ "Processing " ++ fp
   -- MUSESCORE
   -- let fpNoExt = takeDirectory fp ++ "/" ++ takeBaseName fp
   let fpNoExt = dropExtension fp

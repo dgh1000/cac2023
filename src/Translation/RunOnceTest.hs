@@ -58,7 +58,7 @@ doPlay_t mBeg mEnd mSolo splicePts (RunData metasIn) = do
       score <- readXmlTest
       let x :: Score
           x = xmlToScore score
-      putStrLn "Writing tnote.txt ... "
+      putStrLn "Writing score.txt ... "
       writeFile "score.txt" (showIString x)
       return ()
       {- 
