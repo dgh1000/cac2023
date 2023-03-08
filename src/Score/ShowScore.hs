@@ -40,12 +40,6 @@ instance ShowItemClass MarkDList where
   showI (MarkDList ms) = SingleLine "MarkD: to be implemented"
   
 
-----------------------------------------------------------------------
---          instance of ShowItemClass for Staff
-
-instance ShowItemClass Staff where
-  showI = error "instance TBD"
-
 
 ----------------------------------------------------------------------
 --          instance of ShowItemClass for Score
@@ -143,8 +137,9 @@ instance Showable LocMergedNumTechnique where
 
 -}
 
-instance ShowListClass Staff where
-  showL (Staff _ dyns hairp ped metMarks maxEnd _ slurs chords _ _) =
+instance ShowItemClass Staff where
+  showI (Staff _ dyns hairp ped metMarks maxEnd _ slurs chords _ _) =
+    Component "staff" True $ 
     [ -- Component "Dynamics"  True [showI $  WrappedMap dyns]
     -- , showI ("Hairpins",     map (SingleLineTup 20 20) $ M.toAscList hairp)
     -- , showI ("Pedal events", map (SingleLineTup 20 20) $ M.toAscList ped)
@@ -165,7 +160,16 @@ instance ShowListClass Staff where
 
 
 instance ShowItemClass Chord where
-  showI = error "foo"
+  showI (Chord endLoc mods notes graces) = Component ("endLoc: " ++ showLoc2 endLoc) True remain
+    where
+      remain = [showI notes] ++ map showI graces
+
+instance ShowItemClass Notes where
+  showI (NSingles notes) = Component "singles notes:" True (map showI $ M.toAscList notes)
+  showI (NTrill trillTem notes1 notes2) = error "foo"
+
+-- instance ShowItemClass (Int,Note) where
+--   showI 
 
 {-
 ----------------------------------------------------------------------
