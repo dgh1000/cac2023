@@ -160,12 +160,14 @@ instance ShowItemClass Staff where
 
 
 instance ShowItemClass Chord where
-  showI (Chord endLoc mods notes graces) = Component ("endLoc: " ++ showLoc2 endLoc) True remain
+  showI (Chord endLoc mods notes graces) = Component ("endLoc: " ++ showLoc2 endLoc) True [showI notes, r2]
     where
-      remain = [showI notes] ++ map showI graces
+      -- r1 = Component "Regular notes:" True (showI notes)
+      r2 = Component "Grace notes" True (map showI graces)
+      -- remain = [showI notes] ++ map showI graces
 
 instance ShowItemClass Notes where
-  showI (NSingles notes) = Component "singles notes:" True (map showI $ M.toAscList notes)
+  showI (NSingles notes) = Component "Regular notes: NSingles" True (map showI $ M.toAscList notes)
   showI (NTrill trillTem notes1 notes2) = error "foo"
 
 -- instance ShowItemClass (Int,Note) where
