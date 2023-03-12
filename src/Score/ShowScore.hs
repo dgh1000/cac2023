@@ -160,10 +160,15 @@ instance ShowItemClass Staff where
 
 
 instance ShowItemClass Chord where
-  showI (Chord endLoc mods notes graces) = Component ("endLoc: " ++ showLoc2 endLoc) True [showI notes, r2]
+  showI (Chord endLoc mods notes graces) = Component ("endLoc: " ++ showLoc2 endLoc) True (reg ++ graceNotes)
     where
-      -- r1 = Component "Regular notes:" True (showI notes)
-      r2 = Component "Grace notes" True (map showI graces)
+      reg = case showI notes of
+        [] -> []
+        ns -> [Component "Regular notes:" True ns]
+      graceNotes = case map showI graces of
+        [] -> []
+        ns -> [Component "Grace notes:" True ns]
+
       -- remain = [showI notes] ++ map showI graces
 
 instance ShowItemClass Notes where
