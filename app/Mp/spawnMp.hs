@@ -80,8 +80,8 @@ compDirectory :: IO FilePath
 compDirectory = do
   e <- lookupEnv "COMPUTER_SYSTEM"
   case e of
-    Just _  -> return "/Users/Mike/Sync/music/comp"
-    Nothing -> return "c:\\Users\\micha\\Sync\\music\\comp"
+    Just _  -> return "/Users/Mike/Dropbox/music/comp"
+    Nothing -> return "c:\\Users\\micha\\Dropbox\\music\\comp"
 
 
 homeDirectory :: IO FilePath
@@ -139,7 +139,7 @@ prepareInXml fp = do
 
 prepareCalib :: Maybe ProcessHandle -> IO (Maybe ProcessHandle)
 prepareCalib mProcHand = do
-  let fpNoExt = "/Users/Mike/Sync/stack/cac/app/CalibrateSampler/calib"
+  let fpNoExt = "/Users/Mike/Dropbox/stack/cac/app/CalibrateSampler/calib"
   flag <- compile $ fpNoExt <.> "hs"
   if flag
     then do
@@ -171,13 +171,13 @@ doStop mProcHand = case mProcHand of
       Nothing -> "case interrupt" `trace` interruptProcessGroupOf h >> return ()
   
  
--- printf "ghc --make -i/Users/Mike/Sync/stack/cac/src -package mtl %s" fp
+-- printf "ghc --make -i/Users/Mike/Dropbox/stack/cac/src -package mtl %s" fp
 cacSrc :: IO FilePath
 cacSrc = do
   e <- lookupEnv "COMPUTER_SYSTEM"
   case e of
-    Just _  -> return "/Users/Mike/Sync/stack/cac/src"
-    Nothing -> return "c:\\Users\\micha\\Sync\\stackw\\cac\\src"
+    Just _  -> return "/Users/Mike/Dropbox/stack/cac/src"
+    Nothing -> return "c:\\Users\\micha\\Dropbox\\stackw\\cac\\src"
 
 
 
@@ -231,12 +231,12 @@ spawnNoArg execName = do
 
 
 spawnCtrl str chan ctrl = do
-  let execName = "/Users/Mike/Sync/stack/cac/src/Midi/sendCtrl"
+  let execName = "/Users/Mike/Dropbox/stack/cac/src/Midi/sendCtrl"
   callProcess execName [printf "%d:%d:%d" str chan ctrl]
 
 
 spawnCalib str chan ctrl = do
-  let execName = "/Users/Mike/Sync/stack/cac/app/Calib/calib"
+  let execName = "/Users/Mike/Dropbox/stack/cac/app/Calib/calib"
   callProcess execName []
 
   
