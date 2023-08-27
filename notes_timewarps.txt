@@ -1,0 +1,72 @@
+makeTimeMaps: Currently, computing the time maps works like this:
+
+1. It computes a base time map that has only Level 1 (marks like Rit. 
+   and T=60) and Level 2 (marks like 1= and =2) tempos.
+2. It computes 'tmsMarks' ([Utm]) and 'tmsShapes' ([Utm]). It gets 
+   tmsMarks by calling computeDirectUtms on 'scMarks score'.
+3  Filters out just the "global" [Utm] and calls ATM2.applyTimeMod 
+   on each one through a fold, producing 'tm2' a final global or
+   base time map.
+4. originally randomized tm2 slightly producing tm3 but I removed that
+5. a function: doStaffTimeMap <staff name> -> <relative time map> -> <relative time map>
+   This also calls ATM2.applyTimeMod but on just the [Utm] that apply to a staff, folding
+   over all [Utm]
+6. calls toAbsolute on every relative time map
+7. sets the Tr state to new abs maps for every staff and new relative maps for every staff
+   (Do I use relative maps at any future computation?)
+
+ToUnitTimeMods2: computeDirectUtms Map Loc (Map String [MarkD]) -> [Utm]
+
+1. calls computeTmMarks: Map Loc (Map String [MarkD]) -> Map Loc (Map String [TimeModMark])
+2. calls computeUtms2 :: Map Loc (Map String [TimeModMark]) -> [Utm]
+
+ToUnitTimeMods2: computeTmMarks :: Map Loc (Map String [MarkD]) -> 
+  Map Loc (Map String [TimeModMark])
+
+1. Converts following MarkD's to following TimeModMark's
+   AbsWarp       TmmAbsWarp
+   Pause         TmmPause
+   W             TmmW
+   Boundary2     TmmBoundary
+   Adjust2       TmmAdjust
+   PostPause     TmmAfterPause
+
+ToUnitTimeMods2: computeUtms2 :: Map Loc (Map String [TimeModMark]) -> [Utm]
+
+1. discards staff name: maybe toUtm1 only preserves global unit time mods
+2. calls toUtm1 to convert Loc -> TimeModMark -> [Utm]
+
+ToUnitTimeMods2: toUtm1 :: Loc -> TimeModMark -> [Utm]
+
+1. only TmmPuase and TmmAfterPause are implemented. Not implemented 
+   includes TmmAbsWarp, TmmBoundary, and TmmAdjust
+
+----------------------------------------------------
+ApplyTimeMod2.hs
+
+applyTimeMod :: Map Int TimeSig -> RelTimeMap -> Utm -> RelTimeMap
+
+1. For UtmPause, addjusts the previous slice by the amount of pause in seconds. 
+   Seems to look up avg quarter duration over 1 quarter prior and 1 quarter 
+   after the pause location.
+
+2. For UtmPostPause, similar but adjusts the slice after the pause location
+
+3. For (UtmWarp _ loc1 loc2 shape eAmt) calls generalWarp
+
+generalWarp just calls generalWarp2
+
+generalWarp2 :: Map Int TimeSig -> RelTimeMap -> Loc -> Loc -> 
+   Either Double Double -> UtmRampShape -> RelTimeMap
+
+1. We want 'shape' of UrsFlat ("Unit ramp shape"?) and relative warp
+
+----------------------------------------------------
+
+"Shift"
+
+We want to create a new time mod mark called "shift" that shifts a staff 
+ahead or behind by a certain amount at the point it is marked, by adjusting 
+time map one quarter before or after. 
+
+Need to create a Utm for it.

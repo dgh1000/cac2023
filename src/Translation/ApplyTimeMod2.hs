@@ -11,7 +11,6 @@ import Control.Monad.State
 import Control.Arrow
 import Data.Map.Strict(Map)
 import Data.Ratio
-import Util.Math(scale)
 import Util.Map(splitInclude)
 import Common
 import Common.CommonUtil
@@ -35,7 +34,9 @@ import Translation
 --
 --     Right Double: a new absolute duration *in seconds*
 --
-
+-- Questions August 20th: is this a single UTM or a more fundamental
+-- operation? Is it an option that hasn't been given a Utm data type
+-- yet? 
 generalWarp :: Map Int TimeSig -> RelTimeMap -> Loc -> Loc ->  
             Either Double Double -> UtmRampShape -> RelTimeMap
 generalWarp ts tm loc1 loc2 amt shape =
@@ -127,7 +128,25 @@ applyTimeMod timeSigs (RelTimeMap tm) (UtmRamp _ loc1 loc2 tempo1 tempo2) =
         s1  = locDiffQuar timeSigs loc1 loc
         r1 = scale 0 (fromRational s1) (fromRational s2) 0 1
         r = tempo1 * base ** r1
-        
+
+applyTimeMod timeSigs tm (UtmLShift staffN loc amt) = shift timeSigs LeftWarp amt loc tm 
+
+applyTimeMod timeSigs tm (UtmRShift staffN loc amt) = shift timeSigs RightWarp amt loc tm 
+
+
+shift :: Map Int TimeSig -> WarpSide -> Double -> Loc -> RelTimeMap -> RelTimeMap
+shift timeSigs warpSide amtQuar locA tm = 
+    generalWarp2 timeSigs tm loc1 loc2 (Left deltaT) UrsFlat
+  where
+    (loc1,loc2) | warpSide == LeftWarp  = (locBefore,locA)
+                | otherwise             = (locA,locAfter) 
+    locBefore = case locAddQuar timeSigs locA (-1) of
+      Just l -> l
+    locAfter = case locAddQuar timeSigs locA 1 of
+      Just l -> l
+    qd = avgQuarDur timeSigs tm loc1 loc2 
+    deltaT = qd * amtQuar
+
 
 {- 
   RelTimeMap $

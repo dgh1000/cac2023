@@ -1,5 +1,5 @@
 
-module Translation.RunOnce where
+module Translation.RunOnceFile where
 
 -- The idea: a config file will be a Haskell script that spawns MIDI
 -- playback. It will call routines in this module.
@@ -42,6 +42,7 @@ import XmlDoc.ShowXmlDoc
 import Util.FileUtil
 import Util.Exception
 import Util.Showable
+import MidiFile.Convert (writeFileMessages)
 
 
 -- <beg msr> <maybe end msr> <maybe solo meta-instr> <splice points>
@@ -53,13 +54,13 @@ data ArgData = PlayCmd Int (Maybe Int) (Maybe String) [String]
 
 -- we want to validate 
 
-runOnce :: RunData -> [String] -> IO ()
-runOnce rd args =
-  runOnceA args rd `catches` handlers2  
+runOnceFile :: RunData -> [String] -> IO ()
+runOnceFile rd args =
+  runOnce_a args rd `catches` handlers2  
 
 
-runOnceA :: [String] -> RunData -> IO ()
-runOnceA args rd = do
+runOnce_a :: [String] -> RunData -> IO ()
+runOnce_a args rd = do
   case parseArgs args of
     PlayCmd mBeg mEnd mSolo splicePts -> doPlay mBeg mEnd mSolo splicePts rd
     SendCtrl stream chan ctrl value -> doSendCtrl stream chan ctrl value
@@ -115,34 +116,24 @@ doPlay mBeg mEnd mSolo splicePts (RunData metasIn) = do
           s = TrState score metaMap gen M.empty M.empty M.empty [] [] [] []
                       M.empty []
           (err_or_shorts,finalState) =
-            runState (runExceptT (toMidi (mBeg,mEnd) splicePts)) s
-      -- putStrLn "writing synth.txt..."
-      -- writeFile "synth.txt" (concat $ tsDebugOut finalState)
+            runState (runExceptT (toMidiFile (mBeg,mEnd) splicePts)) s
       case err_or_shorts of
         Left msg -> putStrLn msg
-        Right (sNotes,shorts) -> do
+        Right (sNotes,fileMessages) -> do
           -- debugDump finalState
           -- writeSNotes sNotes
-          raws <- E.evaluate $ force shorts
-          allOff streams
-          threadDelay 300000
-          beginTime <- fromIntegral `fmap` time
-          playRawEvents streams (beginTime+200) raws `catches`
-                        handlers streams
-          threadDelay 1000000
-          allOff streams
-          stopMidi streams
+          raws <- E.evaluate $ force fileMessages
+          putStrLn "Writing 'test.mid'"
+          writeFileMessages "test.mid" raws
           return ()
 
 ----------------------------------------------------------------------
 -- debug
 
 writeSNotes :: [SNote] -> IO ()
-writeSNotes ss
-  | null ss = throwMine "no snotes" 
-  | otherwise = do
-      putStrLn "**** Writing SNotes ****"
-      writeFile "snotes.txt" $ showiToString $ Component "" False (map showI ss)
+writeSNotes ss = do
+  putStrLn "**** Writing SNotes ****"
+  writeFile "snotes.txt" $ showiToString $ Component "" False (map showI ss)
 
 
 

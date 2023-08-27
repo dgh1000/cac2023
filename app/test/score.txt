@@ -1,0 +1,31 @@
+Score
+marks:
+  [  1: 1+     ]
+    staff name: B
+      Trunc 5.0e-2
+      StacDur 7.0e-2
+    staff name: T
+      Trunc 5.0e-2
+      StacDur 7.0e-2
+  [  1: 3+     ]
+    staff name: B
+      Extend 8.0e-2
+    staff name: T
+      Extend 8.0e-2
+      ArpDelta 0.1
+  [  2: 1+     ]
+    staff name: T
+      SetTempo Nothing 80.0 False
+  [  3: 1+     ]
+    staff name: B
+      LeftSideShift 6.25e-2
+  [  3: 4+     ]
+    staff name: B
+      Adjust2 True (-1.0) 6.25e-2
+staves:
+staff name: B
+  max true end: [  5: 1+     ]
+  MarkDs
+staff name: T
+  max true end: [  5: 1+     ]
+  MarkDs

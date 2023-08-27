@@ -183,7 +183,7 @@ data TempoMark =
   { tmOrigLoc :: Loc }
   deriving(Show)
   
-
+-- Questions August 2023: what is the difference between a TimeModMark and an UnitTimeMark?
 data TimeModMark =
   TmmAbsWarp
   { tmmWarpSide :: WarpSide
@@ -202,7 +202,11 @@ data TimeModMark =
      | TmmAdjust
   { tmmGlobFlag :: Bool
   , tmmDbl     :: Double
+  }  | TmmShift
+  { tmmWarpSide :: WarpSide
+  , tmmDbl :: Double 
   }
+
   deriving(Show)
 
 
@@ -270,6 +274,25 @@ data AbsTimeMap = AbsTimeMap (Map Loc Double)
 data Warp2Data = Warp2Data Loc Loc Double RampEndWhereOne
 
 
+-- TmmAbsWarp -- there's a UnitAbsWarp
+-- { tmmWarpSide :: WarpSide
+-- , tmmDbl  :: Double
+-- }
+--    | TmmPause -- there's a UnitPause
+-- { tmmDbl     :: Double
+-- }
+--    | TmmAfterPause -- there's a UnitPostPause
+-- { tmmDbl     :: Double 
+-- }
+--    | TmmW
+--    | TmmBoundary
+-- { tmmMaybeDbl :: Maybe Double
+-- }
+--    | TmmAdjust -- there's a UnitAdjust
+-- { tmmGlobFlag :: Bool
+-- , tmmDbl     :: Double
+-- }
+
 -- UnitWarp with the Either field as Left:
 --
 --    the first Loc is at the warp mark.
@@ -301,6 +324,12 @@ data UnitTimeMod = -- UnitRamp  Loc Loc Double Double
                     -- which there is no alteration in time), amount of warp in 
                     -- 10's of milliseconds per octave. 
                  | UnitWarpByPitch Loc Loc Double Double
+                    -- This does a warp on either left side (Loc to -1 quarter) or
+                    -- right side (Loc to +1 quarter) by the given relative change
+                    -- in duration (Double). A negative Double means reduce the 
+                    -- duration, positive means increase it.
+                 | UnitLeftSideShift Loc Double
+                 | UnitRightSideShift Loc Double
 
 
 -- what kinds of unit warps do we need?
@@ -343,7 +372,18 @@ data Utm =
               , utmTempo1      :: Double
               , utmTempo2      :: Double
               }
+  |
+  UtmLShift   { utmStaffN      :: Maybe String
+              , utmLoc         :: Loc
+              , utmAmt         :: Double
+              }
+  |
+  UtmRShift   { utmStaffN      :: Maybe String
+              , utmLoc         :: Loc
+              , utmAmt         :: Double
+              }
     
+
 
 data UtmRampShape = UrsFlat | UrsTowardEnd | UrsFromBeg
   deriving(Show)

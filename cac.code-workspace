@@ -13,7 +13,7 @@
             "path": "src/Translation"
         },
         {
-            "path": "src/XmlDoc"
+            "path": "src/MidiFile"
         }
     ]
 }

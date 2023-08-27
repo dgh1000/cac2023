@@ -9,6 +9,12 @@ data Short = Short Double Int Int Int Int
              deriving (NFData,Generic,Show)
 
 
+data FileMessage = 
+     FMNoteOn Double Int Int Int
+  |  FMNoteOff Double Int Int Int
+  |  FMCtrl Double Int Int Int
+  deriving (NFData,Generic,Show)
+
 data ShortWithMsg = ShortWithMsg Double Int Int Int Int (Maybe String)
 
 

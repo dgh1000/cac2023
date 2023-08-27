@@ -162,11 +162,15 @@ data Mark a = SymbolMark String Int
             | Lev2DynL Double a
             | Lev2DynR Double a
             | Lev2DynLR Double a
+                -- time shift amount as fraction of level 1 tempo at this
+                -- point. ramp flag.
             | TimeShift (Maybe a) a Bool
             | SpliceBeg String
             | SpliceEnd String
-                -- time shift amount as fraction of level 1 tempo at this
-                -- point. ramp flag.
+            -- LeftSideShift compresses or stretches the quarter duration just to the left
+            -- of the Loc of this mark. Negative 'a' means compress, positive a means stretch.
+            | LeftSideShift a
+            | RightSideShift a
             deriving(Show)
 
 

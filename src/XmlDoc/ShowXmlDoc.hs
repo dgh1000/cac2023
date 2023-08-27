@@ -3,7 +3,7 @@ module XmlDoc.ShowXmlDoc where
 
 
 import Text.Printf
-import Text.XML.Light
+-- import Text.XML.Light
 import Data.Maybe
 import qualified Data.Map as M
 import Data.Map(Map)
@@ -92,6 +92,8 @@ showXPitch :: XPitch -> String
 showXPitch (XPitch step alter octave) = printf "%s%s%d" step sAlter octave
   where
     sAlter = case alter of
+      -2 -> "bb"
       -1 -> "b"
       0  -> ""
       1  -> "#"
+      2  -> "##"

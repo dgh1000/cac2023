@@ -4,6 +4,7 @@ module Translation.ToMidi where
 
 import qualified Data.Map as M
 import qualified Data.List as L
+import Data.Bits
 import Data.Function
 import Control.Arrow
 import Data.Array
@@ -67,11 +68,9 @@ analyzePcRepetition = do
   return $ "\n" ++ concatMap (flip toString allPitches) [0..11]
       
 
--- toMidi
---
---   - initialize
-toMidi :: (Int,Maybe Int) -> [String] -> Tr ([SNote],[Short])
-toMidi (begMsr,mEndMsr) splicePts = do
+-- toMidiFile
+toMidiFile :: (Int,Maybe Int) -> [String] -> Tr ([SNote],[FileMessage])
+toMidiFile (begMsr,mEndMsr) splicePts = do
 
   -- analyze repetitions of pitch classes
   msg <- analyzePcRepetition
@@ -100,11 +99,50 @@ toMidi (begMsr,mEndMsr) splicePts = do
   currNotes <- concat `liftM` gets (view notesOut)
   currRaws  <- concat `liftM` gets (view rawsOut)
   (notes2,raws2) <- spliceEverything splicePts (currNotes,currRaws)
-  let (newNotes,newRaws) = normalize 0.1 (notes2,raws2)
+  -- let (newNotes,newRaws) = normalize 0.1 (notes2,raws2)
   initRaws  <- concat `liftM` gets (view initRaws)
 
   -- convert notes, raws, and init raws into shorts
-  -- 
+  return (notes2,convertToFileMsgs notes2 raws2 initRaws)
+
+
+-- toMidi
+--
+--   - initialize
+toMidi :: (Int,Maybe Int) -> [String] -> Tr ([SNote],[Short])
+toMidi (begMsr,mEndMsr) splicePts = do
+
+  -- analyze repetitions of pitch classes
+  msg <- analyzePcRepetition
+  
+  -- find end measure
+  score <- gets (view score)
+  let endMsr = case mEndMsr of
+        Just x  -> x
+        Nothing -> findEndMsr begMsr splicePts score
+
+  -- make time maps
+  makeTimeMaps
+
+  -- make loudness curves
+  makeLoudnessCurvesTr2
+
+  -- make control curves
+  -- makeControlCurves
+  
+  -- ***Run*** each meta instrument by calling 'callMetaRun'
+  metas <- gets (M.toList . view metas)
+  mapM_ (callMetaRun begMsr endMsr) metas 
+
+  -- this will normalize notes to start 0.1 seconds into the track
+  -- mSpliceBegEnd <- getSpliceTimes maybeSplicePoint
+  currNotes <- gets (concat . view notesOut)
+  currRaws  <- gets (concat . view rawsOut)
+  (notes2,raws2) <- spliceEverything splicePts (currNotes,currRaws)
+  let (newNotes,newRaws) = normalize 0.1 (notes2,raws2)
+  initRaws  <- gets (concat . view initRaws)
+
+  -- convert notes, raws, and init raws into shorts
   return (newNotes,convertToShorts newNotes newRaws initRaws)
 
 
@@ -130,7 +168,7 @@ prepareMetaRun msrB msrE instr = do
   let sNoteMap = M.fromList $ map fst out
       bounds = mconcat $ map snd out
   case maybeBounds bounds of
-        Nothing -> ("no notes; skipping " ++ (iName instr)) `trace`
+        Nothing -> ("no notes; skipping " ++ iName instr) `trace`
                    return Nothing
         Just bs -> return $ Just $ MetaPrepared sNoteMap bs
 
@@ -197,7 +235,7 @@ offsetOne d note@SNote{snOnOff = oo@((_,(t1,t2)):_)} = note {snOnOff = new}
 gsToUtms :: Tr [Utm]
 gsToUtms = do
   comIn <- computeGsCombined
-  timeSigs <- scTimeSigs `liftM` gets (view score) 
+  timeSigs <- gets (scTimeSigs . view score) 
   --  'f'
   --  Input: MetaInstr
   --  Algorithm: check staves that are part of this meta. Example all input
@@ -291,6 +329,7 @@ makeTimeMaps = do
   let baseTimeMap = computeBaseTimeMap score 1
 
   -- Now compute unit time mods (Utms)
+
   let tmsMarks = computeDirectUtms marks
   tmsShapes <- gsToUtms
   let tms = L.sortBy (compare `on` utmRank) $ tmsMarks ++ tmsShapes
@@ -299,19 +338,57 @@ makeTimeMaps = do
   let tmsGlob = filter ((==Nothing) . utmStaffN) tms
       tm2 = foldl (ATM2.applyTimeMod timeSigs) baseTimeMap tmsGlob
   
-  tm3 <- randomizeTimeMap tm2
+  -- tm3 <- randomizeTimeMap tm2
   let doStaffTimeMap :: String -> RelTimeMap -> RelTimeMap
       doStaffTimeMap staffN tmIn = tmOut 
         where
           tmOut = foldl (ATM2.applyTimeMod timeSigs) tmIn xs
-          xs = filter ((==(Just staffN)) . utmStaffN) tms
-      unalteredMaps = M.fromList $ map (id &&& const tm3) staffNames
+          xs = filter ((==Just staffN) . utmStaffN) tms
+      unalteredMaps = M.fromList $ map (id &&& const tm2) staffNames
       finalRelMaps = M.mapWithKey doStaffTimeMap unalteredMaps
       absMaps = M.map toAbsolute finalRelMaps
   -- modify (\s -> s { tsTimeMaps = absMaps
   --                 , tsRelTimeMaps = finalRelMaps })
   modify (set timeMaps absMaps . set relTimeMaps finalRelMaps)
 
+convertToFileMsgs :: [SNote] -> [TrRaw] -> [TrRaw] -> [FileMessage]
+convertToFileMsgs notes raws initRaws = out
+  where 
+    notesAsFMs = concatMap noteToFileMessage notes
+    rawsAsFMs = map rawToFileMessage raws
+    initRawsAsFMs = map rawToFileMessage initRaws
+    out = case notesAsFMs of
+      [] -> throwMine "no notes, in convertToFileMsgs in ToMidi2.hs"
+      _  -> notesAsFMs ++ rawsAsFMs ++ initRawsAsFMs
+
+
+noteToFileMessage :: SNote -> [FileMessage]
+noteToFileMessage SNote { snOnOff = (_,(t1,t2)):_
+                        , snDest = (_,chan)
+                        , snPitch = pit
+                        , snVel   = vel
+                        , snMods  = mods } = 
+    [FMNoteOn t1 chan pit vel, FMNoteOff t2 chan pit 64] ++
+    modsOut
+  where
+    modsOut = concatMap (toFileMessageMod t1 t2 chan) mods
+
+-- data TrRaw = TrRaw
+--   { trStaffName :: String
+--   , trTime      :: Double
+--   , trDest      :: (Int,Int)
+--   , trStatus    :: Int
+--   , trData1     :: Int
+--   , trData2     :: Int
+--   }
+rawToFileMessage :: TrRaw -> FileMessage
+rawToFileMessage r = case trStatus r of
+    0xB0 -> FMCtrl t chan controller value
+  where
+    t = trTime r
+    chan = snd $ trDest r
+    controller = trData1 r
+    value = trData2 r
 
 -- convertToshorts
 --
@@ -328,6 +405,8 @@ convertToShorts notes raws initRaws = out
       [] -> throwMine "no notes, in convertToShorts in ToMidi2.hs"
       _  -> notesAsShort ++ rawsAsShort ++ initRawsAsShort
 
+-- we need to redefine short to get this into midi file.. for example need to know type
+-- of message 
 
 noteToShort :: SNote -> [Short]
 noteToShort SNote { snOnOff = (_,(t1,t2)):_
@@ -357,6 +436,18 @@ toShortMod t1 t2 (stream,chan) (ModifCtrl timing ctrlNum value) =
     tOn = case timing of
       Left d -> t1+d
 
+toFileMessageMod :: Double -> Double -> Int -> Modif -> [FileMessage]
+toFileMessageMod t1 t2 chan (ModifKs timing key) = 
+    [FMNoteOn tOn chan key 64, FMNoteOff tOff chan key 64]
+    where
+      tOn = case timing of
+          Left d -> t1+d
+      tOff = tOn + 0.05
+toFileMessageMod t1 t2 chan (ModifCtrl timing ctrlNum value) = 
+    [FMCtrl tOn chan ctrlNum value]
+    where
+      tOn = case timing of
+        Left d -> t1 + d
 
 
 rawToShort :: TrRaw -> Short

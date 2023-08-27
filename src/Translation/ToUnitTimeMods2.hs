@@ -68,11 +68,13 @@ computeTmMarks m = M.mapMaybeWithKey g m
     f :: Loc -> MarkD -> Maybe TimeModMark
     f l (AbsWarp ws amt) = Just $ TmmAbsWarp ws amt
     f l (Pause amt)      = Just $ TmmPause amt
-    f l W                = Just $ TmmW  
+    f l W                = Just TmmW  
     f l (Boundary2 mAmt)     = Just $ TmmBoundary mAmt
     f l (Adjust2 flag _ amt) = Just $ TmmAdjust flag amt
     f l (PostPause amt)   = Just $ TmmAfterPause amt
-    f _ _                 = Nothing
+    f l (LeftSideShift amt) = Just $ TmmShift LeftWarp amt
+    f l (RightSideShift amt) = Just $ TmmShift RightWarp amt
+    f _ _ = Nothing
 
 
 -- computeUtms2
@@ -81,12 +83,13 @@ computeUtms2 :: Map Loc (Map String [TimeModMark]) -> [Utm]
 computeUtms2 m1 = concatMap g $ M.toList m1
   where
     g :: (Loc,Map String [TimeModMark]) -> [Utm]
-    g (loc,m2) = concatMap (h loc) $ M.elems m2
-    -- g :: Loc -> Map String [TimeModMark] -> [Utm]
-    -- g loc m = concat . M.mapWithKey (h loc)
-    h :: Loc -> [TimeModMark] -> [Utm]
-    h loc ms = concatMap (toUtm1 loc) ms
-
+    g (loc,m2) = concatMap k staffMarks
+      where
+        staffMarks :: [(String,[TimeModMark])]
+        staffMarks = M.toAscList m2
+        k :: (String,[TimeModMark]) -> [Utm]
+        k (staffN,marks) = concatMap (toUtm1 loc staffN) marks
+        
 
 type TmmMap = Map String (Map Loc [TimeModMark])
 
@@ -96,15 +99,24 @@ type TmmMap = Map String (Map Loc [TimeModMark])
 --   Convert a single TimeModMark to one or more Utms.
 --
 --   Inputs: Loc of mark, 
-toUtm1 :: Loc -> TimeModMark -> [Utm]
-toUtm1 loc (TmmAbsWarp _ _) = 
+
+toUtm1 :: Loc -> String -> TimeModMark -> [Utm]
+toUtm1 loc staffN t@(TmmShift side amt) = printf "%s: %s %s" (showLoc2 loc) staffN (show t) `trace`
+  toUtm1' loc staffN t
+toUtm1 a b c = toUtm1' a b c
+
+toUtm1' :: Loc -> String -> TimeModMark -> [Utm]
+toUtm1' loc staffN (TmmAbsWarp _ _) = 
   throwMine $ printf "%s: absolute warp not implemented" (showLoc2 loc)
-toUtm1 loc (TmmPause amt) = [UtmPause Nothing loc amt]
-toUtm1 loc (TmmAfterPause amt) = [UtmPostPause Nothing loc amt]
-toUtm1 _ TmmW = []
-toUtm1 loc (TmmBoundary _) =
+toUtm1' loc staffN (TmmPause amt) = [UtmPause Nothing loc amt]
+toUtm1' loc staffN (TmmAfterPause amt) = [UtmPostPause Nothing loc amt]
+toUtm1' loc staffN (TmmShift side amt) = case side of
+  LeftWarp -> [UtmLShift (Just staffN) loc amt]
+  RightWarp -> [UtmRShift (Just staffN) loc amt]
+toUtm1' _ staffN TmmW = []
+toUtm1' loc staffN (TmmBoundary _) =
   throwMine $ printf "%s: boundaries/adjusts not implemented" (showLoc2 loc)
-toUtm1 loc (TmmAdjust _ _) =
+toUtm1' loc staffN (TmmAdjust _ _) =
   throwMine $ printf "%s: boundaries/adjusts not implemented" (showLoc2 loc)
 
 
@@ -120,6 +132,8 @@ utmRank (UtmRamp _ _ _ _ _)         = -1
 utmRank (UtmWarp _ _ _ _ (Left _))  = 0
 utmRank (UtmPause _ _ _)            = 1
 utmRank (UtmPostPause _ _ _)        = 2
-utmRank (UtmWarp _ _ _ _ (Right _)) = 3
+utmRank (UtmLShift _ _ _)           = 3
+utmRank (UtmRShift _ _ _)           = 4
+utmRank (UtmWarp _ _ _ _ (Right _)) = 5
 
   

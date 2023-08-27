@@ -65,4 +65,9 @@ instance ShowItemClass RelTimeMap where
       g (loc,t) = SingleLine $ printf "%s: %5.4f" (showLoc2 loc) t
 
 
-  
+instance ShowItemClass MetaPrepared where
+  showI (MetaPrepared snotes range) = Component "MetaPrepared" True [showRange,showSNotes]
+    where 
+      showRange = SingleLine $ printf "Range: %s %s" (showLoc2 $ fst range) (showLoc2 $ snd range)
+      showSNotes = Component "SNotes" True (map g $ M.toAscList snotes)
+      g (staffN,snotesList) = Component ("Staff name: " ++ staffN) True (map showI snotesList)

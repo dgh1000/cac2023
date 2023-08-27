@@ -40,9 +40,6 @@ instance ShowItemClass MarkDList where
 ----------------------------------------------------------------------
 --          instance of ShowItemClass for Staff
 
-instance ShowItemClass Staff where
-  showI = error "instance TBD"
-
 
 ----------------------------------------------------------------------
 --          instance of ShowItemClass for Score
@@ -54,8 +51,8 @@ instance ShowItemClass Score where
         -- Component "Time signatures" True 
         -- (map (\(num,TimeSig numer denom) -> SingleLine $ printf "%3d: %2d/%2d"
         --       num numer denom) . M.toAscList $ timeSigs)
-        shownMarks
-      , showI staves2
+        Component "marks:" True (map showI $ M.toAscList marks)
+      , Component "staves:" False (map showI $ M.toAscList staves)
       ]
       
     where
@@ -67,7 +64,13 @@ instance ShowItemClass Score where
       staves2 :: ShowMap String Staff
       staves2 = ShowMap staves
 
+type LocatedMarks = (Loc,Map String [MarkD])
+instance ShowItemClass LocatedMarks where
+  showI (loc,m) = Component (showLoc2 loc) True (map showI $ M.toAscList m)
 
+type StaffMarks = (String,[MarkD])
+instance ShowItemClass StaffMarks where
+  showI (name,marks) = Component ("staff name: " ++ name) True (map showI marks)
 
 myTransformMap :: forall a b c d.
   Map a (Map b c) -> (c -> d) -> ShowMap a (ShowMap b d)
@@ -101,26 +104,31 @@ instance Showable LocMergedNumTechnique where
 {-
 
        stuff removed April 2019
-
+-}
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 --                        Staff
 
+type NamedStaff = (String,Staff)
+-- instance ShowItemClass NamedStaff where
+--   showI (name,staff) = Component ("staff name: " ++ name) True (showI staff)
 
 
-
-instance ShowListClass Staff where
-  showL (Staff _ dyns hairp ped metMarks maxEnd _ slurs chords) =
-    [ Component "Dynamics"  True [showI $  WrappedMap dyns]
-    , showI ("Hairpins",     map (SingleLineTup 20 20) $ M.toAscList hairp)
-    , showI ("Pedal events", map (SingleLineTup 20 20) $ M.toAscList ped)
-    , SingleLine $ printf "max true end: %s" (showLoc2 maxEnd)
+-- instance ShowListClass Staff where
+instance ShowItemClass NamedStaff where
+  showI (name, Staff _ dyns hairp ped metSymMarks maxEnd _ slurs chords _ _ _) =
+    Component ("staff name: " ++ name) True
+    [ -- Component "Dynamics"  True [showI $  WrappedMap dyns]
+      -- showI ("Hairpins",     map (SingleLineTup 20 20) $ M.toAscList $ M.unions hairp)
+      -- , showI ("Pedal events", map (SingleLineTup 20 20) $ M.toAscList ped)
+      SingleLine $ printf "max true end: %s" (showLoc2 maxEnd)
     -- , Component "True ends"    True (map showI . M.toAscList $ trEnds)
     -- , Component "Time map"     True (map showI . M.toAscList $ timeMap)
-    , Component "slurs" True $ map showI $ M.toAscList slurs
+    -- , Component "slurs" True $ map showI $ M.toAscList slurs
+    , Component "MarkDs" True $ map showI $ M.toAscList metSymMarks
     -- , Component "brackets" True $ map showBr $ M.toAscList brackets
-    ] ++ showL (WrappedMap chords) 
+    ] -- ++ showL (WrappedMap chords) 
     where
       showBr (name,locPairs) = Component name True (map g locPairs)
         where
@@ -146,10 +154,15 @@ instance ShowItemClass LocLoc where
 ----------------------------------------------------------------------
 --                      showing Marks
 
+type LocManyMarkD = (Loc,[MarkD])
+
+instance ShowItemClass LocManyMarkD where
+  showI (loc,marks) = Component (showLoc2 loc) True (map showI marks)
+
 instance ShowItemClass MarkD where
   showI (TrillShapeMark (TrillShape step1 segs step2)) =
     SingleLine $ printf "Trill shape: %s %s; %s" (show step1) (show step2)
-      ((concatMap (\(f1,d2) -> printf "%8.3f %d, " f1 d2) segs) :: String)
+      (concatMap (uncurry (printf "%8.3f %d, ")) segs :: String)
   showI x = SingleLine $ show x 
   
 
@@ -164,7 +177,7 @@ instance ShowListClass (Map Int Chord) where
   showL = map g . M.toAscList
     where
       g :: (Int,Chord) -> ShowItem
-      g (vn,Chord endLoc mods notes) = 
+      g (vn,Chord endLoc mods notes _) = 
           Component (printf "Voi %d chord: end:%s %s"
                      vn (showLoc2 endLoc)
                      (concatMap (\m -> " " ++ show m) $ S.toList mods))
@@ -209,6 +222,7 @@ instance ShowItemClass Dynamic where
     level vn
   showI (Fp vn) = SingleLine $ printf "Fp voice:%d" vn
 
+{-
 type LocHairpin = (Loc,Hairpin)
 instance ShowItemClass LocHairpin where
 
@@ -220,7 +234,7 @@ instance ShowItemClass LocHairpin where
 instance ShowStringClass Hairpin where
   showS (Hairpin type_ end) = printf "%11s end:%s"
                                 (show type_) (showLoc2 end)
-
+-}
 
 type LocTexts = (Loc,[Text])
 instance ShowItemClass LocTexts where
@@ -235,7 +249,7 @@ instance ShowItemClass LocPedalEvt where
   showI (loc,p) = SingleLine $ printf "%s %12s" (simpleShowLoc loc) (show p)
 
 
--}
+
 
 {-
 

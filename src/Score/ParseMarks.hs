@@ -311,9 +311,22 @@ level two dynamic
 -- We need to write generic functions that change these to UnitTimeMod
 -- 
 --
+
+-- left shift
+--  (|-0.5 
+--
+--    a left shift is an adjustment of the duration of the quarter note prior to the Loc
+--    of this mark. The amount is a change in duration.
+--
+-- right shift
+--  |)0.5
+--
+--    a right shift is similar to left shift, only that it adjusts the duration of the quarter
+--    note following this mark.
+
 computeWordMarks :: Map String (Map Loc [WordDirection]) ->
                     Map Loc (Map String [MarkD])
-computeWordMarks m = computeWordMark_x ma mb
+computeWordMarks m = computeWordMarkX ma mb
   where
     ma = M.map (lMapMaybe maybeAbove) m
     mb = M.map (lMapMaybe maybeBelow) m
@@ -323,10 +336,10 @@ computeWordMarks m = computeWordMark_x ma mb
     maybeBelow _           = Nothing
 
 
-computeWordMark_x :: Map String (Map Loc [String]) ->
+computeWordMarkX :: Map String (Map Loc [String]) ->
                      Map String (Map Loc [String]) ->
                      Map Loc (Map String [MarkD])
-computeWordMark_x mAbove mBelow = M.unionWith (M.unionWith (++))
+computeWordMarkX mAbove mBelow = M.unionWith (M.unionWith (++))
     marksAbove marksBelow 
   where
     -- marksBleow
@@ -335,7 +348,7 @@ computeWordMark_x mAbove mBelow = M.unionWith (M.unionWith (++))
     marksBelow :: Map Loc (Map String [MarkD])
     marksBelow = M.mapWithKey toMM marksBelow'
     toMM :: Loc -> Map String [MarkN] -> Map String [MarkD]
-    toMM loc m = M.map (map (toMarkD vars loc)) m
+    toMM loc = M.map (map (toMarkD vars loc))
     z :: Map String (Map Loc [RawMark NumVar])
     z = M.map parseWord mAbove
     x :: Map Loc (Map String [RawMark NumVar])
@@ -415,11 +428,14 @@ toMarkD vars loc mIn = f mIn
     f (CtrlSetting c)        = CtrlSetting  c
     f (SpliceBeg s)     = SpliceBeg s
     f (SpliceEnd s)     = SpliceEnd s
+    f (LeftSideShift nv) = LeftSideShift (g nv)
+    f (RightSideShift nv) = RightSideShift (g nv)
     k (GsLeft c amt)   = GsLeft c $ fmap g amt 
     k (GsOneLoc c amt) = GsOneLoc c $ fmap g amt 
     k (GsRight c)      = GsRight c
     k2 (CscLeft c amt)  = CscLeft c $ fmap g amt
     k2 (CscRight c) = CscRight c
+
     
 
 ----------------------------------------------------------------------
@@ -554,7 +570,9 @@ mark = setTempo <|> arp <|> stac <|> trunc <|> ltrunc <|>
        rampEnd <|> rit <|> accel <|> trillShapeMark <|> tremShapeMark <|>
        bracketL <|> bracketR <|> patch <|> artic <|> boundary <|> adjust <|>
        midiCtrl <|> postPause <|> genericOneLoc <|> genericLeft <|>
-       genericRight <|> spliceBeg <|> spliceEnd <|> ctrlSetting
+       genericRight <|> spliceBeg <|> spliceEnd <|> ctrlSetting <|>
+       leftShift <|> rightShift
+
 
 
 midiCtrl :: Parser MarkN
@@ -649,6 +667,7 @@ absWarp =
 
 
 endsLikeAbsWarp = try (string ">>" >> eof)
+
 
 
 postPause = do
@@ -858,6 +877,7 @@ genericOneLoc = do
 
 genericLeft :: Parser MarkN
 genericLeft = do
+  notFollowedBy $ string "(("
   char '('
   typ <- many1 alphaNum
   let oneParam = do char ','
@@ -881,6 +901,19 @@ genericCenter = try $ do
   eof
   return $ GenericShape (GsCenter typ)
 
+leftShift :: Parser MarkN
+leftShift = do
+  try $ string "(("
+  nv <- numVar
+  eof
+  return $ LeftSideShift nv
+
+rightShift :: Parser MarkN
+rightShift = try $ do
+  nv <- numVar
+  try $ string "))"
+  eof
+  return $ RightSideShift nv
 {-
 controlLeft :: Parser MarkN
 controlLeft = do

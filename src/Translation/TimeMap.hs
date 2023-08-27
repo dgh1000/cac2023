@@ -19,6 +19,10 @@ import Translation
 import Translation.ApplyTimeMod2
 import Translation.ToUnitTimeMods2
 import Score.ScoreData
+    ( Mark(RampEndBeg, SetTempo, RitAccel, RampBeg, RampEnd),
+      MarkD,
+      Score(scStaves, scTimeSigs, scMarks),
+      Staff(stMaxTrueEnd) )
 import Util.Exception
 import Util.Math
 import Util.Map
@@ -33,7 +37,6 @@ import Common
 --
 -- 
 
-
 computeBaseTimeMap :: Score -> Double -> RelTimeMap 
 computeBaseTimeMap score ratio = RelTimeMap tm2
   where
@@ -41,9 +44,11 @@ computeBaseTimeMap score ratio = RelTimeMap tm2
     mte = Loc (msrNum mte' + 1) (beat mte')
     timeSigs = scTimeSigs score
     -- parse level 1 tempos
+    -- The MarkD constructors this responds to are SetTempo and RitAccel.
     t1s = filterLev1Tempos timeSigs $ scMarks score
     tm1 = doSegmentsLev1 timeSigs t1s mte
     -- add level 2 tempos
+    -- The MarkD constructors this responds to are RampBeg, RampEnd, and RampEndBeg
     t2s = filterLev2Tempos timeSigs $ scMarks score
     tm2 = doLevel2 timeSigs t2s tm1
 

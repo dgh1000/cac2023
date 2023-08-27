@@ -156,25 +156,40 @@ playRawEvents streams absBegin shorts = do
              ((fromIntegral . fst $ lt)/1000::Double)
   playRawEvents' streams absBegin tuples
 
+type StreamId = Int
+type MidiStatus = Int
+type MidiData0 = Int
+type MidiData1 = Int
+type Evt = (StreamId,MidiStatus,MidiData0,MidiData1)
+type TimeStampEvt = (Integer,Evt)
 
-playRawEvents' _ _ [] = putStrLn "\nDone." >> return ()
-playRawEvents' streams absBegin ((t,(streamId,x,y,z)):remain) = do
+playRawEvents' :: [PMStream] -> Integer -> [TimeStampEvt] -> IO ()
+playRawEvents' _ _ [] = void (putStrLn "\nDone.")
+playRawEvents' streams absBegin evts@((t,_):_) = do
+  -- let (sameTime,remainTimes) = takeEventsWhile evts
+  let (sameTimes,remainEvts) = L.span ((==t) . fst) evts
   spinUntil $ absBegin+t
-  when (streamId >= length streams || streamId < 0) 
-    (throwMine $ "In playRawEvents', got stream id greater than number " ++
+  forM_ sameTimes (\(_,(streamId,x,y,z)) -> do
+    when (streamId >= length streams || streamId < 0) 
+      (throwMine $ "In playRawEvents', got stream id greater than number " ++
        "of MIDI streams available, OR LESS THAN ZERO")
-  writeShort (streams !! streamId) $ toPMEvent (x,y,z)
-  playRawEvents' streams absBegin remain
+    writeShort (streams !! streamId) $ toPMEvent (x,y,z))
+  playRawEvents' streams absBegin remainEvts
+
+-- takeEventsWhile :: [TimeStampEvt] -> ([Evt],[TimeStampEvt])
+-- takeEventsWhile [] = throwMine "empty list in Interface:takeEventsWhile" 
+-- takeEventsWhile l@((t,evt):remain) = (map snd same,remain)
+--   where
+--     (same,remain) = L.span ((==t) . fst) l
 
 configDurTimeClick = 0.001
-
 
 -- spinUntil: takes number of milliseconds
 spinUntil :: Integer -> IO ()
 spinUntil t = do
-  threadDelay 500
+  threadDelay 50
   c <- time
-  if fromIntegral c < t then spinUntil t else return ()
+  when (fromIntegral c < t) $ spinUntil t
 
 
 ----------------------------------------------------------------------

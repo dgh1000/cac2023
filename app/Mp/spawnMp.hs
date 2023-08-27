@@ -252,6 +252,7 @@ data RunOnceArg = RoPlay Int (Maybe Int) (Maybe String) (Maybe String)
                 | RoSendCtrl Int Int Int Int
 
 
+-- example: "p2-3{}{}"
 showArgData (RoPlay mBeg mEnd mSolo mSplice) =
   printf "p%d-%d{%s}{%s}"
          mBeg
