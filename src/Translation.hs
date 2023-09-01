@@ -186,25 +186,27 @@ data TempoMark =
 -- Questions August 2023: what is the difference between a TimeModMark and an UnitTimeMark?
 data TimeModMark =
   TmmAbsWarp
-  { tmmWarpSide :: WarpSide
-  , tmmDbl  :: Double
+  { tmmWarpSide  :: WarpSide
+  , tmmDbl       :: Double
   }
      | TmmPause
-  { tmmDbl     :: Double
+  { tmmDbl       :: Double
   }
      | TmmAfterPause
-  { tmmDbl     :: Double 
+  { tmmDbl       :: Double 
   }
      | TmmW
      | TmmBoundary
   { tmmMaybeDbl :: Maybe Double
   }
      | TmmAdjust
-  { tmmGlobFlag :: Bool
-  , tmmDbl     :: Double
+  { tmmWarpSide :: WarpSide
+  , tmmDur      :: Double
+  , tmmAmt      :: Double
   }  | TmmShift
   { tmmWarpSide :: WarpSide
-  , tmmDbl :: Double 
+  , tmmDur      :: Double
+  , tmmAmt      :: Double    -- time shift in seconds
   }
 
   deriving(Show)
@@ -274,24 +276,6 @@ data AbsTimeMap = AbsTimeMap (Map Loc Double)
 data Warp2Data = Warp2Data Loc Loc Double RampEndWhereOne
 
 
--- TmmAbsWarp -- there's a UnitAbsWarp
--- { tmmWarpSide :: WarpSide
--- , tmmDbl  :: Double
--- }
---    | TmmPause -- there's a UnitPause
--- { tmmDbl     :: Double
--- }
---    | TmmAfterPause -- there's a UnitPostPause
--- { tmmDbl     :: Double 
--- }
---    | TmmW
---    | TmmBoundary
--- { tmmMaybeDbl :: Maybe Double
--- }
---    | TmmAdjust -- there's a UnitAdjust
--- { tmmGlobFlag :: Bool
--- , tmmDbl     :: Double
--- }
 
 -- UnitWarp with the Either field as Left:
 --
@@ -375,14 +359,16 @@ data Utm =
   |
   UtmLShift   { utmStaffN      :: Maybe String
               , utmLoc         :: Loc
-              , utmAmt         :: Double
+              , utmDur         :: Double
+              , utmAmt         :: Double  -- delta change in seconds
               }
   |
   UtmRShift   { utmStaffN      :: Maybe String
               , utmLoc         :: Loc
-              , utmAmt         :: Double
+              , utmDur         :: Double
+              , utmAmt         :: Double  -- delta change in seconds
               }
-    
+  deriving(Show)    
 
 
 data UtmRampShape = UrsFlat | UrsTowardEnd | UrsFromBeg
@@ -392,6 +378,20 @@ data UtmRampShape = UrsFlat | UrsTowardEnd | UrsFromBeg
 data RampEndWhereOne = RewoBegin | RewoEnd
 
 
+-- Time Adjusts move arrival times backward or forward in time.
+-- This data represents an absolute change amount relative to 
+-- base time map. (Rather than change in relative time map.)
+-- 
+-- <loc>  location of the mark
+-- <String> staff name
+-- <side> make the change in slice durations to left or right
+--        sides
+-- <dur>  duration of slices (in quarters) to make changes to 
+-- <amt of absolute change from base time map in seconds>
+data TimeAdjustAbs = TimeAdjustAbs Loc String WarpSide Double Double
+-- Same thing as TimeAdjustRel but gives change in
+-- slice group duration in relative time map.
+data TimeAdjustRel = TimeAdjustRel Loc String WarpSide Double Double
 
 
 

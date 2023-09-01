@@ -32,7 +32,7 @@ spliceEverything splicePts (sns,raws) = "at splice" `trace` (do
       deltas = scanl (\x (y,z) -> x+z-y) 0 timePairs
       timePairs2 = zipWith (\(x,y) z -> (x-z,y-z)) timePairs deltas
       out :: ([SNote],[TrRaw])
-      out = let x = foldl doSplice (sns,raws) timePairs2 in ("timePairs: " ++ show timePairs) `trace` x
+      out = let x = foldl doSplice (sns,raws) timePairs2 in x
   return out)
 
 

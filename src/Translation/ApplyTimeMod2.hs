@@ -18,6 +18,9 @@ import Util.Exception
 import Util.Math
 import Score.ScoreData
 import Translation
+import Data.Maybe
+import Translation
+
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
@@ -61,6 +64,8 @@ generalWarp2 timeSigs (RelTimeMap tm) loc1 loc2 amt shape =
     -- 'newDur': new duration
     newDur = case amt of
       Left delta | delta+dur1 > 0 -> delta+dur1
+                 | otherwise      -> throwMine $ printf "Error in generalWarp2: delta:%.3f dur1:%.3f"
+                                      delta dur1
       Right x                     -> x
     simpleRatio = newDur/dur1
     deltaQuars :: Double
@@ -129,23 +134,26 @@ applyTimeMod timeSigs (RelTimeMap tm) (UtmRamp _ loc1 loc2 tempo1 tempo2) =
         r1 = scale 0 (fromRational s1) (fromRational s2) 0 1
         r = tempo1 * base ** r1
 
-applyTimeMod timeSigs tm (UtmLShift staffN loc amt) = shift timeSigs LeftWarp amt loc tm 
+applyTimeMod timeSigs tm (UtmLShift staffN loc dur amt) = shift timeSigs LeftWarp dur amt loc tm 
 
-applyTimeMod timeSigs tm (UtmRShift staffN loc amt) = shift timeSigs RightWarp amt loc tm 
+applyTimeMod timeSigs tm (UtmRShift staffN loc dur amt) = shift timeSigs RightWarp dur amt loc tm 
 
+shift :: Map Int TimeSig -> WarpSide -> Double -> Double -> Loc -> RelTimeMap -> RelTimeMap
+shift timeSigs warpSide  dur amtSeconds locA tm =
+  printf "warpSide:%s dur:%.4f amtSeconds:%.4f locA:%s" (show warpSide) dur amtSeconds (showLoc2 locA)
+  `trace` shift' timeSigs warpSide dur amtSeconds locA tm
 
-shift :: Map Int TimeSig -> WarpSide -> Double -> Loc -> RelTimeMap -> RelTimeMap
-shift timeSigs warpSide amtQuar locA tm = 
-    generalWarp2 timeSigs tm loc1 loc2 (Left deltaT) UrsFlat
+shift' :: Map Int TimeSig -> WarpSide -> Double -> Double -> Loc -> RelTimeMap -> RelTimeMap
+shift' timeSigs warpSide dur amtSeconds locA tm = 
+    generalWarp2 timeSigs tm loc1 loc2 (Left amtSeconds) UrsFlat
   where
     (loc1,loc2) | warpSide == LeftWarp  = (locBefore,locA)
                 | otherwise             = (locA,locAfter) 
-    locBefore = case locAddQuar timeSigs locA (-1) of
+    locBefore = case locAddQuar timeSigs locA (approxRational (-dur) (1/96)) of
       Just l -> l
-    locAfter = case locAddQuar timeSigs locA 1 of
+    locAfter = case locAddQuar timeSigs locA (approxRational dur (1/96)) of
       Just l -> l
     qd = avgQuarDur timeSigs tm loc1 loc2 
-    deltaT = qd * amtQuar
 
 
 {- 
@@ -306,3 +314,4 @@ applyTempoModify n items tmod = (sum $ map snd segs, segs)
         scale 1 (fromIntegral idx**2) (fromIntegral n**2) r1 r2
       TmRampParab r1 r2 True ->
         scale (fromIntegral n**2) (fromIntegral (n+1-idx)**2) 1 r1 r2
+

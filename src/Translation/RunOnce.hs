@@ -86,10 +86,10 @@ doPlay mBeg mEnd mSolo splicePts (RunData metasIn) = do
     Left err -> putStrLn ("boo:" ++ show err)
     Right streams -> do
       score <- readXml
-      {-
+      
       putStrLn "writing score.txt..."
          >> writeFile "score.txt" (showIString score)
-      -}
+      
       gen <- newStdGen
       let scoreStaffNs = M.keysSet $ scStaves score
       -- if a meta is solo, do that now

@@ -151,7 +151,6 @@ data Mark a = SymbolMark String Int
             | BracketR String
             | BracketC
             | Boundary2 (Maybe a)
-            | Adjust2 Bool Double a
             | MidiCtrl Int a Int -- <ctrl num> <value as numvar> <value as Int>
             | CtrlSetting String
             | GenericShape (GsContent a)
@@ -167,10 +166,26 @@ data Mark a = SymbolMark String Int
             | TimeShift (Maybe a) a Bool
             | SpliceBeg String
             | SpliceEnd String
-            -- LeftSideShift compresses or stretches the quarter duration just to the left
-            -- of the Loc of this mark. Negative 'a' means compress, positive a means stretch.
-            | LeftSideShift a
-            | RightSideShift a
+            -- Adjust <dur> <amt>: moves the arrival point of the mark location 
+            -- ('loc')
+            -- forward or backward in time by warping the interval of 'dur' 
+            -- quarters before 'loc' to increase its duration by 'amt' ('amt'
+            -- can be negative for moving arrival point earlier in time)
+            | AdjustL Double a
+            | AdjustR Double a
+            -- LeftSideShift <dur> <amt> 
+            -- compresses or stretches the interval (<current loc> - <dur>
+            -- <current loc>) by <amt> quarters.
+            -- of the Loc of this mark. Negative 'dur' means compress, 
+            -- positive a means stretch. Think of negative dur as moving
+            -- the on time of any note to the left (earlier)
+            | LeftSideShift a a
+            -- RightSideShift: same as LeftSideShift except changes 
+            -- the interval (<current loc>, <current loc> + <dur>),
+            -- and positive <dur> compresses and negative <dur>
+            -- stretches. Negative 'dur' will undo any previous
+            -- LeftSideShift with positive 'dur'. 
+            | RightSideShift a a
             deriving(Show)
 
 

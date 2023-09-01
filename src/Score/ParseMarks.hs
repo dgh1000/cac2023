@@ -416,7 +416,7 @@ toMarkD vars loc mIn = f mIn
     f (BracketL s s2 v) =  BracketL s s2 (fmap g v)
     f (BracketR s)           = BracketR s
     f (Boundary2 nv)         = Boundary2 $ fmap g nv
-    f (Adjust2 fl d nv1)     = Adjust2 fl d (g nv1)
+    f (AdjustL dur nv1)       = AdjustL dur (g nv1)
     f (MidiCtrl cn nv1 _)    = MidiCtrl cn (g nv1) (round $ g nv1)
     f (GenericShape c)       = GenericShape (k c)
     f (Lev1DynL v)           = Lev1DynL v
@@ -428,8 +428,8 @@ toMarkD vars loc mIn = f mIn
     f (CtrlSetting c)        = CtrlSetting  c
     f (SpliceBeg s)     = SpliceBeg s
     f (SpliceEnd s)     = SpliceEnd s
-    f (LeftSideShift nv) = LeftSideShift (g nv)
-    f (RightSideShift nv) = RightSideShift (g nv)
+    f (LeftSideShift nv1 nv) = LeftSideShift (g nv1) (g nv)
+    f (RightSideShift nv1 nv) = RightSideShift (g nv1) (g nv)
     k (GsLeft c amt)   = GsLeft c $ fmap g amt 
     k (GsOneLoc c amt) = GsOneLoc c $ fmap g amt 
     k (GsRight c)      = GsRight c
@@ -858,15 +858,16 @@ boundaryLeadingNumvar = do
 
 adjust :: Parser MarkN
 adjust = do
-  gf <- option True (char '^' >> return False)
-  c <- (char '-' >> return (-1)) <|> (char '+' >> return 1)
-  v <- numVar
-  return $ Adjust2 gf c v
+  char '^'
+  c <- option 1
+       ((char '-' >> return (-1)) <|> (char '+' >> return 1))
+  NumVar amt var <- numVar
+  return $ AdjustL 0.5 (NumVar (c * amt) var)
 
 
 genericOneLoc :: Parser MarkN
 genericOneLoc = do
-  try $ (char '!' >> notFollowedBy (char '!'))
+  try (char '!' >> notFollowedBy (char '!'))
   typ <- many1 alphaNum
   let oneParam = do char ','
                     numVar
@@ -904,16 +905,19 @@ genericCenter = try $ do
 leftShift :: Parser MarkN
 leftShift = do
   try $ string "(("
-  nv <- numVar
+  sign <- option 1 (char '-' >> return (-1))
+  (NumVar nvAmt var) <- numVar
   eof
-  return $ LeftSideShift nv
+  return $ LeftSideShift (NumVar 0.5 Nothing) (NumVar (nvAmt * sign) var)
 
 rightShift :: Parser MarkN
 rightShift = try $ do
-  nv <- numVar
+  sign <- option 1 (char '-' >> return (-1))
+  (NumVar nvAmt var) <- numVar
   try $ string "))"
   eof
-  return $ RightSideShift nv
+  return $ RightSideShift (NumVar 0.5 Nothing) (NumVar (nvAmt * sign) var)
+
 {-
 controlLeft :: Parser MarkN
 controlLeft = do

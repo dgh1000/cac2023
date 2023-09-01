@@ -398,3 +398,15 @@ mapVfyKeys staffNames m
   | otherwise = throwError "some extra or some missing"
 
 
+-- First round beats by round (n*x) / n. Then check if we are at beat 1 of
+-- next measure.
+roundToSlice :: Map Int TimeSig -> Loc -> Loc
+roundToSlice timeSigs (Loc msr beat) = Loc newMsr newBeat
+  where
+    numer = fromIntegral . tsNumer . fromJust . M.lookup msr $ timeSigs
+    n :: Rational
+    n = fromIntegral slicesPerBeat
+    b :: Rational
+    b = (fromIntegral $ round $ n*beat) / n
+    (newBeat,newMsr) | b <  numer+1 = (b, msr  )
+                     | b == numer+1 = (1, msr+1)
