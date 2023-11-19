@@ -11,6 +11,17 @@ import Control.Lens
 import Instruments
 import Translation
 import Translation.InstrUtils
+    ( includeInitRaws,
+      includeNotes,
+      includeRaws,
+      isCtrlSetting,
+      iuLookup2,
+      lookupStaffMarkLE,
+      lookupVel,
+      updateArp,
+      updateEndAlter,
+      updateLoud,
+      updateStac )
 import Translation.TimeMap
 import Translation.Trill
 import Translation.Curves
@@ -45,7 +56,7 @@ pianoRun instr pno2 metaPre = do
                     filter (\(n,_) -> n `elem` staffNs) . M.toList $
                     scMarksByStaff score
   mapM (doPnoStaff instr pno2 mergedMarks metaPre) staffNs
-    >>= (alterTOff . concat)
+    >>= (alterTOff True . concat)
     >>= includeNotes 
   computePedal pno2 metaPre staffNs >>= includeRaws
   

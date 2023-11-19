@@ -1,6 +1,6 @@
 
-{-# LANGUAGE TupleSections, TypeSynonymInstances, FlexibleInstances,
-    TemplateHaskell, FunctionalDependencies, MultiParamTypeClasses #-}
+{-# LANGUAGE TupleSections, FlexibleInstances, TemplateHaskell,
+    FunctionalDependencies #-}
 
 -- NOTES 2021
 -- what can Any do?
@@ -54,7 +54,7 @@ import Instruments
 -- NOTES 2021
 
 
-data VelocitySource = VsCurve (String -> VelCurve)
+data VelocitySource = VsCurve (SNote -> String -> VelCurve)
                     | VsArticulation
 
 
@@ -67,10 +67,15 @@ data AnySimple = AnySimple
   , _anySimpleDestFn       :: SNote -> String -> (Int,Int) -- artic
   , _anySimpleVelSource    :: VelocitySource
   , _anySimpleKsFn         :: SNote -> String -> Maybe Int -- artic input, maybe ks out
+  -- NOTE 2023: volume control events are attached to SNotes rather than being
+  --   separate raws, so there cannot be a smooth curve of vol. 
+  , _anySimpleModifFn      :: SNote -> String -> [Modif]
   , _anySimpleVolFn        :: String -> Either Int VelCurve
+  -- NOTE 2023: The following, exprFn, is never used.
   , _anySimpleExprFn       :: String -> Either Int VelCurve
   , _anySimpleAliases      :: [(String,String)]
   , _anySimpleStaffN       :: String
+  , _anySimpleConfigs      :: Map String [((String,Int),Int)]
   }
 
 
@@ -83,11 +88,13 @@ makeAny staffNs shapeFn accentAmt velCurve splitTrillFlag notesFn modFn =
      any = Any notesFn modFn
 
 
-makeAnySimple :: String -> GsFunc -> AnySimple -> MetaInstr
-makeAnySimple staffN shapeFn anySimp =
+-- Change Sept. 13, 2023: added the argument splitTrillFlag so I 
+--   can pass it along to Meta 
+makeAnySimple :: String -> GsFunc -> Bool -> AnySimple -> MetaInstr
+makeAnySimple staffN shapeFn splitTrillFlag anySimp =
   MetaInstr staffN [staffN] (Any (anySimpleNotes anySimp) 
                                  (view modFn anySimp))
-            False runAny shapeFn
+            splitTrillFlag runAny shapeFn
 
 
 -- using a synth meta instr means:
@@ -104,6 +111,7 @@ makeAnySimple staffN shapeFn anySimp =
 --
 -- 
 
+
 runAny :: MetaInstr -> Any -> MetaPrepared -> Tr ()
 runAny instr (Any nFn modFn) metaPre = do
   -- do staff: what's the common pattern here
@@ -111,7 +119,7 @@ runAny instr (Any nFn modFn) metaPre = do
   let mergedMarks = InstrUtils.computeMergedMarks sc (iStaffNs instr)
       doStaff staffN = do
         let sns = anyLk staffN $ view allSNotes metaPre
-        mapM (nFn mergedMarks) sns >>= alterTOff >>= includeNotes 
+        mapM (nFn mergedMarks) sns >>= alterTOff True >>= includeNotes 
         let (locB,locE) = view range metaPre
         modFn staffN locB locE >>= includeRaws
   mapM_ doStaff (iStaffNs instr) 
@@ -127,9 +135,11 @@ anyLk k m = case M.lookup k m of {Just x -> x}
 --   look at Piano for model. It calls updateArp, which needs a list of
 --   staves (okay that's easy), marks, 
 --
--- 
+--   how does it fine # marking for keyswitch?
 anySimpleNotes :: AnySimple -> Map Loc [MarkD] -> SNote -> Tr SNote 
 anySimpleNotes anySimp mergedMarks sn = do
+  -- is 'artic' what we are calling thet # function?
+  -- calls anySimpleGetArtic
   artic <- anySimpleGetArtic anySimp sn
   
   let
@@ -140,21 +150,23 @@ anySimpleNotes anySimp mergedMarks sn = do
       -}
 
  
-      thisUpdateDest s = return s {snDest = (view destFn anySimp) s artic}
+      thisUpdateDest s = return s {snDest = view destFn anySimp s artic}
       thisUpdateCtrlMod :: SNote -> Tr SNote
       thisUpdateCtrlMod s = return $
-        let x = case ((view ksFn anySimp) s artic) of
+        -- ksFn passing marked artic. I see now 
+        let x = case view ksFn anySimp s artic of
                   Nothing -> []
                   Just k  -> [ModifKs (Left (-0.05)) k]
+            y = view modifFn anySimp s artic
             -- let x = maybeToList $
             --         fmap (ModifKs (Left $ -0.05)) $ ((view ksFn anySimp)  s artic)
             vm = ModifCtrl (Left $ -0.05) 7 (getVolume s)
             -- vm = ModifCtrl (Left $ -0.05) 7 (view volFn anySimp $ artic)
-        in s { snMods = x ++ [vm] }
-      getVolume s = case (view volFn anySimp) artic of
-          Left i -> i
+        in s { snMods = x ++ y ++ [vm] }
+      getVolume s = case view volFn anySimp artic of
+          Left i  -> i
           Right c -> lookupVel "anySimpleNotes(volume)," (snLoud s) c
-  loudCurve <- anyLk (snStaffName sn) `liftM` gets (view loudnessMaps)
+  loudCurve <- gets $ anyLk (snStaffName sn) . view loudnessMaps
   updateLoud (view accentAmt anySimp) sn
     >>= setNoteVelocity anySimp artic
     >>= view stacFn anySimp
@@ -179,7 +191,7 @@ setNoteVelocity anySimple artic s = case view velSource anySimple of
     return s { snVel = getArticulationLevel . cModifiers $ snChord s }
   VsCurve f      -> 
     return s { snVel = lookupVel "in setNoteVelocity, "
-                       (snLoud s) (f artic) }
+                       (snLoud s) (f s artic) }
 
 
 -- getArticulationLevel
@@ -189,19 +201,12 @@ setNoteVelocity anySimple artic s = case view velSource anySimple of
 --   Base this velocity on articulations that are present on the note's
 --   chord.
 getArticulationLevel :: Set ChordModifier -> Int
-getArticulationLevel ms =
-  if Accent `elem` ms
-    then 80
-    else
-      if DownBow `elem` ms
-        then 95
-        else
-          if Tenuto `elem` ms
-            then 50
-            else
-              if UpBow `elem` ms
-                then 35
-                else 64
+getArticulationLevel ms
+  | Accent `elem` ms = 80
+  | DownBow `elem` ms = 95
+  | Tenuto `elem` ms = 50
+  | UpBow `elem` ms = 35
+  | otherwise = 64
 
 -- any_updateVel :: AnySimple -> SNote -> SNote
 
@@ -223,12 +228,9 @@ getArticulationLevel ms =
 anySimpleModExample :: String -> Bool -> VelCurve -> (Int,Int) ->
                        String -> Loc -> Loc -> Tr [TrRaw] 
 anySimpleModExample msg includeExpr modCurve dest staffN locB locE = do
-  
   lCurve <- (anyLk 1 . anyLk staffN) `liftM` gets (view loudnessMaps)
-  
   tB <-  (lookupTime locB . anyLk staffN) `liftM` gets (view timeMaps)
   tE <-  (lookupTime locE . anyLk staffN) `liftM` gets (view timeMaps)
-  
   let
       -- o: function to generate TrRaw's, given input argument of time
       o :: Double -> [TrRaw]
@@ -236,17 +238,11 @@ anySimpleModExample msg includeExpr modCurve dest staffN locB locE = do
         Just l  ->
           let
               v = lookupVel "in anySimpleMod, " l modCurve
-              
               c1 = [ TrRaw staffN (t-0.002) dest 0xb0 1 v ]
-              
-              c2 = if includeExpr
-                     then [ TrRaw staffN (t-0.002) dest 0xb0 11 v ]
-                     else []
+              c2 = [ TrRaw staffN (t-0.002) dest 0xb0 11 v | includeExpr]
           in
               c1 ++ c2
-              
         Nothing -> []
-        
   return $ concatMap o [tB,tB+0.05..tE] 
 
 
@@ -262,22 +258,29 @@ anySimpleGetArtic anySimp sn = do
   let modSet = let x = cModifiers $ snChord sn :: Set ChordModifier
                in x
   markedArtic <- anySimpleMarkedArtic sn
+  {-
   let isStac = Staccato `elem` modSet
       isMarc = Marcato  `elem` modSet
-      (isTrill,isTrem) = case cNotes $ snChord sn of
+  -}
+  let(isTrill,isTrem) = case cNotes $ snChord sn of
         NSingles _              -> (0,False)
         NTrill (TtnTrill i) _ _ -> (i,False)
         NTrill TtnTremolo _ _   -> (0,True )
+  let rawA = case (isTrill,isTrem) of 
+        (1,_)     -> "tr1"
+        (2,_)     -> "tr2"
+        (_,True)  -> "trem"
+        _         -> markedArtic
+  {-
   let rawA = case (isTrill,isTrem,isStac,isMarc) of
              (1,_,_,_)    -> "tr1"
              (2,_,_,_)    -> "tr2"
              (_,True,_,_) -> "trem"
              (_,_,_,True) -> "marc"
              (_,_,True,_) -> "stac"
-             _        -> markedArtic
-  return $ case lookup rawA (view aliases anySimp) of
-    Just a   -> a
-    Nothing -> rawA
+             _            -> markedArtic
+  -}
+  return $ fromMaybe rawA (lookup rawA (view aliases anySimp))
 
 
 anySimpleMarkedArtic :: SNote -> Tr String
@@ -293,7 +296,7 @@ anySimpleMarkedArtic sn = do
       m2 :: [(Loc,MarkD)]  
       m2 = expList $ M.toDescList $ fst $ splitInclude (snLoc sn) marks
       maybeRight :: (Loc,MarkD) -> Maybe (Loc,String)
-      maybeRight (a,b) = fmap (a,) $ maybeArtic b
+      maybeRight (a,b) = (a,) <$> maybeArtic b
       final :: Maybe (Loc,String)
       final = listToMaybe $ mapMaybe maybeRight m2 
   return $ case final of {Just (_,s) -> s; Nothing -> "ord"}

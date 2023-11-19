@@ -1,5 +1,5 @@
 
-module Instruments.Moog where
+module Instruments.Moog_old where
 
 import qualified Data.Map.Strict as M
 import qualified Data.List as L
@@ -7,14 +7,14 @@ import Data.Maybe
 import Data.Map.Strict(Map)
 import Control.Monad
 import Control.Monad.State
-import Common.CommonData
+import Common
 import Text.Printf
-import Instruments.Curves
-import Instruments.InstrumentsData
-import Instruments.InstrUtils
-import Instruments.TimeMap
+import Translation.Curves
+import Instruments
+import Translation.InstrUtils
+import Translation.TimeMap
 import Util.Exception
-import Instruments.AlterTimes
+import Translation.AlterTimes
 import Score.ScoreData
 
 

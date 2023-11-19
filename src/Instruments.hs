@@ -64,12 +64,66 @@ data NoteConf = NoteConf
 
 makeFields ''NoteConf
 
+-- NOTES 2023: "Any" seems to abstract the meaning of an instrument
+--   down to manipulation of SNotes based on Marks and probably also
+--   based on information contained in an SNote as well as a mod
+--   function based on staff name and range of Locs . Does it have
+--   to be mod that it generates? How does any simple generate 
+--   a vol curve?
 data Any = Any
   { _anyNotesFn :: Map Loc [MarkD] -> SNote -> Tr SNote
   , _anyModFn   :: String -> Loc -> Loc -> Tr [TrRaw]
   }
 
 makeFields ''Any
+
+--------- Hoopus (Hollywood Orchestra Opus Edition)
+
+
+-- data HoopusCtrl11Config = HC11CNotUsed | HC11CVolume Int Int
+
+data HoopusNoteDescr = HoopusNoteDescr
+  { _hoopusNoteDescrMarkedArtic     :: String
+  , _hoopusNoteDescrModifiers       :: Set ChordModifier
+  , _hoopusNoteDescrSlurNext        :: Bool
+  , _hoopusNoteDescrIsTrill         :: Int -- 0 means no trill, 1 HT, 2 WT
+  , _hoopusNoteDescrIsTrem          :: Bool
+
+  }
+
+makeFields ''HoopusNoteDescr
+
+data HoopusModConfig = HMCContinuousOnly | HMCSelector (HoopusNoteDescr -> SNote -> Int)
+
+data HoopusVelConfig = HVCLoudness VelCurve | HVCFunc (HoopusNoteDescr -> SNote -> Int)
+
+
+
+data HoopusChan = HoopusChan
+  { _hoopusChanMidiChan           :: Int
+  , _hoopusChanModConfig          :: HoopusModConfig
+  -- , _hoopusChanCtrl11Config       :: HoopusCtrl11Config
+  , _hoopusChanVelConfig          :: HoopusVelConfig
+  , _hoopusChanShortenForStaccato :: Bool
+  , _hoopusChanAccentAmt          :: Double
+  -- , _hoopusArticDoMod             :: SNote -> Maybe Int
+  }
+
+makeFields ''HoopusChan
+
+data Hoopus = Hoopus
+  { -- something about the name 'stream' was causing an error
+    _hoopusStreamm            :: Int
+  , _hoopusStaffName          :: String
+  , _hoopusDetermineChan      :: HoopusNoteDescr -> SNote -> HoopusChan
+  , _hoopusModLoudnessDests   :: [(Int,(Int,Int))]
+  , _hoopusExprLoudnessDests  :: [(Int,(Int,Int))]
+  , _hoopusSepSame            :: Bool
+  }
+
+makeFields ''Hoopus
+
+
 
 
 ----------------------------------------------------------------------
