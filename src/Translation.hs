@@ -440,6 +440,10 @@ data Modif = ModifKs
   , modCtrl   :: Int
   , modValue  :: Int
   }
+           | ModifCtrlSet
+  { modTiming    :: Either Double Double
+  , modCtrlsVals :: [(Int,Int)]
+  }
   deriving(Show)
 
 
@@ -449,6 +453,14 @@ data DestData = DestData
   , ddVel      :: Int
   , ddMods     :: [Modif]
   }
+
+data MidiConfig = MidiConfig [MidiConfigOneDest]
+  deriving(Show)
+data MidiConfigOneDest = MidiConfigOneDest (Int,Int) [(Int,Int)]
+  deriving(Show)
+data MidiConfigFile = MidiConfigFile (Map String MidiConfig)
+  deriving(Show)
+
 
 
 ----------------------------------------------------------------------
