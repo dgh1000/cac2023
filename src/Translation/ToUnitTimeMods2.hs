@@ -11,6 +11,7 @@ module Translation.ToUnitTimeMods2 where
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified Data.List as L
+import Data.Function
 import Debug.Trace
 import Control.Monad.State
 import Text.Printf
@@ -146,28 +147,59 @@ utmRank UtmRShift {}                = 5
 --  Time adjusts on relative time map. As of Aug 29, 2023, intended
 --  for use on staff time maps rather than global base map
 
-computeAdjustUtms timeSigs m = show out `trace` out
-  where
-    out = computeAdjustUtms' timeSigs m 
+-- computeAdjustUtms m = unlines (map show out) `trace` out
+--   where
+--     out = computeAdjustUtms' m 
 
-computeAdjustUtms' :: Map Int TimeSig -> Map Loc (Map String [MarkD]) ->
-                     [Utm]
-computeAdjustUtms' timeSigs =
-    map adjustToUtm . absToRelTimeAdjusts . mapMaybe toAdjustMarkAbs . g2 .g1
+
+
+computeAdjustUtms :: Map Loc (Map String [MarkD]) -> [Utm]
+computeAdjustUtms = concat . M.elems . g5 . g4 . g3b . g3 . g2 . g1
   where
-    g1 :: Map Loc (Map String [MarkD]) -> Map Loc [(String,MarkD)]
-    g1 = M.map (expandTuples . M.toAscList)
-    g2 :: Map Loc [(String,MarkD)] -> [(Loc,(String,MarkD))]
+    g1 :: Map Loc (Map String [MarkD]) -> Map Loc [(String,[MarkD])]
+    g1 = M.map M.toAscList
+    g2 :: Map Loc [(String,[MarkD])] -> [(Loc,(String,[MarkD]))]
     g2 = expandTuples . M.toAscList
-    
+    g3 :: [(Loc,(String,[MarkD]))] -> Map String [(Loc,[MarkD])]
+    g3 = M.fromListWith (++) . map (\(a,b) -> (a,[b])) . flipLocStaffN
+    g3b :: Map String [(Loc,[MarkD])] -> Map String [(Loc,[MarkD])]
+    g3b = M.map $ L.sortBy (compare `on` fst)
+    g4 :: Map String [(Loc,[MarkD])] -> Map String [(Loc,MarkD)]
+    g4 = M.map expandTuples
+    g5 :: Map String [(Loc,MarkD)] -> Map String [Utm]
+    g5 = M.mapWithKey toAdjustMarks
+-- computeAdjustUtms' timeSigs =
+--     map adjustToUtm . absToRelTimeAdjusts . mapMaybe toAdjustMarkAbs . g2 .g1
+--   where
+--     g1 :: Map Loc (Map String [MarkD]) -> Map Loc [(String,MarkD)]
+--     g1 = M.map (expandTuples . M.toAscList)
+--     g2 :: Map Loc [(String,MarkD)] -> [(Loc,(String,MarkD))]
+--     g2 = expandTuples . M.toAscList
+
+-- toAdjustMarks :: String -> [(Loc,MarkD)] -> [Utm]
+-- toAdjustMarks s ms = ("toAdjustMarks\n" ++ unlines (map show out)) `trace` out
+--   where
+    -- out = toAdjustMarks' s ms
+
+
+toAdjustMarks :: String -> [(Loc,MarkD)] -> [Utm]
+toAdjustMarks staffN = map adjustToUtm . absToRelTimeAdjusts . g1
+  where
+    g1 :: [(Loc,MarkD)] -> [TimeAdjustAbs]
+    g1 = mapMaybe (toAdjustMarkAbs staffN)
+
+flipLocStaffN :: [(Loc,(String,[MarkD]))] -> [(String,(Loc,[MarkD]))]
+flipLocStaffN = map g
+  where
+    g (l,(s,ms)) = (s,(l,ms))
 
 expandTuples :: [(a,[b])] -> [(a,b)]
 expandTuples = concatMap (\(x,ys) -> map (x,) ys)
 
-toAdjustMarkAbs :: (Loc,(String,MarkD)) -> Maybe TimeAdjustAbs
-toAdjustMarkAbs (loc,(staffN,AdjustL dur amt)) = Just $ TimeAdjustAbs loc staffN LeftWarp dur amt
-toAdjustMarkAbs (loc,(staffN,AdjustR dur amt)) = Just $ TimeAdjustAbs loc staffN RightWarp dur amt
-toAdjustMarkAbs _                              = Nothing
+toAdjustMarkAbs :: String -> (Loc,MarkD) -> Maybe TimeAdjustAbs
+toAdjustMarkAbs staffN (loc,AdjustL dur amt) = Just $ TimeAdjustAbs loc staffN LeftWarp dur amt
+toAdjustMarkAbs staffN (loc,AdjustR dur amt) = Just $ TimeAdjustAbs loc staffN RightWarp dur amt
+toAdjustMarkAbs _ _                          = Nothing
 
 --     0     -1     1      2     -2
 --     0     -1     

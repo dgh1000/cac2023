@@ -138,13 +138,13 @@ applyTimeMod timeSigs tm (UtmLShift staffN loc dur amt) = shift timeSigs LeftWar
 
 applyTimeMod timeSigs tm (UtmRShift staffN loc dur amt) = shift timeSigs RightWarp dur amt loc tm 
 
-shift :: Map Int TimeSig -> WarpSide -> Double -> Double -> Loc -> RelTimeMap -> RelTimeMap
-shift timeSigs warpSide  dur amtSeconds locA tm =
-  printf "warpSide:%s dur:%.4f amtSeconds:%.4f locA:%s" (show warpSide) dur amtSeconds (showLoc2 locA)
-  `trace` shift' timeSigs warpSide dur amtSeconds locA tm
+-- shift :: Map Int TimeSig -> WarpSide -> Double -> Double -> Loc -> RelTimeMap -> RelTimeMap
+-- shift timeSigs warpSide  dur amtSeconds locA tm =
+--   printf "warpSide:%s dur:%.4f amtSeconds:%.4f locA:%s" (show warpSide) dur amtSeconds (showLoc2 locA)
+--   `trace` shift' timeSigs warpSide dur amtSeconds locA tm
 
-shift' :: Map Int TimeSig -> WarpSide -> Double -> Double -> Loc -> RelTimeMap -> RelTimeMap
-shift' timeSigs warpSide dur amtSeconds locA tm = 
+shift :: Map Int TimeSig -> WarpSide -> Double -> Double -> Loc -> RelTimeMap -> RelTimeMap
+shift timeSigs warpSide dur amtSeconds locA tm = 
     generalWarp2 timeSigs tm loc1 loc2 (Left amtSeconds) UrsFlat
   where
     (loc1,loc2) | warpSide == LeftWarp  = (locBefore,locA)
