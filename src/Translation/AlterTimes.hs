@@ -11,12 +11,17 @@ import Translation
 import Translation.InstrUtils
 
 
--- is this entirely looking at slurs? or repeated notes
-alterTOff :: [SNote] -> Tr [SNote]
-alterTOff notes = do
+-- is this just about arpeggios? wait those don't offer tOff
+
+-- looks at a bunch of SNote
+alterTOff :: Bool -> [SNote] -> Tr [SNote]
+alterTOff doSepSame notes = do
+  -- a function to pair up nominal pitch (not harmonics I think)
+  -- and the on time. In preparation for calling M.fromListWith
+  -- this appears to map every pitch to all its on times 
   let fn s = (snNomPitch s,[getTOn s])
       begSet = M.map S.fromList $ M.fromListWith (++) $ map fn notes
-  return $ map (alterOne begSet) notes
+  return $ map (alterOne doSepSame begSet) notes
 
 
 type OO = (String,(Double,Double))
@@ -24,9 +29,9 @@ type OO = (String,(Double,Double))
 -- it looks like alterEnd can be positive for legato and negative for
 -- separated.
 
-alterOne :: Map Int (Set Double) -> SNote -> SNote
-alterOne begSet s =
-    s { snOnOff = minDurFn . gapFunc . endFn $ snOnOff s}
+alterOne :: Bool -> Map Int (Set Double) -> SNote -> SNote
+alterOne doSepSame begSet s =
+    s { snOnOff = minDurFn . (if doSepSame then gapFunc else id) . endFn $ snOnOff s}
   where
     alterEnd = snAlterEnd s
     sepSame = snSepSame s
