@@ -38,7 +38,13 @@ library
       Instruments.FalconData
       Translation.AlterTimes
       Instruments.Any
-      Instruments.AnyQ
+      Instruments.AnyEWSoloWoodwinds
+      Instruments.AnyEWSoloStrings
+      Instruments.AnyEWSoloBrass
+      Instruments.AnyEWUtils
+      Instruments.AnyMoog
+      Instruments.Hoopus
+      Instruments.HoopusSoloStrings
       Instruments
       Translation.Curves
       Translation.Dynamics
@@ -52,6 +58,7 @@ library
       Translation.Trill
       Translation.ApplyTimeMod2
       Translation.ToUnitTimeMods2
+      Translation.ParseConfig
       Translation
       Translation.ShowTranslation
       Midi.Interface
@@ -123,6 +130,17 @@ executable testMidiFile
     , cac
     , midi
     , event-list
+
+executable testParseConfig
+  main-is: testParseConfig.hs
+  other-modules:
+  hs-source-dirs:
+    app/Mp
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , cac
+    , bytestring
 
 executable shiftMarkTest
   main-is: shiftMarkTest.hs

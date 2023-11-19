@@ -332,7 +332,7 @@ makeTimeMaps = do
 
   let tmsMarks = computeDirectUtms marks
   tmsShapes <- gsToUtms
-  let tmsAdjusts = computeAdjustUtms timeSigs marks
+  let tmsAdjusts = computeAdjustUtms marks
   let tms = L.sortBy (compare `on` utmRank) $ tmsMarks ++ tmsShapes ++ tmsAdjusts
 
   -- now compute the UnitTimeMods

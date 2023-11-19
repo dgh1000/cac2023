@@ -19,13 +19,16 @@ marks:
   [  2: 3+     ]
   [  3: 1+     ]
     staff name: B
-      AdjustL 0.5 3.0e-2
+      AdjustL 0.5 8.0e-2
   [  4: 1+     ]
     staff name: B
-      AdjustL 0.5 (-3.0e-2)
+      AdjustL 0.5 (-8.0e-2)
+  [  4: 3+     ]
+    staff name: B
+      AdjustL 0.5 0.0
   [  5: 1+     ]
     staff name: B
-      AdjustL 0.5 1.5e-2
+      AdjustL 0.5 0.0
 staves:
 staff name: B
   max true end: [  5: 2+     ]
