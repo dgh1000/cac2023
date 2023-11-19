@@ -115,7 +115,7 @@ findEndMsr2 msrSet begMsr
        where
          m1 = minimum $ map fst xs
          m2 = maximum $ map fst xs
-    Clump _ e _ _ = case takeWhile (\c -> clFlag c || clSize c < 3) l2 of
+    Clump _ e _ _ = case takeWhile (\c -> clFlag c || clSize c < 2) l2 of
       [] -> throwMine $ printf ("in seraching for end measure, " ++
             "starting at %d (which "++
             "may be either explicit start measure or splice point), " ++
