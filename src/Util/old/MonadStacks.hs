@@ -2,13 +2,13 @@ module Util.MonadStacks(ErrorRand,runEW, runER, evalER
                        , ErrWri) where
 
 import Control.Monad.State
-import Control.Monad.Error
+import Control.Monad.Except
 import Control.Monad.Writer
 import Util.UtilData
 
-runEW m = runWriter (runErrorT m)
+runEW m = runWriter (runExceptT m)
 
-runER m s = runState (runWriterT (runErrorT m)) s
+runER m s = runState (runWriterT (runExceptT m)) s
 evalER m s = fst $ fst $ runER m s
 
 {-

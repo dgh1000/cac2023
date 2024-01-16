@@ -25,7 +25,8 @@ module Util.RandomState
 import qualified Data.List as L
 import Control.Monad.Writer
 import Control.Monad.State
-import Control.Monad.Error
+import Control.Monad.Except
+import Control.Monad.Primitive
 import System.Random
 import Util.Math
 import Util.UtilData
@@ -108,8 +109,12 @@ rdGaussesScale :: (MyRandomClass b, MonadState b m , MonadError String m) =>
 rdGaussesScale low high = do
   xs <- rdGausses
   let d = abs (high - low)
-  when (d == 0) (throwError "zero delta limits in rdGausessScale")
-  when (high <= low) (throwError "high less than low in rdGausessScale")
+  if (d == 0) 
+    then (throwError "zero delta limits in rdGausessScale")
+    else return ()
+  if (high <= low) 
+    then (throwError "high less than low in rdGausessScale")
+    else return ()
   return $ map (\x -> (scale (-1.5) x 1.5 low high)) xs
 
 rdGaussesScaleLimits :: (MyRandomClass b, MonadState b m, 
@@ -150,8 +155,12 @@ rdGauss = do
 --
 rdGaussScale low high = do
   x <- rdGauss
-  when (abs(high-low)==0) (throwError "zero delta limits in rdGaussScale")
-  when (high < low) (throwError "high less than low in rdGauss")
+  if (abs(high-low)==0) 
+    then (throwError "zero delta limits in rdGaussScale")
+    else return ()
+  if high < low 
+    then throwError "high less than low in rdGauss"
+    else return ()
   return $ scale (-2) x 2 low high
 
 rdGaussScaleLimits low high = do
@@ -180,7 +189,9 @@ rdGaussScaleLimits low high = do
 -- 
 chooseRandom :: [Double] -> [(Double,a)] -> ErrorRand (Double,a)
 chooseRandom weights choices = do
-  when (L.null choices) (throwError "Null choice list.")
+  if L.null choices 
+    then throwError "Null choice list."
+    else return ()
   let sorted = L.sortBy (\(y2,_) (y1,_)-> compare y1 y2 {-reversed!-} ) choices
       grouped = L.groupBy (\(x,_) (y,_) -> x == y) sorted
   idx <- weightedChoice weights
@@ -209,7 +220,9 @@ weightedChoice weights = do
 randomChooseList :: [a] -> ErrorRand a
 randomChooseList xs = do
   let ll = length xs
-  when (ll == 0) (throwError "in randomChooseList, passed null list")
+  if ll == 0
+    then throwError "in randomChooseList, passed null list"
+    else return ()
   idx <- rdRandomR 0 (ll - 1)
   return (xs !! idx)
 
@@ -219,7 +232,7 @@ randomChooseSeqs :: (Random a, MyRandomClass b, MonadState b m) =>
         m [a] -> m [a] -> m [a]
 randomChooseSeqs seq1 seq2 = do
   let g i v1 v2 = if i == 1 then v1 else v2
-  liftM3 (zipWith3 g) (rdRandomRs 1 (2::Int)) seq1 seq2
+  (zipWith3 g) <$> (rdRandomRs 1 (2::Int)) <*> seq1 <*> seq2
 
 
 

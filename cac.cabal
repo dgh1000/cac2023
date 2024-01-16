@@ -116,6 +116,7 @@ library
     , HCodecs
     , cereal
     , event-list
+    , primitive
   default-language: Haskell2010
 
 

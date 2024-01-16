@@ -91,16 +91,16 @@ toMidiFile (begMsr,mEndMsr) splicePts = do
   -- makeControlCurves
   
   -- ***Run*** each meta instrument by calling 'callMetaRun'
-  metas <- M.toList `liftM` (gets $ view metas)
+  metas <- M.toList `fmap` (gets $ view metas)
   mapM_ (callMetaRun begMsr endMsr) metas 
 
   -- this will normalize notes to start 0.1 seconds into the track
   -- mSpliceBegEnd <- getSpliceTimes maybeSplicePoint
-  currNotes <- concat `liftM` gets (view notesOut)
-  currRaws  <- concat `liftM` gets (view rawsOut)
+  currNotes <- concat `fmap` gets (view notesOut)
+  currRaws  <- concat `fmap` gets (view rawsOut)
   (notes2,raws2) <- spliceEverything splicePts (currNotes,currRaws)
   -- let (newNotes,newRaws) = normalize 0.1 (notes2,raws2)
-  initRaws  <- concat `liftM` gets (view initRaws)
+  initRaws  <- concat `fmap` gets (view initRaws)
 
   -- convert notes, raws, and init raws into shorts
   return (notes2,convertToFileMsgs notes2 raws2 initRaws)
@@ -257,7 +257,7 @@ gsToUtms = do
                   us -> us 
                   
               | otherwise = []
-  (concatMap f . M.elems) `liftM` gets (view metas)
+  (concatMap f . M.elems) `fmap` gets (view metas)
 
 {-
 makeLoudnessCurves :: Tr ()

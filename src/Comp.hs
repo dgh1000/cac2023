@@ -135,7 +135,8 @@ oneRandomNote = do
 
 nRandomNotes :: Int -> Rio [Note Double]
 nRandomNotes n = do
-  tuples <- replicateM n oneRandomNote
+  tuples <- replicate n oneRandomNote
+  -- tuples <- replicateM n oneRandomNote
   return $ tuplesToNotes tuples
 
 randomComp :: Int -> Rio (Comp Double)

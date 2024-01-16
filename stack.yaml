@@ -18,7 +18,11 @@
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 # nightly-2021-06-20 : (ghc 9.0.1)
-resolver: lts-20.25 # ghc 9.2.8
+# resolver: lts-20.25 # ghc 9.2.8
+# I believe this is GHC 9.6.3
+resolver: lts-22.5
+  # url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/22/5.yaml
+
 # resolver: nightly-2023-06-18 # ghc 9.4.5
 # resolver: nightly-2023-01-06 # (ghc 9.4.4)
 

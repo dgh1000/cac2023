@@ -1,6 +1,6 @@
-module Util.EitherError
+module Util.EitherError where
 
-import Control.Monad.Error
+import Control.Monad.Except
 
 type StringError = Either String
 

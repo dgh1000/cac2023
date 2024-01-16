@@ -54,7 +54,7 @@ import Control.Monad.State
 -- 
 run01 :: M es ()
 run01 = do
-  netSets <- msNetworkSetList `liftM` get
+  netSets <- msNetworkSetList `fmap` get
   let netSetIn = case netSets of
         []  -> error "186730"
         n:_ -> n

@@ -4,6 +4,7 @@
 module Util.RandMonad where
 
 import Control.Monad.State
+import Control.Monad.Primitive
 import System.Random
 import Data.List
 import Data.Function
@@ -71,7 +72,9 @@ rRandomRs (lo,hi) = do
 rChooseList :: (RandMonad m) => [a] -> m a
 rChooseList xs = do
   let l = length xs
-  when (l==0) (error "in rChooseList, passed null list")
+  if l==0
+    then (error "in rChooseList, passed null list")
+    else return ()
   idx <- rRandomR (0,l-1)
   return $ xs !! idx
 
@@ -79,7 +82,7 @@ rChooseList xs = do
 rPermuteList :: (RandMonad m) => [a] -> m [a]
 rPermuteList xs = do
   let l = length xs
-  rs <- replicateM l (rRandomR (0,1::Double))
+  rs <- sequence (replicate l $ (rRandomR (0,1::Double)))
   let rs2 = sortBy (compare `on` snd) (zip [(0::Int)..] rs)
   return $ map (xs!!) (fst $ unzip rs2)
   
