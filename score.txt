@@ -11,24 +11,19 @@ marks:
     staff name: Piano
       SetTempo Nothing 60.0 False
       Extend 8.0e-2
-  [ 21: 1+     ]
-  [ 28: 1+     ]
-  [ 35: 1+     ]
-  [ 42: 1+     ]
-  [ 49: 1+     ]
-  [ 56: 1+     ]
-  [ 64: 1+     ]
+  [  7: 1+     ]
     staff name: Piano
       SetTempo Nothing 80.0 False
-  [ 65: 1+     ]
-  [ 74: 1+     ]
-  [ 83: 1+     ]
-  [ 92: 1+     ]
-  [102: 1+     ]
-  [112: 1+     ]
+  [ 24: 1+     ]
     staff name: Piano
-      StacDur 7.0e-2
+      SetTempo Nothing 68.0 False
+  [ 25: 4+     ]
+    staff name: Piano
+      RampBeg 1.0
+  [ 26: 1+     ]
+    staff name: Piano
+      RampEnd 0.7
 staves:
 staff name: Piano
-  max true end: [118: 3+     ]
+  max true end: [ 31: 4+     ]
   MarkDs
