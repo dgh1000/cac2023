@@ -1,10 +1,8 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.1.
+-- This file has been generated from package.yaml by hpack version 0.38.0.
 --
 -- see: https://github.com/sol/hpack
---
--- hash: 2f2334a4d421c1b8fdbb16c236f59053f73f8ff13b3059930609757355c41a26
 
 name:           cac
 version:        0.1.0.0
@@ -27,165 +25,274 @@ source-repository head
 
 library
   exposed-modules:
-      Cac.SimpleGen.Data
+      Cac.Algo
+      Cac.Alter
+      Cac.Cac
+      Cac.Comp
+      Cac.Eval
+      Cac.Eval3S
+      Cac.Fitness
+      Cac.Genetic.Data
+      Cac.Genetic.Evolve
+      Cac.Genetic.Gen
+      Cac.Genetic.Serial
+      Cac.Genetic.Show
+      Cac.Genetic.Test
+      Cac.Genetic.Util
+      Cac.Gesture
+      Cac.Gesture.Ges01
+      Cac.Java
+      Cac.Manip.Manip
+      Cac.Manip.Manip2
+      Cac.Manip.Util
       Cac.Markov.Data
       Cac.Markov.Run
+      Cac.Markov.TestData
       Cac.Markov.Util
+      Cac.Mm.MmData
+      Cac.Monads
+      Cac.Motif
+      Cac.MusicXml
+      Cac.MusicXml.Elems
+      Cac.Pcs
+      Cac.Pitch.Gen
+      Cac.Ptmc.Data
+      Cac.Search
+      Cac.Search.Algo
+      Cac.Search_orig
+      Cac.SearchPar
+      Cac.SimpleGen.Data
+      Cac.SimpleGen.Gen
+      Cac.Simpler.Algo
+      Cac.Simpler.Clump
+      Cac.Simpler.Clump_old
+      Cac.Simpler.Comp
+      Cac.Simpler.FieldsTest
+      Cac.Simpler.Lt
+      Cac.Simpler.Play
+      Cac.Simpler.Rm
+      Cac.Simpler.Simpler
+      Cac.Simpler.Simpler2
+      Cac.Simpler.Simpler3
+      Cac.Simpler.Simpler4
+      Cac.Simpler.SimplerData
+      Cac.Simpler.ThTest
+      Cac.SimplerB.Comp01
+      Cac.SimplerB.Eval01
+      Cac.SimplerB.Percentile
+      Cac.SimplerB.Question
+      Cac.SimplerB.Run01
+      Cac.SimplerB.Search
+      Cac.SimplerB.SearchC
+      Cac.SimplerB.ShowSimplerB
+      Cac.SimplerB.SimplerBData
+      Cac.SimplerB.Util
+      Cac.SimplerC.Data
+      Cac.SimplerC.Percentile
+      Cac.SimplerC.Search
+      Cac.SimplerC.Search2
+      Cac.SimplerC.Sort
+      Cac.SimplerC.Test
+      Cac.SimplerD.Data
+      Cac.SimplerD.Percentile
+      Cac.SimplerD.Search
+      Cac.SimplerD.SearchHelp
+      Cac.SimplerD.SearchSpecific
+      Cac.TestCac
+      Cac.Types
+      Cac.Types_orig
+      Cac2
+      Cac_orig
+      Cac_ST
       Common
+      Common.CommonExport_orig
       Common.CommonUtil
-      Instruments.ShowInstruments
-      Instruments.Piano
-      Instruments.FalconData
-      Translation.AlterTimes
+      Common.MidiInterface
+      Comp
+      Configs.FalconSynth
+      Configs.GenericShapeMasterFunctions
+      Configs.GOrganConfig
+      Configs.PrSynth
+      Configs.WTC4
+      Configs.WTC4_falcon
+      Configs.WTC4_v02
+      Configs.WTC4_v03
+      Configs.WTC4_v04
+      Csound.Test
+      Instruments
       Instruments.Any
-      Instruments.AnyEWSoloWoodwinds
-      Instruments.AnyEWSoloStrings
+      Instruments.AnyEWSectionStrings
       Instruments.AnyEWSoloBrass
+      Instruments.AnyEWSoloStrings
+      Instruments.AnyEWSoloWoodwinds
       Instruments.AnyEWUtils
+      Instruments.AnyG
       Instruments.AnyMoog
+      Instruments.FalconData
+      Instruments.GOrgan
       Instruments.Hoopus
       Instruments.HoopusSoloStrings
-      Instruments
-      Translation.Curves
-      Translation.Dynamics
-      Translation.GenericShape
-      Translation.InstrUtils
-      Translation.RunOnce
-      Translation.SendControl
-      Translation.Splice2
-      Translation.TimeMap
-      Translation.ToMidi
-      Translation.Trill
-      Translation.ApplyTimeMod2
-      Translation.ToUnitTimeMods2
-      Translation.ParseConfig
-      Translation
-      Translation.ShowTranslation
+      Instruments.Ir
+      Instruments.Ir2Violin
+      Instruments.Piano
+      Instruments.Q
+      Instruments.Q2
+      Instruments.Q_examples
+      Instruments.ShowInstruments
+      Instruments.SynthExamples
+      Instruments.Test
+      Lib
       Midi.Interface
+      Midi.Interface_orig
       Midi.InterfaceWithMessages
       Midi.MidiData
+      Midi.MidiData_old
+      Midi.MidiData_orig
+      Midi.MidiExport
       Midi.MidiUtil
+      Midi.RandomizeMidi
+      Midi.RandomizeMidi_orig
+      Midi.ShowMidi_orig
+      Midi.Split
+      MidiFile
       MidiFile.Convert
+      Mp.MpData
+      Mp.ParseCommandLine
+      Mp.ParseConfig
       Score.FindEnd
       Score.ParseMarks
       Score.ScoreData
+      Score.ScoreData_orig
       Score.ScoreExport
       Score.ShowScore
       Score.XmlToScore
       Score.XmlToScore_grace
+      Score.XmlToScore_orig
+      Test01
+      Translation
+      Translation.AlterTimes
+      Translation.ApplyTimeMod2
+      Translation.Brackets
+      Translation.Curves
+      Translation.DebugScore
+      Translation.Dynamics
+      Translation.GenericShape
+      Translation.InstrUtils
+      Translation.ParseConfig
+      Translation.RunOnce
+      Translation.RunOnceFile
+      Translation.SendControl
+      Translation.ShowTranslation
+      Translation.Splice
+      Translation.Splice2
+      Translation.TestToUnitTimeMods
+      Translation.TimeMap
+      Translation.ToMidi
+      Translation.ToUnitTimeMods2
+      Translation.Trill
+      Translation_old.LoudnessFunc_orig
+      Translation_old.ParseConfig
+      Translation_old.ShowTranslation
+      Translation_old.TranslationData
+      Translation_old.TranslationData2
+      Translation_old.ValidateConfig
+      Util.AnalyzeSamples.AnalyzeSamplesData
+      Util.AnalyzeSamples.Execute
+      Util.AnalyzeSamples.Lib
+      Util.AnalyzeSamples.RunFunctions
+      Util.AnalyzeSamples2.Routines
+      Util.Array
+      Util.ByteString
+      Util.CLib.CLibData
+      Util.CLib.CsoundInterface
+      Util.CLib.DirectoryStuff
+      Util.CLib.GnuPlotInterface
+      Util.CLib.LoadedInstrConfigPath
+      Util.CLib.PvsanalInterface
+      Util.CmdLineFetch
+      Util.CsoundPlayerSamplesGen.Foo
       Util.Curve
+      Util.DataReorg.CmpSpecs
+      Util.DataReorg.GenSpecs
+      Util.EitherError
+      Util.Env
+      Util.Er
+      Util.Error
       Util.Exception
+      Util.Exceptions
       Util.FileUtil
+      Util.List
       Util.Map
       Util.Math
       Util.Maybe
+      Util.MiscCsound.HetroFormat.Hetro
+      Util.MiscCsound.PvsOpcodes.GenPvsCsd
+      Util.Parse
+      Util.ParseBracketed
+      Util.RandMonad
+      Util.RandomState
+      Util.RandomState_orig
       Util.Set
       Util.Showable
       Util.Text
       Util.UtilData
-      Util.RandomState
-      Util.Parse
-      Util.RandMonad
+      Uvi
+      Uvi.AIrTrumpet
+      Uvi.InstrFuncs
+      Uvi.IrTrumpet
+      Uvi.RunOnceUvi
+      Uvi.Show
+      Uvi.ToMidi
+      Uvi.Util
+      View
       XmlDoc.ParseXml
       XmlDoc.Process
+      XmlDoc.ShowXmlDoc
+      XmlDoc.ShowXmlDoc_orig
+      XmlDoc.ToIXmlDoc
       XmlDoc.XmlDocData
       XmlDoc.XmlDocExport
-      XmlDoc.ShowXmlDoc
-      Csound.Test
-      Configs.GenericShapeMasterFunctions
-      Lib
+      XmlDoc.XmlUtil
   other-modules:
       Paths_cac
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
-    , deepseq
-    , array
-    , filepath
-    , directory
-    , bytestring
-    , parsec
-    , containers
-    , PortMidi
-    , mtl
-    , random
-    , lens
-    , xml
-    , midi
-    , HCodecs
-    , cereal
-    , event-list
-    , primitive
   default-language: Haskell2010
 
-
-executable testMidiFile
-  main-is: testMidiFile.hs
+executable cac-exe
+  main-is: Main.hs
   other-modules:
+      Cac.AppCacData
+      Cac.Execute
+      Cac.GenData
+      Cac.ParseCmdLine
+      Cac.TestMwc
+      Cac.TestPar
+      Cac.TestSearch
+      Cac.ThreadedTest
+      CsoundPlayer.CsoundPlayerData
+      CsoundPlayer.ParseCmdLine
+      CsoundPlayer.ParseConfig_removeSoon
+      CsoundPlayer.RunFunctions
+      CsoundPlayer.RunFunctions_orig
+      ExperMidi.Em
+      MidiPlayer.MidiPlayerData
+      MidiPlayer.RunFunctions
+      MidiPlayer.RunFunctions_new
+      MidiPlayer.RunFunctions_profile
+      MidiPlayer.RunFunctionsXml
+      Mp.SpawnMp_help
+      SendMidi.MoogConfig
+      Paths_cac
   hs-source-dirs:
-      app/MidiFileExperiments
+      app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , cac
-    , midi
-    , event-list
-
-executable testParseConfig
-  main-is: testParseConfig.hs
-  other-modules:
-  hs-source-dirs:
-    app/Mp
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , cac
-    , bytestring
-
-executable shiftMarkTest
-  main-is: shiftMarkTest.hs
-  other-modules:
-  hs-source-dirs:
-    app/test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , cac
-    , containers
-
-executable spawnMp
-  main-is: spawnMp.hs
-  other-modules:
-  hs-source-dirs:
-      app/Mp
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , cac
-    , parsec
-    , filepath
-    , haskeline
-    , process
-    , directory
   default-language: Haskell2010
-
-
-executable testCtrl
-  main-is: testCtrl.hs
-  other-modules:
-  hs-source-dirs:
-      app/CalibrateSampler
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , cac
-    , lens
-    , mtl
-    , PortMidi
-    , random
-  default-language: Haskell2010
-
 
 test-suite cac-test
   type: exitcode-stdio-1.0

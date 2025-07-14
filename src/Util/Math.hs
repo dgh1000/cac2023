@@ -1,4 +1,4 @@
- module Util.Math where
+module Util.Math where
 
 import Text.Printf
 import qualified Data.List as L
