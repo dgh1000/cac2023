@@ -1,5 +1,0 @@
-
-we are going to make patterns. some way of specifying a pattern, beginning and
-end tempo, repetitions, what thet scale is, what scale patterns, rolled
-chords, whether chord pattern
-

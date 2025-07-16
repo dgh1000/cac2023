@@ -6,12 +6,10 @@ module Translation.RunOnce where
 
 import qualified Data.Map.Strict as M
 import qualified Control.Exception as E
-import qualified Sound.PortMidi as SP
 import qualified Data.List as L
 import qualified Data.Set as S
 import qualified Text.XML.Light as XL
 import Debug.Trace
-import Sound.PortMidi hiding (name,initialize)
 import System.Random
 import System.Environment
 import Control.Exception
@@ -33,6 +31,8 @@ import Data.Set (Set)
 import Translation
 import Translation.ShowTranslation
 import Translation.ToMidi
+import Midi.MidiData
+import System.MIDI
 import Midi.Interface
 import Score.ScoreData
 import Score.XmlToScore
@@ -55,15 +55,15 @@ data ArgData = PlayCmd Int (Maybe Int) (Maybe String) [String]
 
 runOnce :: RunData -> [String] -> IO ()
 runOnce rd args =
-  runOnceA args rd `catches` handlers2  
+  runOnceA args rd `catches` handlers2
 
 
 runOnceA :: [String] -> RunData -> IO ()
 runOnceA args rd = do
   case parseArgs args of
     PlayCmd mBeg mEnd mSolo splicePts -> doPlay mBeg mEnd mSolo splicePts rd
-    SendCtrl stream chan ctrl value -> doSendCtrl stream chan ctrl value
-    SendCtrlSet stream setNum -> doSendCtrlSet stream setNum
+    SendCtrl stream chan ctrl value -> error "foo" -- doSendCtrl stream chan ctrl value
+    SendCtrlSet stream setNum -> error "foo" -- doSendCtrlSet stream setNum
 
 {-
 MOVED TO interface.hs
@@ -79,67 +79,58 @@ findDevice = do
 
 doPlay :: Int -> Maybe Int -> Maybe String -> [String] -> RunData -> IO ()
 doPlay mBeg mEnd mSolo splicePts (RunData metasIn) = do
-  mDev <- findSystemDevice
-  -- when (isNothing mDev) (throwMine "MidiPipe Input 3 or port2 is not present")
-  mStreams <- startMidi (fromJust mDev) (fromJust mDev+3)
-  case mStreams of
-    Left err -> putStrLn ("boo:" ++ show err)
-    Right streams -> do
-      score <- readXml
-      
-      putStrLn "writing score.txt..."
-         >> writeFile "score.txt" (showIString score)
-      
-      gen <- newStdGen
-      let scoreStaffNs = M.keysSet $ scStaves score
-      -- if a meta is solo, do that now
-      let metas = case mSolo of
-            Nothing -> metasIn
-            Just m  -> case L.find ((==m) . iName) metasIn of
-              Nothing -> throwMine $ printf ("you asked to solo meta with" ++
-                 "name '%s' but no such meta exists") m
-              Just x -> [x]
+  conns <- openConnections
+  score <- readXml
+  putStrLn "writing score.txt..."
+      >> writeFile "score.txt" (showIString score)
+  gen <- newStdGen
+  let scoreStaffNs = M.keysSet $ scStaves score
+  -- if a meta is solo, do that now
+  let metas = case mSolo of
+        Nothing -> metasIn
+        Just m  -> case L.find ((==m) . iName) metasIn of
+          Nothing -> throwMine $ printf ("you asked to solo meta with" ++
+              "name '%s' but no such meta exists") m
+          Just x -> [x]
+  -- do some error checking
+  let coveredStaffNs = computeCovered metas
+  when (coveredStaffNs /= scoreStaffNs)
+    (putStrLn $ printf ("WARNING! score staff names are %s; meta " ++
+      "coverage is %s") (show scoreStaffNs) (show coveredStaffNs))
+  let names = map iName metas :: [String]
+  when (length names /= length (S.fromList names))
+    (throwMine $ printf "meta names are %s; these are not unique"
+        (show names))
 
-      -- do some error checking
-      let coveredStaffNs = computeCovered metas
-      when (coveredStaffNs /= scoreStaffNs)
-        (putStrLn $ printf ("WARNING! score staff names are %s; meta " ++
-          "coverage is %s") (show scoreStaffNs) (show coveredStaffNs))
-      let names = map iName metas :: [String]
-      when (length names /= length (S.fromList names))
-        (throwMine $ printf "meta names are %s; these are not unique" 
-           (show names))
-
-      -- proceed after error checking
-      let metaMap = M.fromList $ map (iName &&& id) metas
-          s = TrState score metaMap gen M.empty M.empty M.empty [] [] [] []
-                      M.empty []
-          (err_or_shorts,finalState) =
-            runState (runExceptT (toMidi (mBeg,mEnd) splicePts)) s
-      -- putStrLn "writing synth.txt..."
-      -- writeFile "synth.txt" (concat $ tsDebugOut finalState)
-      case err_or_shorts of
-        Left msg -> putStrLn msg
-        Right (sNotes,shorts) -> do
-          -- debugDump finalState
-          -- writeSNotes sNotes
-          raws <- E.evaluate $ force shorts
-          allOff streams
-          threadDelay 300000
-          beginTime <- fromIntegral `fmap` time
-          playRawEvents streams (beginTime+200) raws `catches`
-                        handlers streams
-          threadDelay 1000000
-          allOff streams
-          stopMidi streams
-          return ()
+  -- proceed after error checking
+  let metaMap = M.fromList $ map (iName &&& id) metas
+      s = TrState score metaMap gen M.empty M.empty M.empty [] [] [] []
+                  M.empty []
+      (err_or_shorts,finalState) =
+        runState (runExceptT (toMidi (mBeg,mEnd) splicePts)) s
+  -- putStrLn "writing synth.txt..."
+  -- writeFile "synth.txt" (concat $ tsDebugOut finalState)
+  case err_or_shorts of
+    Left msg -> putStrLn msg
+    Right (sNotes,shorts) -> do
+      -- debugDump finalState
+      -- writeSNotes sNotes
+      raws <- E.evaluate $ force shorts
+      allOff conns
+      threadDelay 300000
+      beginTime <- fromIntegral <$> currentTime (head conns)
+      playRawEvents conns (beginTime+200) raws `catches` handlers2
+      threadDelay 1000000
+      allOff conns
+      mapM_ stop conns
+      mapM_ close conns
 
 ----------------------------------------------------------------------
 -- debug
 
 writeSNotes :: [SNote] -> IO ()
 writeSNotes ss
-  | null ss = throwMine "no snotes" 
+  | null ss = throwMine "no snotes"
   | otherwise = do
       putStrLn "**** Writing SNotes ****"
       writeFile "snotes.txt" $ showiToString $ Component "" False (map showI ss)
@@ -203,7 +194,7 @@ playCmd = do
                    (case read endMsr of {0 -> Nothing; x -> Just x})
                    (case soloStaff of {"" -> Nothing; s -> Just s})
                    splicePoints
-  
+
 
 
 ----------------------------------------------------------------------
@@ -226,7 +217,7 @@ debugDump2 ts = do
   -- view timeMods ts :: Map String [UnitTimeMod]
   --
   -- [UnitTimeMod] BECOMES ShowList UnitTimeMod 
-  
+
   let s11 = ShowMap $ M.map ShowList $ view timeMods ts
       s1 = showiToString $ case showI s11 of
              Component _ _ vs -> Component "time mods" True vs
@@ -324,7 +315,7 @@ openOutputDevice devNum = do
     Right err -> return $ Left err
 -}
 
-
+{-
 doSendCtrl :: Int -> Int -> Int -> Int -> IO ()
 doSendCtrl str chan ctrl val = do
   mDev <- findSystemDevice
@@ -346,6 +337,7 @@ doSendCtrl str chan ctrl val = do
 
 ----------------------------------------------------------------------
 
+
 doSendCtrlSet :: Int -> Int -> IO ()
 doSendCtrlSet str setNum = do
   let sendOneCtrl theStream ((chan,ctrlNum),value) =
@@ -364,7 +356,7 @@ doSendCtrlSet str setNum = do
       putStrLn $ printf "Writing control set %d to stream %d" setNum str
       let s | setNum >= 0 && setNum < length controlSets = controlSets !! setNum
       mapM_ (sendOneCtrl theStr) s
-
+-}
 
 
 
@@ -373,8 +365,8 @@ doSendCtrlSet str setNum = do
 handlers2 = [ Handler myHandlerM
             , Handler ioHandlerM ]
 
-handlers streams = [ Handler (asyncHandlerM streams)
-                   , Handler myHandlerM
+handlers streams = [ -- Handler (asyncHandlerM streams)
+                     Handler myHandlerM
                    , Handler ioHandlerM]
 
 
@@ -387,12 +379,12 @@ ioHandlerM :: IOException -> IO ()
 ioHandlerM e = do
   putStrLn (show e)
 
-
+{-
 asyncHandlerM :: [PMStream] -> AsyncException -> IO ()
 asyncHandlerM streams _ = do
   allOff streams
   putStrLn "Interrupted!"
-  
+-}
 
 data Adsr = Adsr Int Int Int Int Int
 
@@ -400,7 +392,7 @@ type ControlSet = [((Int,Int),Int)]
 
 controlSet01 :: ControlSet
 controlSet01 = [ ((1, 103), 80)  -- filter cutoff
-               
+
                , ((1, 104), 64)  -- filter cutoff mod intensity: linear key
                                  --   follow
 
@@ -420,7 +412,7 @@ controlSet01 = [ ((1, 103), 80)  -- filter cutoff
                , ((1, 112), 64)  -- release
                , ((1, 113), 64)  -- dynamic
 
-               
+
                ]
 
 controlSets :: [ControlSet]
@@ -430,4 +422,4 @@ controlSets = [controlSet01]
 ----------------------------------------------------------------------
 --            parse control set file
 
-  
+

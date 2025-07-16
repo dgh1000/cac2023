@@ -1,4 +1,0 @@
-Notes
-  Note
-    tBeg:   0.000 tEnd:   0.500 pitch:60
-    ampl: -10.000 timbre:default

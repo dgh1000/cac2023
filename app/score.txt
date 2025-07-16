@@ -1,0 +1,44 @@
+Score
+marks:
+  [  1: 1+     ]
+    staff name: Piano
+      Trunc 8.0e-2
+  [  1: 2+     ]
+    staff name: Piano
+      Extend 8.0e-2
+      Trunc 8.0e-2
+  [  1: 4+     ]
+    staff name: Piano
+      SetTempo Nothing 60.0 False
+      Extend 8.0e-2
+  [  2: 1+     ]
+    staff name: Piano
+      StacDur 8.0e-2
+  [ 15: 1+     ]
+    staff name: Piano
+      SetTempo Nothing 120.0 False
+  [ 34: 1+     ]
+    staff name: Piano
+      SymbolMark "trill-flat" 1
+      SymbolMark "trill-flat" 6
+  [ 34: 2+     ]
+    staff name: Piano
+      SymbolMark "trill-natural" 1
+      SymbolMark "trill-natural" 6
+  [ 34: 3+     ]
+    staff name: Piano
+      SymbolMark "trill-sharp" 1
+      SymbolMark "trill-sharp" 6
+staves:
+staff name: Piano
+  max true end: [ 34: 4+     ]
+  MarkDs
+    [ 34: 1+     ]
+      SymbolMark "trill-flat" 1
+      SymbolMark "trill-flat" 6
+    [ 34: 2+     ]
+      SymbolMark "trill-natural" 1
+      SymbolMark "trill-natural" 6
+    [ 34: 3+     ]
+      SymbolMark "trill-sharp" 1
+      SymbolMark "trill-sharp" 6

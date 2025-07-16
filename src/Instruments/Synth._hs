@@ -20,6 +20,7 @@ import Util.Exception
 import Control.Lens
 import Control.Lens.TH
 import Control.Monad.State
+import Control.Monad
 
 --  BrData: internal representation in this module: final representation of
 --  all data related to one Bracket
@@ -84,7 +85,7 @@ runSynth meta synth metaPre = do
 --   Call computeBrData on every staff and concat them
 runSynth_findAllBrackets :: MetaInstr -> Tr [BrData]
 runSynth_findAllBrackets meta =
-  concat `liftM` forM (iStaffNs meta) computeBrData 
+  concat <$> forM (iStaffNs meta) computeBrData 
 
 
 -- runSynth_convertBracket
