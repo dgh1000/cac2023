@@ -26,7 +26,7 @@ where
 module Midi.Interface  where
 
 import System.Environment
-import qualified Sound.PortMidi as SP
+-- import qualified Sound.PortMidi as SP
 import qualified Data.List as L
 import Text.Printf
 import System.IO
@@ -39,7 +39,8 @@ import Data.Function
 import Data.Bits
 import Data.List(sortBy)
 import Foreign.C.Types
-import Sound.PortMidi hiding (name,initialize)
+-- import Sound.PortMidi hiding (name,initialize)
+import System.MIDI
 import Midi.MidiData
 import Util.Exception
 import Util.Showable
@@ -47,24 +48,7 @@ import Util.Showable
 
 ----------------------------------------------------------------------
 --   opening/close midi streams
-
-startMidi :: Int -> Int -> IO (Either PMError [PMStream])
-startMidi midiDevNumLow midiDevNumHigh = do
-  SP.initialize
-  result <- mapM openOutputDevice [midiDevNumLow..midiDevNumHigh]
-  let (errors,streams) = partitionEithers result
-  case errors of
-    [] -> return $ Right streams
-    (err:_) -> return $ Left err
-
-
-stopMidi :: [PMStream] -> IO ()    
-stopMidi streams = do
-  mapM_ close streams
-  terminate
-  return ()    
-
-
+{-
 promptForMidi :: IO (Either PMError [PMStream])
 promptForMidi = do
   c <- countDevices
@@ -76,61 +60,63 @@ promptForMidi = do
     []      -> throwMine "Something wrong in port number."
     (i,_):_ -> startMidi i i
 
+-}
 
-openOutputDevice :: Int -> IO (Either PMError PMStream)
-openOutputDevice devNum = do
-  result <- openOutput devNum 0
-  case result of
-    Right stream -> return $ Right stream
-    Left err -> ("openOutputDevice err:" ++ show devNum) `trace`
-      (return $ Left err)
+findIndexOfDevice :: String -> [Destination] -> IO (Maybe Int)
+findIndexOfDevice name dests = do
+  names <- zip [0..] <$> mapM getName dests
+  let rightNames = filter (\(_,n) -> n == name) names
+  case rightNames of
+    [] -> return Nothing
+    (h:_) -> do
+      return $ Just $ fst h
 
-
-showMidiDevice :: Int -> IO ()
-showMidiDevice x = do
-  di <- getDeviceInfo x
-  putStrLn $ printf "%d: %s '%s'" x (decideInputOrOutput di) (SP.name di) 
-
-
-decideInputOrOutput di = if input di then "Input :" else "Output:"
-
-
-findNamedDevice :: Bool -> String -> IO (Maybe DeviceID)
-findNamedDevice enforceOutput name = do
-  c <- countDevices
-  let test n = do info <- getDeviceInfo n
-                  let flag = not enforceOutput || output info
-                  return $ SP.name info == name && flag
-  tests <- mapM test [0..c-1]
-  return $ snd <$> L.find fst (zip tests [0..c-1])
-    
-
-findSystemDevice :: IO (Maybe DeviceID)
-findSystemDevice = do
+findSystemDevice :: [Destination] -> IO Int
+findSystemDevice dests = do
   e <- lookupEnv "COMPUTER_SYSTEM"
   dev <- case e of
-    Just _  -> findNamedDevice False "MidiPipe Input 3"
-    Nothing -> findNamedDevice True "port3"
-  when (isNothing dev) (throwMine "MidiPipe Input 3 or port3 is not present")
-  return dev
+    Just _  -> findIndexOfDevice "MidiPipe Input 3" dests
+    Nothing -> findIndexOfDevice "port3" dests
+  case dev of
+    Nothing -> throwMine "MidiPipe Input 3 or port3 is not present"
+    Just d  -> return d
+
+openConnections :: IO [Connection]
+openConnections = do
+  dests <- enumerateDestinations
+  idx <- findSystemDevice dests
+  let outputDests = [dests !! idx, dests !! (idx+1), dests !! (idx+2)]
+  conns <- mapM openDestination outputDests
+  mapM_ start conns
+  return conns
 
 ----------------------------------------------------------------------
 --           notes off utilities
 
-allNotesOff :: PMStream -> IO ()
-allNotesOff stream = do
-  let doChan c = writeShort stream $ toPMEvent (0xB0+c-1,123,0)
+-- all notes off CC 123 0
+allNotesOff :: Connection -> IO ()
+allNotesOff conn = do
+  let doChan c = send conn $ MidiMessage c (CC 123 0)
   mapM_ doChan [1..16]
 
-
-pedalOff :: PMStream -> IO ()
-pedalOff stream = do
-  let doChan c = writeShort stream $ toPMEvent (0xB0+c-1,0x40,0)
+pedalOff :: Connection -> IO ()
+pedalOff conn = do
+  -- let doChan c = writeShort stream $ toPMEvent (0xB0+c-1,0x40,0)
+  let doChan c = send conn $ MidiMessage c (CC 0x40 0)
   mapM_ doChan [1..16]
 
-allOff :: [PMStream] -> IO ()
+allOff :: [Connection] -> IO ()
 allOff streams = mapM_ allNotesOff streams >> mapM_ pedalOff streams
 
+shortToMessage :: Short -> (Double,(Int,MidiMessage))
+shortToMessage (Short time connNum status note vel) =
+    (time,(connNum,midiMsg))
+  where
+    chan = fromIntegral $ status .&. 0x0f
+    statusType = fromIntegral $ shift status (-4) 
+    shortMsg = ShortMessage chan statusType (fromIntegral note) 
+      (fromIntegral vel)
+    midiMsg = translateShortMessage shortMsg
 
 
 ----------------------------------------------------------------------
@@ -142,19 +128,20 @@ allOff streams = mapM_ allNotesOff streams >> mapM_ pedalOff streams
 --   Real-time playback of midi data in the input form 
 --     [(MidiTime,RawMidiEvent)] 
 --      
--- 
-playRawEvents :: [PMStream] -> Integer -> [Short] -> IO ()
-playRawEvents streams absBegin shorts = do
-  let f :: Short -> [(Integer,(Int,Int,Int,Int))]
-      f (Short t str status data1 data2) =
-        [(round $ 1000*t,(str,status,data1,data2))]
-      tuples = L.sortBy (compare `on` fst) $ concatMap f shorts
+playRawEvents :: [Connection] -> Integer -> [Short] -> IO ()
+playRawEvents conns absBegin shorts = do
+  let f :: Short -> (Integer,(Int,MidiMessage))
+      f sh = (round $ 1000*t,msg)
+        where
+          (t,msg) = shortToMessage sh
+      tuples = L.sortBy (compare `on` fst) $ map f shorts
       lt = case tuples of
         [] -> throwMine "in Interface.hs, no notes"
         xs -> last xs
   putStrLn $ printf "last MIDI event: %.1f secs"
              ((fromIntegral . fst $ lt)/1000::Double)
-  playRawEvents' streams absBegin tuples
+  playRawEvents' conns absBegin tuples
+
 
 type StreamId = Int
 type MidiStatus = Int
@@ -163,44 +150,27 @@ type MidiData1 = Int
 type Evt = (StreamId,MidiStatus,MidiData0,MidiData1)
 type TimeStampEvt = (Integer,Evt)
 
-playRawEvents' :: [PMStream] -> Integer -> [TimeStampEvt] -> IO ()
+playRawEvents' :: [Connection] -> Integer -> [(Integer,(Int,MidiMessage))] -> IO ()
 playRawEvents' _ _ [] = void (putStrLn "\nDone.")
 playRawEvents' streams absBegin evts@((t,_):_) = do
   -- let (sameTime,remainTimes) = takeEventsWhile evts
   let (sameTimes,remainEvts) = L.span ((==t) . fst) evts
-  spinUntil $ absBegin+t
-  forM_ sameTimes (\(_,(streamId,x,y,z)) -> do
+  spinUntil (head streams) (absBegin+t)
+  forM_ sameTimes (\(_,(streamId,msg)) -> do
     when (streamId >= length streams || streamId < 0) 
       (throwMine $ "In playRawEvents', got stream id greater than number " ++
-       "of MIDI streams available, OR LESS THAN ZERO")
-    writeShort (streams !! streamId) $ toPMEvent (x,y,z))
+        "of MIDI streams available, OR LESS THAN ZERO")
+    -- writeShort (streams !! streamId) $ toPMEvent (x,y,z))
+    send (streams !! streamId) msg)
   playRawEvents' streams absBegin remainEvts
-
--- takeEventsWhile :: [TimeStampEvt] -> ([Evt],[TimeStampEvt])
--- takeEventsWhile [] = throwMine "empty list in Interface:takeEventsWhile" 
--- takeEventsWhile l@((t,evt):remain) = (map snd same,remain)
---   where
---     (same,remain) = L.span ((==t) . fst) l
 
 configDurTimeClick = 0.001
 
 -- spinUntil: takes number of milliseconds
-spinUntil :: Integer -> IO ()
-spinUntil t = do
+spinUntil :: Connection -> Integer -> IO ()
+spinUntil conn t = do
   threadDelay 50
-  c <- time
-  when (fromIntegral c < t) $ spinUntil t
+  c <- currentTime conn
+  when (fromIntegral c < t) $ spinUntil conn t
 
 
-----------------------------------------------------------------------
---       utility to convert to the actual type used by the PortMidi
---       library, PMEvent
-
--- toPMEvent
---   Converts RawMidiEvent to PMEvent (note, the latter includes a time,
---   but since we do playback with the PortMidi's function writeShort, 
---   the PortMidi library will ignore the time, so we just set it to zero)
-toPMEvent :: (Int,Int,Int) -> PMEvent
-toPMEvent (status,data1,data2) = PMEvent msg 0
-  where msg = encodeMsg $ PMMsg (fromIntegral status) (fromIntegral data1)
-                                (fromIntegral data2)

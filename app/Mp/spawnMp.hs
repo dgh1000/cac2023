@@ -14,7 +14,7 @@ import Text.Printf
 import Text.Parsec
 import Text.Parsec.String
 import Util.FileUtil
-import Translation.SendControl
+-- import Translation.SendControl
 import System.Directory (exeExtension)
 import GHC.IO (unsafePerformIO)
 -- import Language.Haskell.Interpreter
@@ -60,14 +60,14 @@ loopIO l mProcHand = do
       Calib -> do
         result <- prepareCalib mProcHand
         return (False,result)
-      SendCtrl str chan crtl val -> do
+      SendCtrl str chan crtl val -> error "foo" {- do
         result <- prepareRun mProcHand (RoSendCtrl str chan crtl val)
-        return (False,result)
-      SendCtrlFile strNum -> do
+        return (False,result) -}
+      SendCtrlFile strNum -> error "foo" {- do
         doStop mProcHand >> return (False,Nothing)
         threadDelay 300000
         doSendParsedControls strNum
-        return (False,Nothing)
+        return (False,Nothing) -}
       Quit  -> doStop mProcHand >> return (True,Nothing)
       Stop  -> doStop mProcHand >> return (False,Nothing)
       Blank -> return (False,mProcHand)
@@ -167,8 +167,8 @@ doStop mProcHand = case mProcHand of
   Just h -> do
     c <- getProcessExitCode h
     case c of
-      Just _ -> "case not interrupt" `trace` return ()
-      Nothing -> "case interrupt" `trace` interruptProcessGroupOf h >> return ()
+      Just _ -> "process already finished, not interrupting" `trace` return ()
+      Nothing -> "process needs to be interrupted" `trace` interruptProcessGroupOf h >> return ()
   
  
 -- printf "ghc --make -i/Users/Mike/Dropbox/stack/cac/src -package mtl %s" fp

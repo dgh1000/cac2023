@@ -4,7 +4,7 @@
 module Util.RandMonad where
 
 import Control.Monad.State
-import Control.Monad.Primitive
+-- import Control.Monad.Primitive
 import System.Random
 import Data.List
 import Data.Function

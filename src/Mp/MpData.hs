@@ -1,7 +1,7 @@
 
 module Mp.MpData where
 
-import Translation.TranslationData
+import Translation
 
 -- type MsrRange = (Int, Maybe Int)
 

@@ -5,6 +5,7 @@ import GHC.Generics hiding(Meta)
 import Control.DeepSeq
 
 
+-- timestamp - in seconds? message type, channel, note, vel
 data Short = Short Double Int Int Int Int
              deriving (NFData,Generic,Show)
 
@@ -15,6 +16,7 @@ data FileMessage =
   |  FMCtrl Double Int Int Int
   deriving (NFData,Generic,Show)
 
+-- Probably don't need this
 data ShortWithMsg = ShortWithMsg Double Int Int Int Int (Maybe String)
 
 
