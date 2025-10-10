@@ -119,7 +119,7 @@ doPlay mBeg mEnd mSolo splicePts (RunData metasIn) = do
       allOff conns
       threadDelay 300000
       beginTime <- fromIntegral <$> currentTime (head conns)
-      playRawEvents conns (beginTime+200) raws `catches` handlers2
+      playRawEvents conns (beginTime+200) raws `catches` handlers conns
       threadDelay 1000000
       allOff conns
       mapM_ stop conns
@@ -362,12 +362,12 @@ doSendCtrlSet str setNum = do
 
 ----------------------------------------------------------------------
 
-handlers2 = [ Handler myHandlerM
-            , Handler ioHandlerM ]
+handlers conns = [ Handler myHandlerM
+                 , Handler ioHandlerM 
+                 , Handler (asyncHandlerM conns) ]
 
-handlers streams = [ -- Handler (asyncHandlerM streams)
-                     Handler myHandlerM
-                   , Handler ioHandlerM]
+handlers2 = [ Handler myHandlerM
+                    , Handler ioHandlerM]
 
 
 myHandlerM :: MyException -> IO ()
@@ -376,15 +376,13 @@ myHandlerM (MyException s) = do
 
 
 ioHandlerM :: IOException -> IO ()
-ioHandlerM e = do
-  putStrLn (show e)
+ioHandlerM = print
 
-{-
-asyncHandlerM :: [PMStream] -> AsyncException -> IO ()
+
+asyncHandlerM :: [Connection] -> AsyncException -> IO ()
 asyncHandlerM streams _ = do
   allOff streams
   putStrLn "Interrupted!"
--}
 
 data Adsr = Adsr Int Int Int Int Int
 
