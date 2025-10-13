@@ -119,7 +119,7 @@ type NamedStaff = (String,Staff)
 instance ShowItemClass NamedStaff where
   showI (name, Staff _ dyns hairp ped metSymMarks maxEnd _ slurs chords _ _ _) =
     Component ("staff name: " ++ name) True
-    [ -- Component "Dynamics"  True [showI $  WrappedMap dyns]
+    ([ -- Component "Dynamics"  True [showI $  WrappedMap dyns]
       -- showI ("Hairpins",     map (SingleLineTup 20 20) $ M.toAscList $ M.unions hairp)
       -- , showI ("Pedal events", map (SingleLineTup 20 20) $ M.toAscList ped)
       SingleLine $ printf "max true end: %s" (showLoc2 maxEnd)
@@ -128,8 +128,12 @@ instance ShowItemClass NamedStaff where
     -- , Component "slurs" True $ map showI $ M.toAscList slurs
     , Component "MarkDs" True $ map showI $ M.toAscList metSymMarks
     -- , Component "brackets" True $ map showBr $ M.toAscList brackets
-    ] -- ++ showL (WrappedMap chords) 
+    ] ++ map showChords (M.toAscList chords))
     where
+      -- chords: Map Int (Map Int Chord)
+      showChords (loc,chds) = 
+        Component (printf "loc: %s" (showLoc2 loc)) True 
+        (map (showI . VoiceChord) $ M.toAscList chds)      
       showBr (name,locPairs) = Component name True (map g locPairs)
         where
           g (loc1,loc2) = SingleLine $ showLoc2 loc1 ++ " " ++ showLoc2 loc2
@@ -172,14 +176,25 @@ instance ShowItemClass LocOctLines where
   showI (loc,OctaveLine n end) = SingleLine $ printf "%s n:%3d end:%s" 
          (simpleShowLoc loc) n (simpleShowLoc end)
 
+newtype VoiceChord = VoiceChord (Int,Chord)
 
+instance ShowItemClass VoiceChord where
+  showI (VoiceChord (vn,Chord endLoc {- key mStaff -} mods notes _)) = 
+      Component 
+      (printf "Voi:%d chord: end:%s %s"
+                  vn (showLoc2 endLoc)
+                  (concatMap (\m -> " " ++ show m) $ S.toList mods)
+      )
+      True [showI notes]
+
+{-
 instance ShowListClass (Map Int Chord) where
   showL = map g . M.toAscList
     where
       g :: (Int,Chord) -> ShowItem
-      g (vn,Chord endLoc mods notes _) = 
-          Component (printf "Voi %d chord: end:%s %s"
-                     vn (showLoc2 endLoc)
+      g (vn,Chord endLoc key mods notes _) = 
+          Component (printf "Voi %d chord: end:%s key:%d %s"
+                     vn (showLoc2 endLoc) key
                      (concatMap (\m -> " " ++ show m) $ S.toList mods))
           True [sNotes]
         where
@@ -190,12 +205,16 @@ instance ShowListClass (Map Int Chord) where
                , Component "m2" True (map showI $ M.toAscList m2)
                ]
           prepend s1 (SingleLine s2) = SingleLine $ s1 ++ s2
+-}
 
+instance ShowItemClass Notes where
+  showI (NSingles notes) = Component "Notes" True (map (showI . IndexNote) $ M.toAscList notes)
+  showI _ = SingleLine "Trill/tremolo omitted"
 
+newtype IndexNote = IndexNote (Int,Note) 
 
-type IndexNote = (Int,Note) 
 instance ShowItemClass IndexNote where
-  showI (idx,Note (Pitch midi step alter _) isTied trueEnd _) =
+  showI (IndexNote (idx,Note (Pitch midi step alter _) isTied trueEnd _)) =
     SingleLine $ printf ("%d: midi:%2d step:%d alter:%2d tieStart:%3s " ++ 
       "trueEnd:%s") idx midi step alter (yesno isTied)
       (simpleShowLoc trueEnd)

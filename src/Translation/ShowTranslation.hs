@@ -23,6 +23,7 @@ showCurve (OneCurve segMap timeSigs tm) =
         l1 = timeToLoc x1 timeSigs tm
         l2 = timeToLoc x2 timeSigs tm
 
+-- isShort (Chord _ _ _ mods _ _) = Staccato `elem` mods
 isShort (Chord _ mods _ _) = Staccato `elem` mods
 
 instance ShowItemClass SNote where

@@ -42,6 +42,13 @@ import XmlDoc.ShowXmlDoc
 import Util.FileUtil
 import Util.Exception
 import Util.Showable
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+import qualified Data.ByteString as B
+import qualified Data.Text.Encoding as EN
+import Data.Text.Encoding.Error(lenientDecode)
+import System.IO (openBinaryFile, IOMode(..), hClose)
+
 
 
 -- <beg msr> <maybe end msr> <maybe solo meta-instr> <splice points>
@@ -250,29 +257,25 @@ computeMsrRange args = case args of
     ri :: String -> Int
     ri s = case reads s of { (i,_):_ -> i}
 
+readStrictUtf16Text :: FilePath -> IO String -- IO T.Text
+readStrictUtf16Text filePath = do
+    bytes <- B.readFile filePath
+    return $ T.unpack $ EN.decodeUtf16LEWith lenientDecode bytes
+
+readStrictUtf8Text :: FilePath -> IO (Maybe String)
+readStrictUtf8Text filePath = do
+  bytes <- B.readFile filePath
+  case EN.decodeUtf8' bytes of
+    Left _  -> return Nothing
+    Right t -> return $ Just $ T.unpack t
+
 {-
-startMidi :: IO (Maybe [PMStream])
-startMidi = do
-  i <- openMidiPipeInput2
-  result <- initMidi i i
-  case result of
-    Left err -> putStrLn (show err) >> return Nothing
-    Right streams -> return $ Just streams
-
-
-stopMidi :: [PMStream] -> IO ()    
-stopMidi streams = do
-  mapM_ close streams
-  terminate
-  return ()    
--}
-
 readXml :: IO Score
 readXml = do
   env <- lookupEnv "COMPUTER_SYSTEM"
   buf <- case env of
-    Just _  -> readFileStrictly "/Users/mike/in.musicxml"
-    Nothing -> readFileStrictly "c:\\Users\\micha\\in.musicxml"
+    Just _  -> readStrictUtf16Text "/Users/mike/in.musicxml"
+    Nothing -> readStrictUtf16Text "c:\\Users\\micha\\in.musicxml"
   let topElems = onlyElems . parseXML $ buf
   case L.find ((=="score-partwise") . XL.qName . elName) topElems of
     Just e ->
@@ -281,7 +284,69 @@ readXml = do
              writeFile "xml.txt" $ showIString xd
              return $ xmlToScore xd
     Nothing  -> error "foo"
+-}
 
+readXmlUtf16 :: IO String
+readXmlUtf16 = do
+  env <- lookupEnv "COMPUTER_SYSTEM"
+  case env of
+    Just _  -> readStrictUtf16Text "/Users/mike/in.musicxml"
+    Nothing -> readStrictUtf16Text "c:\\Users\\micha\\in.musicxml"
+
+readXmlUtf8 :: IO (Maybe String)
+readXmlUtf8 = do
+  env <- lookupEnv "COMPUTER_SYSTEM"
+  case env of
+    Just _  -> readStrictUtf8Text "/Users/mike/in.musicxml"
+    Nothing -> readStrictUtf8Text "c:\\Users\\micha\\in.musicxml"
+
+tryReadXml :: String -> Maybe Score
+tryReadXml buf
+  | null topElems = Nothing
+  | otherwise     = Just score
+  where
+    topElems = onlyElems . parseXML $ buf
+    score = case L.find ((=="score-partwise") . XL.qName . elName) topElems of
+      Just e -> xmlToScore (parseXScore e)
+      Nothing  -> error "foo"
+
+readXml :: IO Score
+readXml = do
+  buf8 <- readXmlUtf8
+  let result8 = tryReadXml =<< buf8
+  case result8 of
+    Just s -> return s
+
+readXml2 :: IO Score
+readXml2 = do
+  buf16 <- readXmlUtf16
+  let result16 = tryReadXml buf16
+  buf8 <- readXmlUtf8
+  let result8 = tryReadXml =<< buf8
+  case (result8,result16) of
+    (_,Just s) -> "Using UTF16LE on XML file" `trace` return s
+    (Just s,_) -> "Using UTF8 on XML file" `trace` return s
+    _          -> error "neither UTF8 nor UTF16 works in reading XML file"
+
+
+{-
+readXml :: IO Score
+readXml = do
+  env <- lookupEnv "COMPUTER_SYSTEM"
+  buf <- case env of
+    Just _  -> readFileStrictly "/Users/mike/in.musicxml"
+    Nothing -> readFileStrictly "c:\\Users\\micha\\in.musicxml"
+  let topElems = onlyElems . parseXML $ buf
+  
+  case L.find ((=="score-partwise") . XL.qName . elName) topElems of
+    Just e ->
+      let xd = parseXScore e
+      in  do putStrLn "Writing xml.txt ... "
+             writeFile "xml.txt" $ showIString xd
+             return $ xmlToScore xd
+    Nothing  -> do writeFile (show $ length topElems) "orig-xml.txt"
+                   error "foo"
+-}
 
 {-
 openMidiPipeInput2 :: IO DeviceID
@@ -363,7 +428,7 @@ doSendCtrlSet str setNum = do
 ----------------------------------------------------------------------
 
 handlers conns = [ Handler myHandlerM
-                 , Handler ioHandlerM 
+                 , Handler ioHandlerM
                  , Handler (asyncHandlerM conns) ]
 
 handlers2 = [ Handler myHandlerM

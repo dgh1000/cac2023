@@ -76,6 +76,7 @@ data GraceNote = GraceNote
 -- Bool: True = acci, False = appo
 data GraceNoteSeq = GraceNoteSeq Bool [GraceNote]
 
+-- are trill-flat, trill-sharp, etc. really changed to a MarkD
 data Staff = Staff
   { stName         :: String
   , stDynamics     :: [Map Loc Dynamic]
@@ -412,6 +413,7 @@ data ChordModifier = SingTrem Int
                    | DownBow
                    | UpBow
                    | OpenString
+                   | TrillMark
                      deriving(Show,Eq,Ord,NFData,Generic)
 
 

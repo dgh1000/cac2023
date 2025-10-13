@@ -29,7 +29,9 @@ data XMsrAttr = XMsrAttr
   { xaDpq :: Maybe Int       -- divisions per quarter
   , xaNumer :: Maybe Int
   , xaDenom :: Maybe Int
+  , xaKey   :: Maybe Int
   }
+  deriving(Show)
 
 -- does every 
 data XMsrData = 
@@ -178,7 +180,8 @@ data IXmlDoc = IXmlDoc
 data IXMsrInfo = IXMsrInfo
   { ixDpq   :: Int    -- divisions per quarter
   , ixNumer :: Int
-  , ixDenom :: Int }
+  , ixDenom :: Int
+  , ixKey   :: Int }
 
 {-
 data IXPart = IXPart

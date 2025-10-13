@@ -15,6 +15,7 @@ import XmlDoc.XmlDocExport
 import Common.CommonUtil
 import Common
 import Util.Exception
+import GHC.IO (unsafePerformIO)
 
 
 
@@ -33,23 +34,35 @@ computeXmlStaves :: XScore -> ( Map Int IXMsrInfo
 computeXmlStaves (XScore _ parts isSib) 
   = (mis, M.map g parts)
   where
+    -- Oct 25: this gets measure infos out of first part. I guess we assume
+    -- it's the same for all parts
     mis = case M.toList parts of {(_,p):_ -> computeMsrInfos p}
     g :: XPart -> Map Loc [XMsrData]
     g (XPart msrs) = computeMsrDatas isSib mis msrs
 
+-- computeMsrInfos :: XPart -> Map Int IXMsrInfo
+-- computeMsrInfos xpart@(XPart msrs) = showMsrDatas `trace` output
+--   where
+--     (s, output) = computeMsrInfos2 xpart 
+--     showMsrDatas = unlines $ map showMsrData msrs
+--     showMsrData (XMsr _ attr _) = show attr
+
 computeMsrInfos :: XPart -> Map Int IXMsrInfo
-computeMsrInfos (XPart msrs) = 
-  case scanl step (Nothing,Nothing,Nothing) . map transformMsr $ msrs of
+computeMsrInfos (XPart msrs) = case s of
     _:ys -> M.fromList . zip [1..] . map toMsrInfo $ ys
   where
+    s = scanl step (Nothing,Nothing,Nothing,Nothing) . map transformMsr $ msrs
     combine x Nothing = x
     combine _ (Just x) = Just x
-    step (a, b, c) (XMsrAttr ma mb mc) 
-      = (a `combine` ma, b `combine` mb, c `combine` mc)
-    toMsrInfo (Just x,Just y,Just z) = IXMsrInfo x y z
+    step (a, b, c, d) (XMsrAttr ma mb mc md) 
+      = (a `combine` ma, b `combine` mb, c `combine` mc, d `combine` md)
+    toMsrInfo (Just x,Just y,Just z,Just w) = IXMsrInfo x y z w
+    -- This changes all measures into XMsrAttr including
+    -- measures which don't have any attributes set (by
+    -- setting those to all Nothing)
     transformMsr :: XMsr -> XMsrAttr
     transformMsr (XMsr _ (Just msrAttr) _) = msrAttr
-    transformMsr _ = XMsrAttr Nothing Nothing Nothing
+    transformMsr _ = XMsrAttr Nothing Nothing Nothing Nothing
 
 data TimeState = TimeState Int Int (Maybe Int)  -- <prev time> <current time>
                                                 -- <previous non-chord voice
@@ -220,7 +233,7 @@ divsToLoc mis msrNum divs
   | b < fromIntegral numer + 1 = Just $ Loc msrNum b
   | otherwise = printf "divsToLoc: bad measure %d" msrNum `trace` Nothing
   where
-    IXMsrInfo dpq numer denom = case M.lookup msrNum mis of
+    IXMsrInfo dpq numer denom _ = case M.lookup msrNum mis of
       Just x -> x
     b = 1 + (fromIntegral denom / 4) * (fromIntegral divs / fromIntegral dpq)
 
