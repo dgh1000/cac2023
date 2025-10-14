@@ -128,7 +128,7 @@ type MarkN = Mark NumVar
 
 type MarkD = Mark Double
 
-data Mark a = SymbolMark String Int
+data Mark a = SymbolMark String (Maybe Int) (Maybe Int)
   -- SetTempo <maybe pre-tempo> <post-tempo or only-tempo> <flag: * present>
             | SetTempo (Maybe a) a Bool
             | ArpDelta Double
@@ -312,6 +312,8 @@ data TrillStep = Upper | Lower
 
 data Chord = Chord
   { cEndLoc        :: Loc
+  , cKey           :: Int
+  , cStaff         :: Maybe Int
   , cModifiers     :: Set ChordModifier
   , cNotes         :: Notes
   , cGraces        :: [GNote]
@@ -356,12 +358,10 @@ data InterNote = InterNote
   , inNotations :: [XNotation]
   , inNotehead  :: Notehead }
 
--- try to figure this out 9/1/22. prelim chord. major feature seems 
--- to be end loc. what's in a Note? how is this prelim and what is different
--- about final chord?
--- 
 data PrelimChord = PrelimChord
   { prcEndLoc     :: Loc
+  , prcKey        :: Int
+  , prcStaff      :: Maybe Int
   , prcModifiers  :: Set ChordModifier
   , prcNotes      :: [Note]
   }
@@ -437,7 +437,7 @@ data OctaveLine = OctaveLine Int Loc   -- <# octaves shift>, <end loc>
 
 
 chordTrueEnds :: Chord -> [(Int,Loc)]
-chordTrueEnds (Chord endLoc _ notes _) = case notes of
+chordTrueEnds (Chord endLoc _ _ _ notes _) = case notes of
   NSingles noteMap ->
     let f p = case M.lookup p noteMap of
           Just n -> nTrueEnd n
@@ -445,7 +445,7 @@ chordTrueEnds (Chord endLoc _ notes _) = case notes of
   NTrill _ s1 s2 ->
     let f s p = case M.lookup p s of
           Just n -> nTrueEnd n
-    in (map (id &&& f s1) $ M.keys s1) ++ (map (id &&& f s2) $ M.keys s2)
+    in map (id &&& f s1) (M.keys s1) ++ map (id &&& f s2) (M.keys s2)
 
 
 

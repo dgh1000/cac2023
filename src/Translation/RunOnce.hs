@@ -310,15 +310,15 @@ tryReadXml buf
       Just e -> xmlToScore (parseXScore e)
       Nothing  -> error "foo"
 
-readXml :: IO Score
-readXml = do
+readXmlTest :: IO Score
+readXmlTest = do
   buf8 <- readXmlUtf8
   let result8 = tryReadXml =<< buf8
   case result8 of
     Just s -> return s
 
-readXml2 :: IO Score
-readXml2 = do
+readXml :: IO Score
+readXml = do
   buf16 <- readXmlUtf16
   let result16 = tryReadXml buf16
   buf8 <- readXmlUtf8
@@ -327,7 +327,6 @@ readXml2 = do
     (_,Just s) -> "Using UTF16LE on XML file" `trace` return s
     (Just s,_) -> "Using UTF8 on XML file" `trace` return s
     _          -> error "neither UTF8 nor UTF16 works in reading XML file"
-
 
 {-
 readXml :: IO Score

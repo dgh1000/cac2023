@@ -179,10 +179,10 @@ instance ShowItemClass LocOctLines where
 newtype VoiceChord = VoiceChord (Int,Chord)
 
 instance ShowItemClass VoiceChord where
-  showI (VoiceChord (vn,Chord endLoc {- key mStaff -} mods notes _)) = 
+  showI (VoiceChord (vn,Chord endLoc key mStaff mods notes _)) = 
       Component 
-      (printf "Voi:%d chord: end:%s %s"
-                  vn (showLoc2 endLoc)
+      (printf "Voi:%d chord: key:%d staff:%s end:%s %s"
+                  vn key (show mStaff) (showLoc2 endLoc)
                   (concatMap (\m -> " " ++ show m) $ S.toList mods)
       )
       True [showI notes]

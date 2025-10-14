@@ -489,7 +489,7 @@ maybeMetMark _ _ = Nothing
 
 maybeSymbol :: XMsrData -> Maybe MarkD
 maybeSymbol (XMDDirection (XDOtherDirection s) _ mVoice mStaff) = 
-  Just $ SymbolMark s 0 {- mVoice mStaff -}
+  Just $ SymbolMark s mVoice mStaff
 maybeSymbol _ = Nothing
 
 
@@ -676,7 +676,7 @@ noteMapToChordMap msrInfo chordBegin = M.map (notesToChord chordBegin msrInfo)
 -- have the key signature
 notesToChord :: Loc -> Map Int IXMsrInfo -> [XNote] -> PrelimChord
 notesToChord chordBegin msrInfo notesIn = 
-    PrelimChord endingLoc {- key (xnStaff firstNote) -} modifierData notesOut
+    PrelimChord endingLoc key (xnStaff firstNote) modifierData notesOut
   where
   firstNote:_ = notesIn
   endingLoc = computeEndLoc msrInfo chordBegin (XD.xnDuration firstNote)
@@ -787,7 +787,7 @@ computeChordEndsMap m = listToLMap $ concatMap g $ M.toList m
 -- output:: Map Loc (Map Int PrelimChord) but with 
 -- 
 processTies :: Map Loc [(Loc,Int)] -> Map Loc (Map Int PrelimChord) ->
-               (Map Loc (Map Int PrelimChord))
+               Map Loc (Map Int PrelimChord)
 processTies chordEnds staff = M.mapMaybeWithKey processLoc staff
   where
     -- processLoc
@@ -797,7 +797,7 @@ processTies chordEnds staff = M.mapMaybeWithKey processLoc staff
     --   Maybe (Map Int PrelimChord): result after removing notes
     --     that are "tie middles" and (Maybe?) adjusting endloc or 
     --     trueendloc of notes that remain
-    processLoc :: Loc -> Map Int PrelimChord -> (Maybe (Map Int PrelimChord))
+    processLoc :: Loc -> Map Int PrelimChord -> Maybe (Map Int PrelimChord)
     processLoc loc = mmwk processChord
       where
         -- processChord
@@ -806,7 +806,7 @@ processTies chordEnds staff = M.mapMaybeWithKey processLoc staff
         -- PrelimChord 
         -- Maybe PrelimChord: whatever notes are left, Nothing if none
         processChord :: Int -> PrelimChord -> Maybe PrelimChord
-        processChord vn ch@(PrelimChord end _ ns) =
+        processChord vn ch@(PrelimChord end _ _ _ ns) =
           let set_NSingles ns = ch {prcNotes=ns}
               -- doTieNote: decide for one note whether to keep it or
               -- remove it and adjust its end if necessary
@@ -884,7 +884,7 @@ doTieNote chordEnds staff atLoc vnIn end note
     -- f2: takes a PrelimChord and returns list of notes matching pitch match
     --   (if I'm not mistaken there shouldn't be more than one)
     f2 :: PrelimChord -> [Note]
-    f2 (PrelimChord _ _ ns) = filter ((==pitchMatch) . midiPitch . nPitch) ns
+    f2 (PrelimChord _ _ _ _ ns) = filter ((==pitchMatch) . midiPitch . nPitch) ns
     -- m4: mapping f2 to the inside of m3, retrieving all matching notes
     --   
     --   could there be more than one? not likely since usually chords 
@@ -1012,9 +1012,9 @@ prelimChord2Chord symbols staff = M.mapMaybeWithKey pc2c_loc staff
 
 
 pc2c_main_case :: PrelimChord -> Chord
-pc2c_main_case (PrelimChord end {- key mStaff -} mods ns) =
+pc2c_main_case (PrelimChord end key mStaff mods ns) =
   -- GRACENOTES
-  Chord end {- key mStaff -} mods (NSingles $ M.fromList $ map (nmp &&& id) ns) []
+  Chord end key mStaff mods (NSingles $ M.fromList $ map (nmp &&& id) ns) []
   where
     nmp = midiPitch . nPitch
                      
@@ -1035,7 +1035,7 @@ pc2c_trill_case atLoc upperAlter key c1 =
        note2 = note1 {nPitch=pitch2}
        new1 = M.fromList [(midi1,note1)]
        new2 = M.fromList [(midi2,note2)]
-   in Just $ Chord (prcEndLoc c1) {- (prcKey c1) (prcStaff c1) -} (prcModifiers c1)
+   in Just $ Chord (prcEndLoc c1) (prcKey c1) (prcStaff c1) (prcModifiers c1)
              (NTrill (TtnTrill trillDiff) new1 new2) []
 
 
@@ -1044,11 +1044,11 @@ mkNoteMap = M.fromList . map ((midiPitch . nPitch) &&& id)
 
 pc2c_dt_case :: Map Loc (Map Int PrelimChord) -> Loc -> Int -> PrelimChord ->
                 Chord
-pc2c_dt_case staff atLoc vn c1@(PrelimChord end1 {- key mStaff -} mods1 ns1) = case mns2 of
-    Just (end2,ns2) -> Chord end2 {- key mStaff -} mods1 (NTrill TtnTremolo (mkNoteMap ns1)
+pc2c_dt_case staff atLoc vn c1@(PrelimChord end1 key mStaff mods1 ns1) = case mns2 of
+    Just (end2,ns2) -> Chord end2 key mStaff mods1 (NTrill TtnTremolo (mkNoteMap ns1)
                                                         (mkNoteMap ns2) ) []
     Nothing -> printf "warning, no chord follows doub.tremolo at %s"
-               (showLoc2 atLoc) `trace` Chord end1 {- key mStaff -} mods1
+               (showLoc2 atLoc) `trace` Chord end1 key mStaff mods1
                                         (NSingles (mkNoteMap ns1)) []
   where
     -- find the following chord if it exists, at end1
@@ -1118,7 +1118,7 @@ isTrill syms atLoc vn pc = case maybeOrnament of
     Just i -> Just i
     _      -> maybeNotation
   where
-    maybeNotation = M.lookup atLoc syms >>= listToMaybe . mapMaybe mTrill {- vn (prcStaff pc) -}
+    maybeNotation = M.lookup atLoc syms >>= listToMaybe . mapMaybe (mTrill vn) {- (prcStaff pc) -}
     maybeOrnament | Score.ScoreData.TrillMark `elem` prcModifiers pc = Just 2
                   | otherwise                                        = Nothing
 
@@ -1139,8 +1139,8 @@ mTrill _ _ = Nothing
 -}
 
 -- new mTrill that accepts any trill symbol mark
-mTrill :: {- Int -> Maybe Int -> -} MarkD -> Maybe Int
-mTrill {- vn mChordStaff -} (SymbolMark s voi {- mStaff -}) = mTrill' s
+mTrill :: Int -> {- Maybe Int -> -} MarkD -> Maybe Int
+mTrill vn {- mChordStaff -} (SymbolMark s voi mStaff) = mTrill' s
   -- | isJust mVoi = case mVoi of
   --     Just v | v == vn -> mTrill' s
   --     _                -> Nothing
@@ -1148,7 +1148,7 @@ mTrill {- vn mChordStaff -} (SymbolMark s voi {- mStaff -}) = mTrill' s
   --     (Just st1,Just st2) -> mTrill' s
   --     _                                -> Nothing
   -- | otherwise = Nothing
-mTrill _ = Nothing
+mTrill _ _ = Nothing
 
 mTrill' :: String -> Maybe Int
 mTrill' s = case s of
