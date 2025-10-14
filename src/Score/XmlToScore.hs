@@ -1044,7 +1044,11 @@ mkNoteMap = M.fromList . map ((midiPitch . nPitch) &&& id)
 
 pc2c_dt_case :: Map Loc (Map Int PrelimChord) -> Loc -> Int -> PrelimChord ->
                 Chord
-pc2c_dt_case staff atLoc vn c1@(PrelimChord end1 key mStaff mods1 ns1) = case mns2 of
+pc2c_dt_case staff atLoc vn c1 = ("pc2c_dt_case:"++ showLoc2 atLoc)
+  `trace` pc2c_dt_case' staff atLoc vn c1
+
+pc2c_dt_case' :: Map Loc (Map Int PrelimChord) -> Loc -> Int -> PrelimChord -> Chord
+pc2c_dt_case' staff atLoc vn c1@(PrelimChord end1 key mStaff mods1 ns1) = case mns2 of
     Just (end2,ns2) -> Chord end2 key mStaff mods1 (NTrill TtnTremolo (mkNoteMap ns1)
                                                         (mkNoteMap ns2) ) []
     Nothing -> printf "warning, no chord follows doub.tremolo at %s"
@@ -1055,7 +1059,7 @@ pc2c_dt_case staff atLoc vn c1@(PrelimChord end1 key mStaff mods1 ns1) = case mn
     a :: Maybe PrelimChord
     a = M.lookup end1 staff >>= M.lookup vn
     b :: PrelimChord -> Maybe (Loc,[Note])
-    b c2 | isJust $ findDoubTremStop c2 = Just $ (prcEndLoc c2,prcNotes c2)
+    b c2 | isJust $ findDoubTremStop c2 = Just (prcEndLoc c2,prcNotes c2)
          | otherwise = Nothing
     -- c is the notes at double tremolo stop chord
     mns2 :: Maybe (Loc,[Note])
@@ -1144,7 +1148,8 @@ mTrill _ _ = Nothing
 mTrill :: Int -> Maybe Int -> MarkD -> Maybe Int
 mTrill vn mChordStaff (SymbolMark s mVoi mStaff)
   | isJust mVoi = case mVoi of
-      Just v | v == vn -> "voice num matches" `trace` mTrill' s
+      Just v | v == vn   -> "voice num matches" `trace` mTrill' s
+             | otherwise -> Nothing
   -- | isJust mChordStaff = case (mChordStaff,mStaff) of
   --     (Just st1,Just st2) -> mTrill' s
   --     _                                -> Nothing

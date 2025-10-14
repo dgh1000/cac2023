@@ -60,15 +60,15 @@ data ArgData = PlayCmd Int (Maybe Int) (Maybe String) [String]
 
 -- we want to validate 
 
-runOnce :: RunData -> [String] -> IO ()
-runOnce rd args =
-  runOnceA args rd `catches` handlers2
+runOnce :: RunData -> FilePath -> [String] -> IO ()
+runOnce rd xmlFile args =
+  runOnceA args xmlFile rd `catches` handlers2
 
 
-runOnceA :: [String] -> RunData -> IO ()
-runOnceA args rd = do
+runOnceA :: [String] -> FilePath -> RunData -> IO ()
+runOnceA args xmlFilePath rd = do
   case parseArgs args of
-    PlayCmd mBeg mEnd mSolo splicePts -> doPlay mBeg mEnd mSolo splicePts rd
+    PlayCmd mBeg mEnd mSolo splicePts -> doPlay xmlFilePath mBeg mEnd mSolo splicePts rd
     SendCtrl stream chan ctrl value -> error "foo" -- doSendCtrl stream chan ctrl value
     SendCtrlSet stream setNum -> error "foo" -- doSendCtrlSet stream setNum
 
@@ -84,10 +84,10 @@ findDevice = do
   return dev
 -}
 
-doPlay :: Int -> Maybe Int -> Maybe String -> [String] -> RunData -> IO ()
-doPlay mBeg mEnd mSolo splicePts (RunData metasIn) = do
+doPlay :: FilePath -> Int -> Maybe Int -> Maybe String -> [String] -> RunData -> IO ()
+doPlay xmlFilePath mBeg mEnd mSolo splicePts (RunData metasIn) = do
   conns <- openConnections
-  score <- readXml
+  score <- readXml xmlFilePath
   putStrLn "writing score.txt..."
       >> writeFile "score.txt" (showIString score)
   gen <- newStdGen
@@ -286,6 +286,15 @@ readXml = do
     Nothing  -> error "foo"
 -}
 
+-- readXML logic: let's say that the .hs file associated with the 
+-- music document specifies the xml location and whether to read as
+-- Sibelius or Dorico. 
+
+{-
+OCT 2025 removing these because of new system of specifying file path
+in the Haskell file associated with each score. It will break on 
+Windows for now.
+
 readXmlUtf16 :: IO String
 readXmlUtf16 = do
   env <- lookupEnv "COMPUTER_SYSTEM"
@@ -293,12 +302,14 @@ readXmlUtf16 = do
     Just _  -> readStrictUtf16Text "/Users/mike/in.musicxml"
     Nothing -> readStrictUtf16Text "c:\\Users\\micha\\in.musicxml"
 
+
 readXmlUtf8 :: IO (Maybe String)
 readXmlUtf8 = do
   env <- lookupEnv "COMPUTER_SYSTEM"
   case env of
     Just _  -> readStrictUtf8Text "/Users/mike/in.musicxml"
     Nothing -> readStrictUtf8Text "c:\\Users\\micha\\in.musicxml"
+-}
 
 tryReadXml :: String -> Maybe Score
 tryReadXml buf
@@ -310,74 +321,17 @@ tryReadXml buf
       Just e -> xmlToScore (parseXScore e)
       Nothing  -> error "foo"
 
-readXmlTest :: IO Score
-readXmlTest = do
-  buf8 <- readXmlUtf8
-  let result8 = tryReadXml =<< buf8
-  case result8 of
-    Just s -> return s
-
-readXml :: IO Score
-readXml = do
-  buf16 <- readXmlUtf16
+readXml :: FilePath -> IO Score
+readXml filePath = do
+  buf16 <- readStrictUtf16Text filePath
   let result16 = tryReadXml buf16
-  buf8 <- readXmlUtf8
-  let result8 = tryReadXml =<< buf8
+  buf8 <- readStrictUtf8Text filePath
+  let result8 = buf8 >>= tryReadXml
   case (result8,result16) of
     (_,Just s) -> "Using UTF16LE on XML file" `trace` return s
     (Just s,_) -> "Using UTF8 on XML file" `trace` return s
     _          -> error "neither UTF8 nor UTF16 works in reading XML file"
 
-{-
-readXml :: IO Score
-readXml = do
-  env <- lookupEnv "COMPUTER_SYSTEM"
-  buf <- case env of
-    Just _  -> readFileStrictly "/Users/mike/in.musicxml"
-    Nothing -> readFileStrictly "c:\\Users\\micha\\in.musicxml"
-  let topElems = onlyElems . parseXML $ buf
-  
-  case L.find ((=="score-partwise") . XL.qName . elName) topElems of
-    Just e ->
-      let xd = parseXScore e
-      in  do putStrLn "Writing xml.txt ... "
-             writeFile "xml.txt" $ showIString xd
-             return $ xmlToScore xd
-    Nothing  -> do writeFile (show $ length topElems) "orig-xml.txt"
-                   error "foo"
--}
-
-{-
-openMidiPipeInput2 :: IO DeviceID
-openMidiPipeInput2 = do
-  c <- countDevices
-  let test n = do info <- getDeviceInfo n
-                  return $ SP.name info == "MidiPipe Input 2"
-  tests <- mapM test [0..c-1]
-  case L.find fst (zip tests [0..c-1]) of
-    Nothing -> throwMine "is MidiPipe running?"
-    Just (_,x) -> putStrLn "using MidiPipe Input 2" >> return x
-
-
-initMidi :: Int -> Int -> IO (Either PMError [PMStream])
-initMidi midiDevNumLow midiDevNumHigh = do
-  SP.initialize
-  
-  result <- mapM openOutputDevice [midiDevNumLow..midiDevNumHigh]
-  
-  let (errors,streams) = partitionEithers result
-  case errors of
-    [] -> return $ Right streams
-    (err:_) -> return $ Left err
-
-
-openOutputDevice :: Int -> IO (Either PMError PMStream)
-openOutputDevice devNum = do
-  result <- openOutput devNum 0
-  case result of
-    Left stream -> return $ Right stream
-    Right err -> return $ Left err
--}
 
 {-
 doSendCtrl :: Int -> Int -> Int -> Int -> IO ()

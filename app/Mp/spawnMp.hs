@@ -114,6 +114,8 @@ prepareRun mProcHand arg = do
       return $ Just ph
     else return mProcHand
 
+-- Oct 2025, moving to Dorico. It exports the MusicXML without giving
+-- a chance to choose filename. 
 
 prepareInXml :: FilePath -> IO ()
 prepareInXml fp = do

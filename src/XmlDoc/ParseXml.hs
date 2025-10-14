@@ -362,6 +362,7 @@ parseWedge e = case myFindAttr "type" e of
   Just "crescendo"  -> XDWedge WedgeCresc
   Just "diminuendo" -> XDWedge WedgeDim
   Just "stop"       -> XDWedge WedgeStop
+  x                 -> error $ printf "wedge problems:%s" (show x)
 
 
 parsePedal :: Element -> XDirection
@@ -369,6 +370,7 @@ parsePedal e = case myFindAttr "type" e of
   Just "start"   -> XDPedal PedalStart  line
   Just "stop"    -> XDPedal PedalStop   line
   Just "change"  -> XDPedal PedalChange line
+  x              -> error $ printf "pedal problems:%s" (show x)
   where
     line = case myFindAttr "line" e of
       Just "yes" -> True
