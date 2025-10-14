@@ -1008,7 +1008,7 @@ prelimChord2Chord symbols staff = M.mapMaybeWithKey pc2c_loc staff
            | otherwise =
               case isTrill symbols atLoc vn c1 of
                 Nothing  -> Just $ pc2c_main_case c1
-                Just trN -> pc2c_trill_case atLoc trN 0 {- (prcKey c1) -} c1
+                Just trN -> pc2c_trill_case atLoc trN (prcKey c1) c1
 
 
 pc2c_main_case :: PrelimChord -> Chord
@@ -1081,6 +1081,7 @@ sharpOrder = [3, 0, 4, 1, 5, 2, 6]
 flatOrder :: [Int]
 flatOrder = [6, 2, 5, 1, 4, 0, 3]
 
+-- Compute trill pitch by examining key
 computeTrillPitch2 :: Int -> Pitch -> (Int,Pitch)
 computeTrillPitch2 key (Pitch _ step1 alter1 octave1) = (newMidi,pitch2)
   where

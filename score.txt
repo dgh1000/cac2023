@@ -12,29 +12,20 @@ marks:
   [  8: 1+     ]
     staff name: Piano
       SymbolMark "Trill" (Just 6) (Just 2)
+  [  9: 4+255/256]
   [ 10: 1+     ]
     staff name: Piano
-      SymbolMark "trill-flat" (Just 1) (Just 1)
-  [ 10: 2+     ]
-    staff name: Piano
-      SymbolMark "trill-natural" (Just 1) (Just 1)
-  [ 10: 3+     ]
-    staff name: Piano
-      SymbolMark "trill-sharp" (Just 1) (Just 1)
+      SymbolMark "Trill" (Just 1) (Just 1)
 staves:
 staff name: Piano
-  max true end: [ 10: 4+     ]
+  max true end: [ 10: 2+     ]
   MarkDs
     [  3: 1+     ]
       SymbolMark "Trill" (Just 6) (Just 2)
     [  8: 1+     ]
       SymbolMark "Trill" (Just 6) (Just 2)
     [ 10: 1+     ]
-      SymbolMark "trill-flat" (Just 1) (Just 1)
-    [ 10: 2+     ]
-      SymbolMark "trill-natural" (Just 1) (Just 1)
-    [ 10: 3+     ]
-      SymbolMark "trill-sharp" (Just 1) (Just 1)
+      SymbolMark "Trill" (Just 1) (Just 1)
   loc: [  2: 1+     ]
     Voi:1 chord: key:-2 staff:Just 1 end:[  2: 2+     ] 
       Notes
@@ -51,10 +42,4 @@ staff name: Piano
       Trill/tremolo omitted
   loc: [ 10: 1+     ]
     Voi:1 chord: key:7 staff:Just 1 end:[ 10: 2+     ] 
-      Trill/tremolo omitted
-  loc: [ 10: 2+     ]
-    Voi:1 chord: key:7 staff:Just 1 end:[ 10: 3+     ] 
-      Trill/tremolo omitted
-  loc: [ 10: 3+     ]
-    Voi:1 chord: key:7 staff:Just 1 end:[ 10: 4+     ] 
       Trill/tremolo omitted

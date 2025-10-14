@@ -159,7 +159,7 @@ parseXNote eNote
     -- traceThrough Nothing x = x
     -- traceThrough (Just vn) x = ("traceThrough vn: " ++ show vn) `trace` x
     toInt1 s = case reads s of {(i,_):_ -> i}
-    isRest = maybe False (const True) $ myFindChild "rest" eNote
+    isRest = isJust $ myFindChild "rest" eNote
     isGrace = case myFindChild "grace" eNote of
       Just e -> case myFindAttr "slash" e of
         Just "yes" -> Just True
@@ -171,7 +171,7 @@ parseXNote eNote
       Nothing -> 0 -- this is the case of the grace note. I don't know if there are
                    -- other cases that have a missing duration child element 9/1/22
       Just d -> toInt1 . strContent $ d
-    chord = maybe False (const True) $ myFindChild "chord" eNote
+    chord = isJust $ myFindChild "chord" eNote
     pitch = case myFindChild "pitch" eNote of
       Just p -> parseXPitch p
     maybeVoice = fmap (toInt1 . strContent) . myFindChild "voice" $ eNote
@@ -302,7 +302,7 @@ parseDirection eDir = fmap (\x -> XMDDirection x mOffset mVoice mStaff) xd
       "pedal"           -> Just $ parsePedal eDirType
       "octave-shift"    -> Just $ parseOctaveShift eDirType
       "other-direction" -> Just . XDOtherDirection . strContent $ eDirType
-      "?DoletSibelius"  -> Nothing
+      "?DoletSibelius"  -> "?Dolet encountered" `trace` Nothing
       t -> printf "Warning: unknown direction element type '%s'" t `trace`
         Nothing
     toInt1 s = case reads s of {(i,_):_ -> i}
@@ -335,10 +335,12 @@ parseDirectionType' e = output
       Just dirType -> case allChildren dirType of
         []  -> throwMine "parseDirectionType 1"
         [x] -> x
-        xs | all (\e -> myElName e == "words") xs ->
+        xs  | all (\e -> myElName e == "words") xs ->
               ("Warning, multiple <words> elements found as " ++
                 "sub-elements of <direction-type>; will only use first one '" ++
                 (strContent . head $ xs) ++ "'") `trace` head xs
+            | otherwise -> ("Multiple direction-type children exist: " ++ show xs)
+                `trace` head xs
 
 
 
