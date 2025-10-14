@@ -1118,7 +1118,7 @@ isTrill syms atLoc vn pc = case maybeOrnament of
     Just i -> Just i
     _      -> maybeNotation
   where
-    maybeNotation = M.lookup atLoc syms >>= listToMaybe . mapMaybe (mTrill vn) {- (prcStaff pc) -}
+    maybeNotation = M.lookup atLoc syms >>= listToMaybe . mapMaybe (mTrill vn (prcStaff pc))
     maybeOrnament | Score.ScoreData.TrillMark `elem` prcModifiers pc = Just 2
                   | otherwise                                        = Nothing
 
@@ -1138,17 +1138,17 @@ mTrill vn (SymbolMark s vTest) | vTest /= vn = Nothing
 mTrill _ _ = Nothing
 -}
 
--- new mTrill that accepts any trill symbol mark
-mTrill :: Int -> {- Maybe Int -> -} MarkD -> Maybe Int
-mTrill vn {- mChordStaff -} (SymbolMark s voi mStaff) = mTrill' s
-  -- | isJust mVoi = case mVoi of
-  --     Just v | v == vn -> mTrill' s
-  --     _                -> Nothing
+-- new mTrill that accepts non-accidental (normal) trill symbol mark
+-- Oct 2025: 
+mTrill :: Int -> Maybe Int -> MarkD -> Maybe Int
+mTrill vn mChordStaff (SymbolMark s mVoi mStaff)
+  | isJust mVoi = case mVoi of
+      Just v | v == vn -> "voice num matches" `trace` mTrill' s
   -- | isJust mChordStaff = case (mChordStaff,mStaff) of
   --     (Just st1,Just st2) -> mTrill' s
   --     _                                -> Nothing
-  -- | otherwise = Nothing
-mTrill _ _ = Nothing
+  | otherwise = ("mStaff:" ++ show mStaff) `trace` Nothing
+mTrill _ _ _ = "Nothing case" `trace` Nothing
 
 mTrill' :: String -> Maybe Int
 mTrill' s = case s of
