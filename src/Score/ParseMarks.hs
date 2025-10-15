@@ -394,7 +394,7 @@ toMarkD vars loc mIn = f mIn
   where
     g = computeNumVar vars loc
     f :: Mark NumVar -> Mark Double
-    f (SymbolMark s i) = SymbolMark s i
+    f (SymbolMark s i mStaff) = SymbolMark s i mStaff
     f (SetTempo nv1 nv2 flag) = SetTempo (fmap g nv1) (g nv2) flag  
     f (ArpDelta d) = ArpDelta d
     f (StacDur d) = StacDur d

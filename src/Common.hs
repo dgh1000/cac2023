@@ -14,6 +14,10 @@ import Data.Maybe
 import Util.Showable
 import Util.Exception
 
+
+musicDirRootMac :: String
+musicDirRootMac = "/Users/mike/Dropbox/music/comp/"
+
 slicesPerBeat = 24 :: Int
 
 

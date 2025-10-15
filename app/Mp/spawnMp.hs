@@ -114,6 +114,8 @@ prepareRun mProcHand arg = do
       return $ Just ph
     else return mProcHand
 
+-- Oct 2025, moving to Dorico. It exports the MusicXML without giving
+-- a chance to choose filename. 
 
 prepareInXml :: FilePath -> IO ()
 prepareInXml fp = do
@@ -133,7 +135,7 @@ prepareInXml fp = do
     (False,True) -> return 2
     _            -> error "neither out.musicxml nor local musicxml files exist"
   if which == 1 
-    then copyFile localXmlFp $ homeD </> "in.musicxml"
+    then "using local XML file" `trace` copyFile localXmlFp $ homeD </> "in.musicxml"
     else copyFile outXmlFp $ homeD </> "in.musicxml"
 
 

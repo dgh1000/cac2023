@@ -1,0 +1,60 @@
+Score
+marks:
+  [  1: 1+     ]
+    staff name: Piano
+      Extend 5.0e-2
+  [  1: 2+     ]
+    staff name: Piano
+      Trill shape: Upper Lower;   15.000 5, 
+  [  3: 1+     ]
+    staff name: Piano
+      SymbolMark "Trill" (Just 6) (Just 2)
+  [  8: 1+     ]
+    staff name: Piano
+      SymbolMark "Trill" (Just 6) (Just 2)
+  [ 10: 1+     ]
+    staff name: Piano
+      SymbolMark "trill-flat" (Just 1) (Just 1)
+  [ 10: 2+     ]
+    staff name: Piano
+      SymbolMark "trill-natural" (Just 1) (Just 1)
+  [ 10: 3+     ]
+    staff name: Piano
+      SymbolMark "trill-sharp" (Just 1) (Just 1)
+staves:
+staff name: Piano
+  max true end: [ 10: 4+     ]
+  MarkDs
+    [  3: 1+     ]
+      SymbolMark "Trill" (Just 6) (Just 2)
+    [  8: 1+     ]
+      SymbolMark "Trill" (Just 6) (Just 2)
+    [ 10: 1+     ]
+      SymbolMark "trill-flat" (Just 1) (Just 1)
+    [ 10: 2+     ]
+      SymbolMark "trill-natural" (Just 1) (Just 1)
+    [ 10: 3+     ]
+      SymbolMark "trill-sharp" (Just 1) (Just 1)
+  loc: [  2: 1+     ]
+    Voi 1 chord: end:[  2: 2+     ] key:-2 
+      Notes
+        53: midi:53 step:3 alter: 0 tieStart: No trueEnd:[m:  2,   2 % 1]
+  loc: [  2: 2+     ]
+    Voi 1 chord: end:[  2: 3+     ] key:-2 
+      Notes
+        55: midi:55 step:4 alter: 0 tieStart: No trueEnd:[m:  2,   3 % 1]
+  loc: [  3: 1+     ]
+    Voi 6 chord: end:[  3: 3+     ] key:-2 
+      Trill/tremolo omitted
+  loc: [  8: 1+     ]
+    Voi 6 chord: end:[  8: 3+     ] key:7 
+      Trill/tremolo omitted
+  loc: [ 10: 1+     ]
+    Voi 1 chord: end:[ 10: 2+     ] key:7 
+      Trill/tremolo omitted
+  loc: [ 10: 2+     ]
+    Voi 1 chord: end:[ 10: 3+     ] key:7 
+      Trill/tremolo omitted
+  loc: [ 10: 3+     ]
+    Voi 1 chord: end:[ 10: 4+     ] key:7 
+      Trill/tremolo omitted

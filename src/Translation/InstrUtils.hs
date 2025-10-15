@@ -118,7 +118,7 @@ initSNote staffN loc vn ch n@(Note pit _ trueEnd _) = do
                , snTrill      = NoTrill
                , snPitWarpOffset = 0
                }
-  
+
 
 
 doNTrill :: Bool -> String -> Loc -> Int -> Chord -> TrillTremNote ->
@@ -140,7 +140,7 @@ doNonSplitTrill staffN loc vn ch ttn ns1 ns2 = do
                         , snHistory = templateNote : snHistory templateNote
                         , snTrill   = outTrill
                         }
-  
+
 
 doSplitTrill :: String -> Loc -> Int -> Chord -> TrillTremNote ->
                     Map Int Note -> Map Int Note -> Tr [SNote]
@@ -151,7 +151,7 @@ doSplitTrill staffN loc vn ch ttn ns1 ns2 = do
   let lk mpred msg = lookupStaffMarkLE mpred msg loc marks
       mShape = case ttn of
         TtnTremolo -> lk isTremShape  "'tremolo shape'"
-        TtnTrill _ -> lk isTrillShape "'trill shape'" 
+        TtnTrill _ -> lk isTrillShape "'trill shape'"
       shape = case mShape of
           Nothing -> throwMine $ printf ("no trill or tremolo shape prior "++
                      "to %s on staff %s") (showLoc2 loc) staffN
@@ -175,7 +175,7 @@ doSplitTrill staffN loc vn ch ttn ns1 ns2 = do
       flag = case ttn of {TtnTremolo -> True; TtnTrill _ -> False}
   return $ [g flag d note | d <- data1, note <- M.elems ns1] ++
            [g flag d note | d <- data2, note <- M.elems ns2]
-           
+
 ---------------------------------------------------------------------
 -- acciaccatura and appogiatura
 doAcciAppo :: String -> Tr ()
@@ -245,7 +245,7 @@ computeCtrls staffN dest = do
           ctrls = mapMaybe maybeCtrl marksAtLoc
           t = lookupTime loc atm
   return $ concat $ M.mapWithKey f marks
-  
+
 
 
 maybeCtrl :: MarkD -> Maybe (Int,Int)
@@ -256,7 +256,7 @@ maybeCtrl _                = Nothing
 
 ----------------------------------------------------------------------
 
-  
+
 
 computeAccent2 amt mods loud
   | Accent `elem` mods = loud+amt
@@ -276,7 +276,7 @@ clipLoud l | l < globMinLoud = "warning: min loud" `trace` globMinLoud
 
 iuLookupLE :: Ord k => k -> Map k a -> a
 iuLookupLE k m = case M.lookupLE k m of {Just (_,v) -> v}
-              
+
 
 ----------------------------------------------------------------------
 
@@ -315,14 +315,12 @@ arpCount staffNames loc pitch = do
 arpPitches :: Loc -> String -> Tr [Int]
 arpPitches loc staffName = do
   sc <- gets $ view score
-  let chordPitches (Chord _ mods (NSingles ps) _) = M.keys ps
-      chordPitches (Chord _ mods (NTrill _ ps1 ps2) _) = M.keys ps1 ++ M.keys ps2
+  let chordPitches (Chord _ _ _ mods (NSingles ps) _) = M.keys ps
+      chordPitches (Chord _ _ _ mods (NTrill _ ps1 ps2) _) = M.keys ps1 ++ M.keys ps2
       cp c | Arpeggiate `elem` cModifiers c = chordPitches c
            | otherwise = []
       chordLookup :: Loc -> Map Loc (Map Int Chord) -> Map Int Chord
-      chordLookup loc chords = case M.lookup loc chords of
-        Just cs -> cs
-        Nothing -> M.empty
+      chordLookup loc chords = fromMaybe M.empty (M.lookup loc chords)
   return . concatMap cp . M.elems . chordLookup loc . stChords .
            iuLookup "h" staffName $ scStaves sc
 
@@ -341,7 +339,7 @@ iuLookup s k m = case M.lookup k m of
 
 ----------------------------------------------------------------------
 isShort :: Chord -> Bool
-isShort (Chord _ mods _ _) = Staccato `elem` mods
+isShort (Chord _ _ _ mods _ _) = Staccato `elem` mods
 
 
 ----------------------------------------------------------------------
@@ -408,8 +406,8 @@ lookupPriorStaffMarkData' g msg loc m = out
     out = case mapMaybe (toData . snd) m3 of
       []  -> Nothing
       x:_ -> Just x
-      
-      
+
+
 
 ----------------------------------------------------------------------
 
@@ -419,7 +417,7 @@ lookupVel errMsg l (VelCurve segs) = case L.find matches segPairs of
     "covered by any segments in VelCurve") errMsg l
   Just ((x1,y1),(x2,y2)) -> round $ scale x1 l x2 y1 y2
   where
-    matches ((t1,_),(t2,_)) = t1 <= l && l <= t2    
+    matches ((t1,_),(t2,_)) = t1 <= l && l <= t2
     segPairs = zip segs (drop 1 segs)
 
 
@@ -434,7 +432,7 @@ findStaffBegEndLocs staffN begMsr endMsr = do
       begLoc = case M.minViewWithKey cs of
         Just ((k,v),_) -> k
 
-  
+
   error "foo"
 
 -- chordsMaxTrueEnd :: Map Loc (Map Int Chord) 
@@ -443,7 +441,7 @@ findStaffBegEndLocs staffN begMsr endMsr = do
 
 arpOffsets size = scanl (+) 0 (map s [0..size-1])
   where
-    s i = scale 0 (fromIntegral i) (fromIntegral $ size-1) 0.8 1.2 
+    s i = scale 0 (fromIntegral i) (fromIntegral $ size-1) 0.8 1.2
 
 -- arpOffsets = [0.0,0.6,1.4,2.4,3.6,4.8,6.4,8.1]
 
@@ -474,7 +472,7 @@ isTremShape _                  = Nothing
 isArtic :: MarkD -> Maybe String
 isArtic (Artic s) = Just s
 isArtic _          = Nothing
-  
+
 
 isStac :: MarkD -> Maybe Double
 isStac (StacDur d) = Just d
@@ -540,7 +538,7 @@ updateLoud accentAmt s = do
   let staffN = snStaffName s
       -- through x = ("abcdefg: " ++ showLoudnessMaps louds) `trace` x -- MUSESCORE
       loc = snLoc s
-  lcs <- (iuLookup3 "c" (snVn s) . iuLookup2 "d" staffN) 
+  lcs <- (iuLookup3 "c" (snVn s) . iuLookup2 "d" staffN)
          `liftM` gets (view loudnessMaps)
   let loud1 = case curveLookup (getTOn s) lcs of
         Nothing -> throwMine $ printf ("missing dynamic mark on staff " ++
@@ -555,7 +553,7 @@ showLoudnessMaps :: Map String (Map Int Curve) -> String
 showLoudnessMaps m1 = show $ M.map f1 m1
   where
     f1 :: Map Int Curve -> Map Int String
-    f1 = M.map (const "Some curve") 
+    f1 = M.map (const "Some curve")
 
 getLoudValue :: Double -> SNote -> Tr Double
 getLoudValue accentAmt s = do
@@ -568,7 +566,7 @@ getLoudValue accentAmt s = do
                    "'%s' before %s") staffN (showLoc2 loc)
         Just x -> x
   return $ computeAccent2 accentAmt (cModifiers $ snChord s) loud1
-  
+
 
 
 -- 
@@ -579,7 +577,7 @@ basicLookupLoud t vn staffN = do
              Nothing -> throwMine $ "error in basicLookupLoud: perhaps no " ++
                                "dynamic mark " ++ show t
              Just x  -> x
-        
+
 
 updateStac :: SNote -> Tr SNote
 updateStac s = do
@@ -593,7 +591,7 @@ updateStac s = do
                                              printf ("missing stac dur " ++
                                              "mark on staff '%s' before " ++
                                              "%s") (snStaffName s)
-                                             (showLoc2 $ snLoc s) 
+                                             (showLoc2 $ snLoc s)
                   in s { snDescr = "updateStac"
                        , snHistory = s : snHistory s
                        , snOnOff = ("stac",(getTOn s,getTOn s+stacDur))
@@ -619,7 +617,7 @@ isUnderSlur s = do
         Just (_,endSlur) | end2 <= endSlur   -> True
                          | otherwise         -> False
   return isMarkedSlur
-  
+
 
 -- updateEndAlter
 --
@@ -655,7 +653,7 @@ updateEndAlter alwaysSlur s = do
       isTrillFlag = case snTrill s of
         NoTrill -> False
         _       -> True
-                     
+
       a = case (isTrillFlag,isMarkedStac,isMarkedSlur) of
         (True,_,_)          -> ext
         (False,True,_)      -> 0
@@ -714,7 +712,7 @@ computeMergedMarks score staffNs =
   M.unionsWith (++) . map snd .
   filter (\(n,_) -> n `elem` staffNs) . M.toList $
   scMarksByStaff score
-  
-                     
+
+
 showTrRaws :: [TrRaw] -> ShowItem
 showTrRaws raws = Component "Raws" False (map showI raws)

@@ -13,6 +13,7 @@ import Data.Map(Map)
 import Data.Set(Set)
 import Text.Printf
 import Score.ScoreData
+import qualified Score.ScoreData as SD
 import Score.ParseMarks(computeWordMarks)
 import XmlDoc.XmlDocExport
 import XmlDoc.Process(computeXmlStaves)
@@ -42,7 +43,7 @@ xmlToScore xscore =
     xmlStaves = snd result1
     xMsrInfo = fst result1
     timeSigs = addAnotherMsr $
-               M.map (\(IXMsrInfo _ numer denom) -> TimeSig numer denom)
+               M.map (\(IXMsrInfo _ numer denom _) -> TimeSig numer denom)
                xMsrInfo
     -- DATA:
     --     xmlStaves is Map String (Map Loc [XMsrData]). 
@@ -51,11 +52,10 @@ xmlToScore xscore =
     stavesWords :: Map String (Map Loc [WordDirection])
     stavesWords = M.map (lMapMaybe maybeWord) xmlStaves
     
-    -- we need to compute Map Loc (Map String [Mark]
-    
+    -- we need to compute Map Loc (Map String [Mark]7
     allMarks'    = computeWordMarks stavesWords
     staves       = M.mapWithKey 
-      (computeStaff xMsrInfo timeSigs) $ xmlStaves
+      (computeStaff xMsrInfo timeSigs) xmlStaves
     allMarks     = foldInMetSymbolMarks staves allMarks'
     marksByStaff = computeMarksByStaff (M.keys staves) allMarks
 
@@ -89,21 +89,15 @@ computeMarksByStaff names mIn = foldl f (flipMap mIn) names
 
 
 
+-- what we do is take each staff. each staff will have metronone and
+-- symbol marks in a map with Loc as the key and the values are a list of
+-- marks.. But in the score, we represent the marks with Loc as the key
+-- and a submap of score name. We for each staff, we need to convert
 -- 
+--    Map Loc [MarkD] to Map String (Map Loc [MarkD])
 foldInMetSymbolMarks :: Map String Staff -> Map Loc (Map String [MarkD]) ->
                         Map Loc (Map String [MarkD])
 foldInMetSymbolMarks staves marksIn =
-  
-  -- what we do is take each staff. each staff will have metronone and
-  -- symbol marks in a map with Loc as the key and the values are a list of
-  -- marks.. But in the score, we represent the marks with Loc as the key
-  -- and a submap of score name. We for each staff, we need to convert
-  -- 
-  --    Map Loc [MarkD] to Map String (Map Loc [MarkD])
-  --
-  -- 
-  
-  
     foldl merge marksIn . map g $ M.toAscList staves
   where
     g :: (String,Staff) -> Map Loc (Map String [MarkD])
@@ -133,7 +127,6 @@ foldInMetSymbolMarks staves marksIn =
 --
 --  problem: some marks will be specific to a staff, while some will be paired
 --  with marks which are on a different staff
--- 
 computeStaff :: Map Int IXMsrInfo -> Map Int TimeSig -> String -> 
                 Map Loc [XMsrData] -> Staff
 computeStaff msrInfo timeSigs staffName xmlStaff1 =
@@ -495,8 +488,8 @@ maybeMetMark _ _ = Nothing
   
 
 maybeSymbol :: XMsrData -> Maybe MarkD
-maybeSymbol (XMDDirection (XDOtherDirection s) _ mVoice _) = case mVoice of
-  Just v -> Just $ SymbolMark s v
+maybeSymbol (XMDDirection (XDOtherDirection s) _ mVoice mStaff) = 
+  Just $ SymbolMark s mVoice mStaff
 maybeSymbol _ = Nothing
 
 
@@ -610,6 +603,20 @@ computeHairpinsOneScoreStaff = M.fromList . mapMaybe pairUp . L.tails .
 --   xMsrDataToNote: filters out just the XMDNote (would include grace notes)
 --   groupNotesByVoice
 --   noteMapToChordMap
+--
+-- Oct 25: what is xMsrDataToNote: works on Map Loc [XMsrData] and what's produced
+-- after the lMapMaybe is Map Loc [XNote]
+-- are in the map. I guess not every XMsrData changes to a note. What is PrelimChord? 
+-- It has a list of
+-- notes, probably with same end Loc, which represent those grouped by voice.
+-- I guess if two notes are in the same voice and start at the same time, they
+-- by definition have the same end Loc. 
+-- groupNotesByVoice :: [XNote] -> Map Int [XNote]
+-- after M.map groupNotesByVoice we have Map Loc (Map Int [XNote])
+-- noteMapToChordMap :: Map Int IXMsrInfo -> Loc -> Map Int [XNote] -> 
+--                      Map Int PrelimChord
+-- after M.mapWithKey we have Map Loc (Map Int PrelimChord). where do we 
+-- get end loc and modifiers from in the PrelimChord
 computeChords :: Map Int IXMsrInfo -> Map Loc [XMsrData] -> 
                  Map Loc (Map Int PrelimChord)
 computeChords msrInfo =
@@ -632,7 +639,7 @@ sibeliusVoiceNumbers isSib m
     replace _ = error "foo"
 -}
 
-
+-- this filters out XMDNote and ignores everything else
 xMsrDataToNote :: XMsrData -> Maybe XNote
 xMsrDataToNote (XMDNote n@XNNote{}) 
   | isJust $ xnIsGrace n  = Nothing
@@ -665,15 +672,19 @@ noteMapToChordMap msrInfo chordBegin = M.map (notesToChord chordBegin msrInfo)
 --   uses toNote to convert an XNote to a Note
 --   computes chord modifier data. seems to be filtering [XNotation] to
 --     find things relevant to chords
+-- so this changes XNote to Note and it has access to IXMsrInfo which could potentially
+-- have the key signature
 notesToChord :: Loc -> Map Int IXMsrInfo -> [XNote] -> PrelimChord
 notesToChord chordBegin msrInfo notesIn = 
-    PrelimChord endingLoc modifierData notesOut
+    PrelimChord endingLoc key (xnStaff firstNote) modifierData notesOut
   where
   firstNote:_ = notesIn
   endingLoc = computeEndLoc msrInfo chordBegin (XD.xnDuration firstNote)
   modifierData = S.fromList . concatMap getChordModifiers $ notesIn
   -- notesOut = M.fromList . zip [1..] . map toNote $ notesIn
   notesOut = map toNote notesIn
+  Loc currentMeasure _ = chordBegin
+  IXMsrInfo _ _ _ key = case M.lookup currentMeasure msrInfo of {Just x -> x} 
 
 
 getChordModifiers :: XNote -> [ChordModifier]
@@ -696,7 +707,7 @@ getChordModifiers n@XNNote {XD.xnNotations=notations} = concatMap g notations
     TremoloSingle  -> SingTrem      nBars
     TremoloStart   -> DoubTremStart nBars
     TremoloStop    -> DoubTremStop  nBars
-  ornToMod _ = Nothing
+  ornToMod XD.TrillMark = Just SD.TrillMark
   techToMod XTOpenString = OpenString
   techToMod XTDownBow    = DownBow
   techToMod XTUpBow      = UpBow
@@ -731,7 +742,7 @@ toNote XNNote { XD.xnPitch = XPitch stepString alter octave
 --
 computeEndLoc :: Map Int IXMsrInfo -> Loc -> Int -> Loc
 computeEndLoc xmis (Loc locMsr locBeat) dur = case M.lookup locMsr xmis of
-  Just (IXMsrInfo dpq numer denom)
+  Just (IXMsrInfo dpq numer denom _)
     -- exhausted case means number of divs put end loc past beat 1 of next msr
     | e == fromIntegral numer + 1 -> Loc (locMsr+1) 1
     | e <  fromIntegral numer + 1 -> Loc locMsr e
@@ -776,7 +787,7 @@ computeChordEndsMap m = listToLMap $ concatMap g $ M.toList m
 -- output:: Map Loc (Map Int PrelimChord) but with 
 -- 
 processTies :: Map Loc [(Loc,Int)] -> Map Loc (Map Int PrelimChord) ->
-               (Map Loc (Map Int PrelimChord))
+               Map Loc (Map Int PrelimChord)
 processTies chordEnds staff = M.mapMaybeWithKey processLoc staff
   where
     -- processLoc
@@ -786,7 +797,7 @@ processTies chordEnds staff = M.mapMaybeWithKey processLoc staff
     --   Maybe (Map Int PrelimChord): result after removing notes
     --     that are "tie middles" and (Maybe?) adjusting endloc or 
     --     trueendloc of notes that remain
-    processLoc :: Loc -> Map Int PrelimChord -> (Maybe (Map Int PrelimChord))
+    processLoc :: Loc -> Map Int PrelimChord -> Maybe (Map Int PrelimChord)
     processLoc loc = mmwk processChord
       where
         -- processChord
@@ -795,7 +806,7 @@ processTies chordEnds staff = M.mapMaybeWithKey processLoc staff
         -- PrelimChord 
         -- Maybe PrelimChord: whatever notes are left, Nothing if none
         processChord :: Int -> PrelimChord -> Maybe PrelimChord
-        processChord vn ch@(PrelimChord end _ ns) =
+        processChord vn ch@(PrelimChord end _ _ _ ns) =
           let set_NSingles ns = ch {prcNotes=ns}
               -- doTieNote: decide for one note whether to keep it or
               -- remove it and adjust its end if necessary
@@ -873,7 +884,7 @@ doTieNote chordEnds staff atLoc vnIn end note
     -- f2: takes a PrelimChord and returns list of notes matching pitch match
     --   (if I'm not mistaken there shouldn't be more than one)
     f2 :: PrelimChord -> [Note]
-    f2 (PrelimChord _ _ ns) = filter ((==pitchMatch) . midiPitch . nPitch) ns
+    f2 (PrelimChord _ _ _ _ ns) = filter ((==pitchMatch) . midiPitch . nPitch) ns
     -- m4: mapping f2 to the inside of m3, retrieving all matching notes
     --   
     --   could there be more than one? not likely since usually chords 
@@ -985,7 +996,7 @@ prelimChord2Chord symbols staff = M.mapMaybeWithKey pc2c_loc staff
     -- tremolos. it's going to take a chord with some notes including a true
     -- end, and then look at a certain place for a matching chord with a doub
     -- trem stop setting. same voice
-    pc2c_loc :: Loc -> (Map Int PrelimChord) -> Maybe (Map Int Chord)
+    pc2c_loc :: Loc -> Map Int PrelimChord -> Maybe (Map Int Chord)
     pc2c_loc atLoc = mmwk pc2c_vn
       where
         pc2c_vn :: Int -> PrelimChord -> Maybe Chord
@@ -995,22 +1006,23 @@ prelimChord2Chord symbols staff = M.mapMaybeWithKey pc2c_loc staff
 
            | isJust $ findDoubTremStop c1  = Nothing
            | otherwise =
-              case isTrill symbols atLoc vn of
-               Nothing  -> Just $ pc2c_main_case c1
-               Just trN -> pc2c_trill_case atLoc trN c1
+              case isTrill symbols atLoc vn c1 of
+                Nothing  -> Just $ pc2c_main_case c1
+                Just trN -> pc2c_trill_case atLoc trN (prcKey c1) c1
 
 
 pc2c_main_case :: PrelimChord -> Chord
-pc2c_main_case (PrelimChord end mods ns) =
+pc2c_main_case (PrelimChord end key mStaff mods ns) =
   -- GRACENOTES
-  Chord end mods (NSingles $ M.fromList $ map (nmp &&& id) ns) []
+  Chord end key mStaff mods (NSingles $ M.fromList $ map (nmp &&& id) ns) []
   where
     nmp = midiPitch . nPitch
                      
 
-
-pc2c_trill_case :: Loc -> Int -> PrelimChord -> Maybe Chord
-pc2c_trill_case atLoc upperAlter c1 =               
+-- we need to find a different way to find the upper note for plain trills
+-- how do we parse a trill symbol? 
+pc2c_trill_case :: Loc -> Int -> Int -> PrelimChord -> Maybe Chord
+pc2c_trill_case atLoc upperAlter key c1 =               
    let msg = printf ("something wrong; a trill chord has more "++
              "than one note at %s") (showLoc2 atLoc)
        note1 = case prcNotes c1 of
@@ -1018,12 +1030,12 @@ pc2c_trill_case atLoc upperAlter c1 =
                  _    -> throwMine msg
        pitch1 = nPitch note1
        midi1 = midiPitch pitch1
-       (midi2,pitch2) = computeTrillPitch upperAlter pitch1
+       (midi2,pitch2) = computeTrillPitch upperAlter key pitch1
        trillDiff = midi2-midi1
        note2 = note1 {nPitch=pitch2}
        new1 = M.fromList [(midi1,note1)]
        new2 = M.fromList [(midi2,note2)]
-   in Just $ Chord (prcEndLoc c1) (prcModifiers c1)
+   in Just $ Chord (prcEndLoc c1) (prcKey c1) (prcStaff c1) (prcModifiers c1)
              (NTrill (TtnTrill trillDiff) new1 new2) []
 
 
@@ -1032,34 +1044,73 @@ mkNoteMap = M.fromList . map ((midiPitch . nPitch) &&& id)
 
 pc2c_dt_case :: Map Loc (Map Int PrelimChord) -> Loc -> Int -> PrelimChord ->
                 Chord
-pc2c_dt_case staff atLoc vn c1@(PrelimChord end1 mods1 ns1) = case mns2 of
-    Just (end2,ns2) -> Chord end2 mods1 (NTrill TtnTremolo (mkNoteMap ns1)
+pc2c_dt_case staff atLoc vn c1 = ("pc2c_dt_case:"++ showLoc2 atLoc)
+  `trace` pc2c_dt_case' staff atLoc vn c1
+
+pc2c_dt_case' :: Map Loc (Map Int PrelimChord) -> Loc -> Int -> PrelimChord -> Chord
+pc2c_dt_case' staff atLoc vn c1@(PrelimChord end1 key mStaff mods1 ns1) = case mns2 of
+    Just (end2,ns2) -> Chord end2 key mStaff mods1 (NTrill TtnTremolo (mkNoteMap ns1)
                                                         (mkNoteMap ns2) ) []
     Nothing -> printf "warning, no chord follows doub.tremolo at %s"
-               (showLoc2 atLoc) `trace` Chord end1 mods1
+               (showLoc2 atLoc) `trace` Chord end1 key mStaff mods1
                                         (NSingles (mkNoteMap ns1)) []
   where
     -- find the following chord if it exists, at end1
     a :: Maybe PrelimChord
     a = M.lookup end1 staff >>= M.lookup vn
     b :: PrelimChord -> Maybe (Loc,[Note])
-    b c2 | isJust $ findDoubTremStop c2 = Just $ (prcEndLoc c2,prcNotes c2)
+    b c2 | isJust $ findDoubTremStop c2 = Just (prcEndLoc c2,prcNotes c2)
          | otherwise = Nothing
     -- c is the notes at double tremolo stop chord
     mns2 :: Maybe (Loc,[Note])
     mns2 = a >>= b
     
+computeTrillPitch :: Int -> Int -> Pitch -> (Int,Pitch)
+computeTrillPitch upperAlter key p | upperAlter /= 2 = computeTrillPitch1 upperAlter p
+                                   | otherwise       = computeTrillPitch2 key p
 
-                                   
-computeTrillPitch :: Int -> Pitch -> (Int,Pitch)
-computeTrillPitch upperAlter (Pitch _ step1 alter1 octave1) = (newMidi,pitch2)
+-- Works in the case that upperAlter is -1, 0, or 1
+computeTrillPitch1 :: Int -> Pitch -> (Int,Pitch)
+computeTrillPitch1 upperAlter (Pitch _ step1 alter1 octave1) = (newMidi,pitch2)
   where
     step2 = (step1+1) `mod` 7
     octave2 = if step1 == 6 then octave1+1 else octave1
     newMidi = stepAlterOctToMidi step2 upperAlter octave2
     pitch2 = Pitch newMidi step2 upperAlter octave2
 
+-- C:0 D:1 E:2 F:3 G:4 A:5 B:6
+sharpOrder :: [Int]
+sharpOrder = [3, 0, 4, 1, 5, 2, 6]
 
+flatOrder :: [Int]
+flatOrder = [6, 2, 5, 1, 4, 0, 3]
+
+-- Compute trill pitch by examining key
+computeTrillPitch2 :: Int -> Pitch -> (Int,Pitch)
+computeTrillPitch2 key (Pitch _ step1 alter1 octave1) = (newMidi,pitch2)
+  where
+    -- okay so we need to find whether 
+    step2 = (step1+1) `mod` 7
+    octave2 = if step1 == 6 then octave1+1 else octave1
+    -- need to find out if step2 has an alter
+    alter2 = case key of
+      0 -> 0
+      x | x > 0 -> alterOfSharpKey step2 x
+      x | x < 0 -> alterOfFlatKey step2 (-x)
+    newMidi = stepAlterOctToMidi step2 alter2 octave2
+    pitch2 = Pitch newMidi step2 alter2 octave2
+
+alterOfSharpKey :: Int -> Int -> Int
+alterOfSharpKey step numSharps =
+  if step `elem` take numSharps sharpOrder
+    then 1
+    else 0
+
+alterOfFlatKey :: Int -> Int -> Int
+alterOfFlatKey step numFlats =
+  if step `elem` take numFlats flatOrder
+    then -1
+    else 0
 
 -- isTrill
 --
@@ -1067,10 +1118,18 @@ computeTrillPitch upperAlter (Pitch _ step1 alter1 octave1) = (newMidi,pitch2)
 -- is a trill mark here
 --
 --    it also p
-isTrill :: Map Loc [MarkD] -> Loc -> Int -> Maybe Int
-isTrill syms atLoc vn =
-    M.lookup atLoc syms >>= listToMaybe . mapMaybe (mTrill vn)
-  
+isTrill :: Map Loc [MarkD] -> Loc -> Int -> PrelimChord -> Maybe Int
+isTrill syms atLoc vn pc = case maybeOrnament of
+    Just i -> Just i
+    _      -> maybeNotation
+  where
+    maybeNotation = M.lookup atLoc syms >>= listToMaybe . mapMaybe (mTrill vn (prcStaff pc))
+    maybeOrnament | Score.ScoreData.TrillMark `elem` prcModifiers pc = Just 2
+                  | otherwise                                        = Nothing
+
+{-
+Old mTrill that enforced the trill symbol had to be on a specific voice. 
+The Dolet plugin XML export broke that because it doesn't export a voice number.
 
 mTrill :: Int -> MarkD -> Maybe Int
 mTrill vn (SymbolMark s vTest) | vTest /= vn = Nothing
@@ -1078,10 +1137,32 @@ mTrill vn (SymbolMark s vTest) | vTest /= vn = Nothing
                                    "trill-natural" -> Just 0
                                    "trill-flat"    -> Just (-1)
                                    "trill-sharp"   -> Just 1
-                                   "Trill"         -> Just 0
+                                   "Trill"         -> Just 2
                                    _               -> Nothing
 
 mTrill _ _ = Nothing
+-}
+
+-- new mTrill that accepts non-accidental (normal) trill symbol mark
+-- Oct 2025: 
+mTrill :: Int -> Maybe Int -> MarkD -> Maybe Int
+mTrill vn mChordStaff (SymbolMark s mVoi mStaff)
+  | isJust mVoi = case mVoi of
+      Just v | v == vn   -> "voice num matches" `trace` mTrill' s
+             | otherwise -> Nothing
+  -- | isJust mChordStaff = case (mChordStaff,mStaff) of
+  --     (Just st1,Just st2) -> mTrill' s
+  --     _                                -> Nothing
+  | otherwise = ("mStaff:" ++ show mStaff) `trace` Nothing
+mTrill _ _ _ = "Nothing case" `trace` Nothing
+
+mTrill' :: String -> Maybe Int
+mTrill' s = case s of
+  "trill-natural" -> Just 0
+  "trill-flat"    -> Just (-1)
+  "trill-sharp"   -> Just 1
+  "Trill"         -> Just 2
+  _               -> Nothing
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
