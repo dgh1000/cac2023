@@ -20,7 +20,10 @@ import GHC.IO (unsafePerformIO)
 -- import Language.Haskell.Interpreter
 
 
+-- main :: IO ()
+-- main = findXmlInDocDir "/Users/mike/Dropbox/music/comp/2025/dorico/project-01.dorico"
 
+main :: IO ()
 main = runInputT defaultSettings $ loop Nothing
 
 
@@ -92,19 +95,21 @@ homeDirectory = do
     Nothing -> return "c:\\Users\\micha\\"
 
 
-isSibOrMscz f = e == ".sib" || e == ".mscz"
+isMusicDocName f = e == ".sib" || e == ".mscz" || e == ".dorico"
   where
     e = takeExtension f
 
+-- Oct 2025, moving to Dorico. It exports the MusicXML without giving
+-- a chance to choose filename. Instead we will probably look for an xml file
+-- name beginning with music doc name and rename it to just the music
+-- doc name plus ".musicxml"
 prepareRun :: Maybe ProcessHandle -> RunOnceArg -> IO (Maybe ProcessHandle)
 prepareRun mProcHand arg = do
   compD <- compDirectory
-  treeFs <- treeFiles isSibOrMscz compD
+  treeFs <- treeFiles isMusicDocName compD
   fp <- mostRecentFileL treeFs 
-  -- MUSESCORE
-  -- let fpNoExt = takeDirectory fp ++ "/" ++ takeBaseName fp
   let fpNoExt = dropExtension fp
-  -- copyFile (fp -<.> ".musicxml") "/Users/Mike/in.musicxml"
+  findXmlInDocDir fpNoExt
   prepareInXml fpNoExt
   flag <- compile (fp -<.> "hs")
   if flag
@@ -114,8 +119,34 @@ prepareRun mProcHand arg = do
       return $ Just ph
     else return mProcHand
 
--- Oct 2025, moving to Dorico. It exports the MusicXML without giving
--- a chance to choose filename. 
+-- After moving to Dorico: 
+-- we need to write a function to rename
+-- its exported musicxml file to a name that matches the base
+-- name of the music doc file plus ".musicxml"
+--
+-- baseNameDoc: full path to the music doc minus its extension
+findXmlInDocDir :: FilePath -> IO ()
+findXmlInDocDir pathBaseNameDoc = do
+  -- we need to search directory for file that begins with baseNameDoc
+  -- and has a .musicxml extension
+  let dir = takeDirectory pathBaseNameDoc
+      baseName = takeBaseName pathBaseNameDoc
+      l = length baseName
+      willConsider p = cond1 && cond2 && cond3
+        where 
+          cond1 = take l (takeBaseName p) == baseName
+          cond2 = takeExtension p == ".musicxml" 
+          cond3 = length (takeBaseName p) /= length baseName
+  considered <- filter willConsider <$> listDirectory dir
+  putStrLn $ "findXmlInDocDir: Files considered for musicxml copy: " ++ show considered
+  case considered of
+    []  -> "findXmlInDocDir: no xml file in doc directory to rename" `trace` return ()
+    [x] -> do
+      let file1 = dir </> x
+          file2 = dir </> baseName ++ ".musicxml"
+      putStrLn $ printf "findXmlInDocDir: copying %s to %s" file1 file2
+      copyFile file1 file2
+    _   -> error "2 xml files in doc dir with matching name prefix"
 
 prepareInXml :: FilePath -> IO ()
 prepareInXml fp = do
