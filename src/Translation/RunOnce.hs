@@ -60,15 +60,15 @@ data ArgData = PlayCmd Int (Maybe Int) (Maybe String) [String]
 
 -- we want to validate 
 
-runOnce :: RunData -> FilePath -> [String] -> IO ()
-runOnce rd xmlFile args =
-  runOnceA args xmlFile rd `catches` handlers2
+runOnce :: RunData -> [String] -> IO ()
+runOnce rd args =
+  runOnceA args rd `catches` handlers2
 
 
-runOnceA :: [String] -> FilePath -> RunData -> IO ()
-runOnceA args xmlFilePath rd = do
+runOnceA :: [String] -> RunData -> IO ()
+runOnceA args rd = do
   case parseArgs args of
-    PlayCmd mBeg mEnd mSolo splicePts -> doPlay xmlFilePath mBeg mEnd mSolo splicePts rd
+    PlayCmd mBeg mEnd mSolo splicePts -> doPlay mBeg mEnd mSolo splicePts rd
     SendCtrl stream chan ctrl value -> error "foo" -- doSendCtrl stream chan ctrl value
     SendCtrlSet stream setNum -> error "foo" -- doSendCtrlSet stream setNum
 
@@ -84,10 +84,10 @@ findDevice = do
   return dev
 -}
 
-doPlay :: FilePath -> Int -> Maybe Int -> Maybe String -> [String] -> RunData -> IO ()
-doPlay xmlFilePath mBeg mEnd mSolo splicePts (RunData metasIn) = do
+doPlay :: Int -> Maybe Int -> Maybe String -> [String] -> RunData -> IO ()
+doPlay mBeg mEnd mSolo splicePts (RunData metasIn) = do
   conns <- openConnections
-  score <- readXml xmlFilePath
+  score <- readXml
   putStrLn "writing score.txt..."
       >> writeFile "score.txt" (showIString score)
   gen <- newStdGen
@@ -286,15 +286,6 @@ readXml = do
     Nothing  -> error "foo"
 -}
 
--- readXML logic: let's say that the .hs file associated with the 
--- music document specifies the xml location and whether to read as
--- Sibelius or Dorico. 
-
-{-
-OCT 2025 removing these because of new system of specifying file path
-in the Haskell file associated with each score. It will break on 
-Windows for now.
-
 readXmlUtf16 :: IO String
 readXmlUtf16 = do
   env <- lookupEnv "COMPUTER_SYSTEM"
@@ -309,7 +300,6 @@ readXmlUtf8 = do
   case env of
     Just _  -> readStrictUtf8Text "/Users/mike/in.musicxml"
     Nothing -> readStrictUtf8Text "c:\\Users\\micha\\in.musicxml"
--}
 
 tryReadXml :: String -> Maybe Score
 tryReadXml buf
@@ -321,11 +311,11 @@ tryReadXml buf
       Just e -> xmlToScore (parseXScore e)
       Nothing  -> error "foo"
 
-readXml :: FilePath -> IO Score
-readXml filePath = do
-  buf16 <- readStrictUtf16Text filePath
+readXml :: IO Score
+readXml = do
+  buf16 <- readXmlUtf16
   let result16 = tryReadXml buf16
-  buf8 <- readStrictUtf8Text filePath
+  buf8 <- readXmlUtf8
   let result8 = buf8 >>= tryReadXml
   case (result8,result16) of
     (_,Just s) -> "Using UTF16LE on XML file" `trace` return s
