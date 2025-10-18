@@ -39,6 +39,7 @@ import Score.XmlToScore
 import Score.ShowScore
 import XmlDoc.ParseXml
 import XmlDoc.ShowXmlDoc
+import XmlDoc.XmlDocData (XScore)
 import Util.FileUtil
 import Util.Exception
 import Util.Showable
@@ -48,6 +49,7 @@ import qualified Data.ByteString as B
 import qualified Data.Text.Encoding as EN
 import Data.Text.Encoding.Error(lenientDecode)
 import System.IO (openBinaryFile, IOMode(..), hClose)
+import GHC.IO (unsafePerformIO)
 
 
 
@@ -308,7 +310,10 @@ tryReadXml buf
   where
     topElems = onlyElems . parseXML $ buf
     score = case L.find ((=="score-partwise") . XL.qName . elName) topElems of
-      Just e -> xmlToScore (parseXScore e)
+      Just e -> 
+        let xd = parseXScore e
+            s = xmlToScore xd
+        in unsafePerformIO (dumpXml xd) `seq` s
       Nothing  -> error "foo"
 
 readXml :: IO Score
@@ -321,6 +326,13 @@ readXml = do
     (_,Just s) -> "Using UTF16LE on XML file" `trace` return s
     (Just s,_) -> "Using UTF8 on XML file" `trace` return s
     _          -> error "neither UTF8 nor UTF16 works in reading XML file"
+
+
+dumpXml :: XScore -> IO XScore
+dumpXml xd = do
+  putStrLn "Writing xml.txt ... "
+  writeFile "xml.txt" $ showIString xd
+  return xd
 
 
 {-

@@ -586,6 +586,7 @@ computeHairpinsOneScoreStaff = M.fromList . mapMaybe pairUp . L.tails .
         Just (loc1, Hairpin Crescendo  loc2 staffN)
     pairUp ((loc1,WedgeDim,staffN)  :(loc2,WedgeStop,_):_) = 
         Just (loc1, Hairpin Diminuendo loc2 staffN)
+    pairUp ((loc1,WedgeContinue,_):_:_) = ("wedge continue at " ++ showLoc2 loc1) `trace` Nothing
     pairUp _ = Nothing
 
 ----------------------------------------------------------------------

@@ -163,7 +163,7 @@ data XPitch = XPitch
   , xOctave :: Int }
             deriving(Show)
 
-data WedgeType = WedgeCresc | WedgeDim | WedgeStop
+data WedgeType = WedgeCresc | WedgeDim | WedgeStop | WedgeContinue
                deriving(Show)
 
 ----------------------------------------------------------------------

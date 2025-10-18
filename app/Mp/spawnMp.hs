@@ -1,4 +1,5 @@
 
+import Data.List ( sort )
 import System.Environment
 import System.IO
 import System.Process
@@ -137,8 +138,18 @@ findXmlInDocDir pathBaseNameDoc = do
           cond1 = take l (takeBaseName p) == baseName
           cond2 = takeExtension p == ".musicxml" 
           cond3 = length (takeBaseName p) /= length baseName
-  considered <- filter willConsider <$> listDirectory dir
+  considered <- map (dir </>) . filter willConsider <$> listDirectory dir
+  fn <- mostRecentXml considered
   putStrLn $ "findXmlInDocDir: Files considered for musicxml copy: " ++ show considered
+  let file1 = fn
+      file2 = dir </> baseName ++ ".musicxml"
+  if file1 == file2 
+    then printf "No need to copy, doc name + .musicxml is most recent"
+    else do
+      putStrLn $ printf "findXmlInDocDir: copying %s to %s" file1 file2
+      copyFile file1 file2
+
+  {-
   case considered of
     []  -> "findXmlInDocDir: no xml file in doc directory to rename" `trace` return ()
     [x] -> do
@@ -147,6 +158,17 @@ findXmlInDocDir pathBaseNameDoc = do
       putStrLn $ printf "findXmlInDocDir: copying %s to %s" file1 file2
       copyFile file1 file2
     _   -> error "2 xml files in doc dir with matching name prefix"
+  -}
+
+mostRecentXml :: [FilePath] -> IO FilePath
+mostRecentXml fps = do
+  times <- mapM getModificationTime fps
+  let tuples = sort $ zip times fps
+      (_,out) = case tuples of
+        [] -> error ("in mostRecentXml, no files were passed in. This could indicate there are no XML " ++
+              "files in music doc directory")
+        xs -> last xs
+  return out
 
 prepareInXml :: FilePath -> IO ()
 prepareInXml fp = do

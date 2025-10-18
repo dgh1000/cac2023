@@ -3,149 +3,47 @@ marks:
   [  1: 1+     ]
     staff name: Piano
       Extend 7.0e-2
-  [  1: 3+     ]
-    staff name: Piano
-      StacDur 6.0e-2
 staves:
 staff name: Piano
-  max true end: [  6: 1+     ]
+  max true end: [  4: 3+     ]
   MarkDs
-  loc: [  1: 3+     ]
-    Voi:2 chord: key:0 staff:Just 2 end:[  1: 4+     ] 
+  loc: [  1: 1+     ]
+    Voi:1 chord: key:0 staff:Just 1 end:[  1: 3+     ] 
       Notes
-        60: midi:60 step:0 alter: 0 tieStart: No trueEnd:[m:  1,   4 % 1]
-  loc: [  1: 4+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  2: 1+     ] 
-      Notes
-        72: midi:72 step:0 alter: 0 tieStart: No trueEnd:[m:  2,   1 % 1]
+        72: midi:72 step:0 alter: 0 tieStart: No trueEnd:[m:  1,   3 % 1]
   loc: [  2: 1+     ]
-    Voi:2 chord: key:0 staff:Just 2 end:[  2: 2+     ] 
+    Voi:1 chord: key:0 staff:Just 1 end:[  2: 2+     ] 
       Notes
-        48: midi:48 step:0 alter: 0 tieStart: No trueEnd:[m:  2,   2 % 1]
+        65: midi:65 step:3 alter: 0 tieStart: No trueEnd:[m:  2,   2 % 1]
   loc: [  2: 2+     ]
-    Voi:2 chord: key:0 staff:Just 2 end:[  2: 4+     ] 
+    Voi:1 chord: key:0 staff:Just 1 end:[  2: 3+     ] 
       Notes
-        55: midi:55 step:4 alter: 0 tieStart: No trueEnd:[m:  2,   4 % 1]
+        67: midi:67 step:4 alter: 0 tieStart: No trueEnd:[m:  2,   3 % 1]
+  loc: [  2: 3+     ]
+    Voi:1 chord: key:0 staff:Just 1 end:[  2: 4+     ] 
+      Notes
+        69: midi:69 step:5 alter: 0 tieStart: No trueEnd:[m:  2,   4 % 1]
   loc: [  2: 4+     ]
-    Voi:2 chord: key:0 staff:Just 2 end:[  3: 1+     ] 
+    Voi:1 chord: key:0 staff:Just 1 end:[  3: 1+     ] 
       Notes
-        48: midi:48 step:0 alter: 0 tieStart: No trueEnd:[m:  3,   1 % 1]
+        70: midi:70 step:6 alter:-1 tieStart: No trueEnd:[m:  3,   1 % 1]
   loc: [  3: 1+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  3: 2+     ]  Staccato Accent
+    Voi:1 chord: key:0 staff:Just 1 end:[  3: 2+     ] 
       Notes
-        77: midi:77 step:3 alter: 0 tieStart: No trueEnd:[m:  3,   2 % 1]
-    Voi:2 chord: key:0 staff:Just 2 end:[  3: 3+     ] 
-      Notes
-        53: midi:53 step:3 alter: 0 tieStart: No trueEnd:[m:  3,   3 % 1]
+        72: midi:72 step:0 alter: 0 tieStart: No trueEnd:[m:  3,   2 % 1]
   loc: [  3: 2+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  3: 2+ 1/ 4]  Staccato
+    Voi:1 chord: key:0 staff:Just 1 end:[  3: 3+     ] 
       Notes
-        76: midi:76 step:2 alter: 0 tieStart: No trueEnd:[m:  3,   9 % 4]
-  loc: [  3: 2+ 1/ 4]
-    Voi:1 chord: key:0 staff:Just 1 end:[  3: 2+ 1/ 2]  Staccato
-      Notes
-        77: midi:77 step:3 alter: 0 tieStart: No trueEnd:[m:  3,   5 % 2]
-  loc: [  3: 2+ 1/ 2]
-    Voi:1 chord: key:0 staff:Just 1 end:[  3: 2+ 3/ 4]  Staccato
-      Notes
-        79: midi:79 step:4 alter: 0 tieStart: No trueEnd:[m:  3,  11 % 4]
-  loc: [  3: 2+ 3/ 4]
-    Voi:1 chord: key:0 staff:Just 1 end:[  3: 3+     ]  Staccato
-      Notes
-        76: midi:76 step:2 alter: 0 tieStart: No trueEnd:[m:  3,   3 % 1]
+        70: midi:70 step:6 alter:-1 tieStart: No trueEnd:[m:  3,   3 % 1]
   loc: [  3: 3+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  3: 3+ 1/ 4]  Staccato
-      Notes
-        74: midi:74 step:1 alter: 0 tieStart: No trueEnd:[m:  3,  13 % 4]
-    Voi:2 chord: key:0 staff:Just 2 end:[  4: 1+     ] 
-      Notes
-        51: midi:51 step:2 alter:-1 tieStart: No trueEnd:[m:  4,   1 % 1]
-  loc: [  3: 3+ 1/ 4]
-    Voi:1 chord: key:0 staff:Just 1 end:[  3: 3+ 3/ 4]  Staccato
-      Notes
-        71: midi:71 step:6 alter: 0 tieStart: No trueEnd:[m:  3,  15 % 4]
-  loc: [  3: 3+ 3/ 4]
-    Voi:1 chord: key:0 staff:Just 1 end:[  3: 4+     ]  Staccato
+    Voi:1 chord: key:0 staff:Just 1 end:[  3: 4+     ] 
       Notes
         69: midi:69 step:5 alter: 0 tieStart: No trueEnd:[m:  3,   4 % 1]
   loc: [  3: 4+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  4: 1+     ]  Staccato
+    Voi:1 chord: key:0 staff:Just 1 end:[  4: 1+     ] 
       Notes
         67: midi:67 step:4 alter: 0 tieStart: No trueEnd:[m:  4,   1 % 1]
   loc: [  4: 1+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  4: 2+     ]  Staccato
+    Voi:1 chord: key:0 staff:Just 1 end:[  4: 3+     ] 
       Notes
-        69: midi:69 step:5 alter: 0 tieStart: No trueEnd:[m:  4,   2 % 1]
-    Voi:2 chord: key:0 staff:Just 2 end:[  4: 3+     ] 
-      Notes
-        49: midi:49 step:1 alter:-1 tieStart: No trueEnd:[m:  4,   3 % 1]
-  loc: [  4: 2+     ]
-    Voi:3 chord: key:0 staff:Just 1 end:[  4: 2+ 1/ 4] 
-      Notes
-        67: midi:67 step:4 alter: 0 tieStart: No trueEnd:[m:  4,   9 % 4]
-  loc: [  4: 2+ 1/ 4]
-    Voi:1 chord: key:0 staff:Just 1 end:[  4: 2+ 1/ 2]  Staccato
-      Notes
-        69: midi:69 step:5 alter: 0 tieStart: No trueEnd:[m:  4,   5 % 2]
-    Voi:3 chord: key:0 staff:Just 1 end:[  4: 2+ 1/ 2] 
-      Notes
-        65: midi:65 step:3 alter: 0 tieStart: No trueEnd:[m:  4,   5 % 2]
-  loc: [  4: 2+ 1/ 2]
-    Voi:1 chord: key:0 staff:Just 1 end:[  4: 2+ 3/ 4]  Staccato
-      Notes
-        71: midi:71 step:6 alter: 0 tieStart: No trueEnd:[m:  4,  11 % 4]
-    Voi:3 chord: key:0 staff:Just 1 end:[  4: 2+ 3/ 4] 
-      Notes
-        64: midi:64 step:2 alter: 0 tieStart: No trueEnd:[m:  4,  11 % 4]
-  loc: [  4: 2+ 3/ 4]
-    Voi:1 chord: key:0 staff:Just 1 end:[  4: 3+     ]  Staccato
-      Notes
-        72: midi:72 step:0 alter: 0 tieStart: No trueEnd:[m:  4,   3 % 1]
-    Voi:3 chord: key:0 staff:Just 1 end:[  4: 3+     ] 
-      Notes
-        62: midi:62 step:1 alter: 0 tieStart: No trueEnd:[m:  4,   3 % 1]
-  loc: [  4: 3+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  4: 4+     ]  Staccato
-      Notes
-        71: midi:71 step:6 alter: 0 tieStart: No trueEnd:[m:  4,   4 % 1]
-    Voi:3 chord: key:0 staff:Just 1 end:[  4: 4+     ] 
-      Notes
-        60: midi:60 step:0 alter: 0 tieStart: No trueEnd:[m:  4,   4 % 1]
-  loc: [  4: 4+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  5: 1+     ]  Staccato
-      Notes
-        67: midi:67 step:4 alter: 0 tieStart: No trueEnd:[m:  5,   1 % 1]
-        71: midi:71 step:6 alter: 0 tieStart: No trueEnd:[m:  5,   1 % 1]
-    Voi:3 chord: key:0 staff:Just 1 end:[  5: 1+     ] 
-      Notes
-        62: midi:62 step:1 alter: 0 tieStart: No trueEnd:[m:  5,   1 % 1]
-  loc: [  5: 1+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  5: 2+     ] 
-      Notes
-        65: midi:65 step:3 alter: 0 tieStart: No trueEnd:[m:  5,   2 % 1]
-        69: midi:69 step:5 alter: 0 tieStart: No trueEnd:[m:  5,   2 % 1]
-  loc: [  5: 2+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  5: 3+     ] 
-      Notes
-        63: midi:63 step:2 alter:-1 tieStart: No trueEnd:[m:  5,   3 % 1]
-        67: midi:67 step:4 alter: 0 tieStart: No trueEnd:[m:  5,   3 % 1]
-  loc: [  5: 3+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  5: 3+ 1/ 4] 
-      Notes
-        72: midi:72 step:0 alter: 0 tieStart: No trueEnd:[m:  5,  13 % 4]
-  loc: [  5: 3+ 1/ 4]
-    Voi:1 chord: key:0 staff:Just 1 end:[  5: 3+ 1/ 2] 
-      Notes
-        70: midi:70 step:6 alter:-1 tieStart: No trueEnd:[m:  5,   7 % 2]
-  loc: [  5: 3+ 1/ 2]
-    Voi:1 chord: key:0 staff:Just 1 end:[  5: 3+ 3/ 4] 
-      Notes
-        69: midi:69 step:5 alter: 0 tieStart: No trueEnd:[m:  5,  15 % 4]
-  loc: [  5: 3+ 3/ 4]
-    Voi:1 chord: key:0 staff:Just 1 end:[  5: 4+     ] 
-      Notes
-        67: midi:67 step:4 alter: 0 tieStart: No trueEnd:[m:  5,   4 % 1]
-  loc: [  5: 4+     ]
-    Voi:1 chord: key:0 staff:Just 1 end:[  6: 1+     ] 
-      Notes
-        65: midi:65 step:3 alter: 0 tieStart: No trueEnd:[m:  6,   1 % 1]
+        65: midi:65 step:3 alter: 0 tieStart: No trueEnd:[m:  4,   3 % 1]

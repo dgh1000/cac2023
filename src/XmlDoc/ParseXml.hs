@@ -298,7 +298,7 @@ parseDirection eDir = fmap (\x -> XMDDirection x mOffset mVoice mStaff) xd
         where defaulty = myFindAttr "default-y" eDirType >>=
                 \s -> case reads s of {(i,_):_ -> Just i}
       "dynamics"        -> Just $ parseDynamics eDirType
-      "wedge"           -> Just $ parseWedge eDirType
+      "wedge"           -> parseWedge eDirType
       "pedal"           -> Just $ parsePedal eDirType
       "octave-shift"    -> Just $ parseOctaveShift eDirType
       "other-direction" -> Just . XDOtherDirection . strContent $ eDirType
@@ -357,11 +357,12 @@ parseMetronome e = case met of
 
 parseDynamics e = case allChildren e of {[d] -> XDDynamics . myElName $ d}
 
-parseWedge :: Element -> XDirection
+parseWedge :: Element -> Maybe XDirection
 parseWedge e = case myFindAttr "type" e of
-  Just "crescendo"  -> XDWedge WedgeCresc
-  Just "diminuendo" -> XDWedge WedgeDim
-  Just "stop"       -> XDWedge WedgeStop
+  Just "crescendo"  -> Just $ XDWedge WedgeCresc
+  Just "diminuendo" -> Just $ XDWedge WedgeDim
+  Just "stop"       -> Just $ XDWedge WedgeStop
+  Just "continue"   -> "noticed Wedge continue" `trace` Nothing
   x                 -> error $ printf "wedge problems:%s" (show x)
 
 
