@@ -709,6 +709,7 @@ getChordModifiers n@XNNote {XD.xnNotations=notations} = concatMap g notations
     TremoloStart   -> DoubTremStart nBars
     TremoloStop    -> DoubTremStop  nBars
   ornToMod XD.TrillMark = Just SD.TrillMark
+  ornToMod (XD.AccidentalMark s) = Just $ SD.AccidentalMark s
   techToMod XTOpenString = OpenString
   techToMod XTDownBow    = DownBow
   techToMod XTUpBow      = UpBow
@@ -1125,8 +1126,18 @@ isTrill syms atLoc vn pc = case maybeOrnament of
     _      -> maybeNotation
   where
     maybeNotation = M.lookup atLoc syms >>= listToMaybe . mapMaybe (mTrill vn (prcStaff pc))
-    maybeOrnament | Score.ScoreData.TrillMark `elem` prcModifiers pc = Just 2
-                  | otherwise                                        = Nothing
+    maybeOrnament | Score.ScoreData.TrillMark `elem` prcModifiers pc 
+                      = Just $ computeTrillOrn (prcModifiers pc)
+                  | otherwise                                        
+                      = Nothing
+
+computeTrillOrn :: Set ChordModifier -> Int
+computeTrillOrn mods = case [s | Score.ScoreData.AccidentalMark s <- S.toList mods] of
+  []          -> 2
+  ["flat"]    -> -1
+  ["natural"] -> 0
+  ["sharp"]   -> 1
+  _           -> "multiple accidental marks on trill; ignoring them" `trace` 2
 
 {-
 Old mTrill that enforced the trill symbol had to be on a specific voice. 

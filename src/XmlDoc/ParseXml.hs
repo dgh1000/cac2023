@@ -247,14 +247,20 @@ parseArticulations = mapMaybe g . allChildren
 
 
 
+parseOrnaments :: Element -> [XOrnament]
 parseOrnaments = mapMaybe g . allChildren
   where
     g elem = case qName . elName $ elem of
       "tremolo" -> Just . parseTremolo $ elem
       "trill-mark" -> Just TrillMark
+      "accidental-mark" -> Just . parseAccidentalMark $ elem
       _            -> printf "Warning: unrecognized ornament '%s'"
                       (qName . elName $ elem) `trace` Nothing
 
+parseAccidentalMark :: Element -> XOrnament
+parseAccidentalMark elem = AccidentalMark $ strContent elem
+
+parseTremolo :: Element -> XOrnament
 parseTremolo elem = Tremolo typ nBars
   where
     toInt1 s = case reads s of {(i,_):_ -> i}

@@ -145,6 +145,7 @@ data XArticulation =
 data XOrnament =
    TrillMark
  | Tremolo TremoloType Int    -- number of bars
+ | AccidentalMark String      -- sharp, flat, 
  deriving(Show,Eq)
 
 data XTechnical = XTOpenString
