@@ -170,14 +170,14 @@ prepareInXml fp = do
       cond1 p = takeExtension p == ".musicxml"
       cond2 p = take (length baseName) (takeBaseName p) == baseName
       willConsider p = cond1 p && cond2 p
-  considered <- filter willConsider <$> listDirectory dir
+  considered <- map (dir </>) . filter willConsider <$> listDirectory dir
   homeD <- homeDirectory
   let homeDFile = homeD </> "out.musicxml"
   homeDFileExists <- doesFileExist homeDFile
   let considered2 | homeDFileExists = homeDFile : considered
                   | otherwise       = considered
   mostRecent <- case considered2 of
-                    [] -> error ("no xml files exists (not out.musicxml " ++
+                    [] -> error ("no xml files exist (not out.musicxml " ++
                                 "or any xml files in document directory)")
                     xs -> printf "among xml files considering: %s" (show considered2)
                           `trace` mostRecentFiles xs
