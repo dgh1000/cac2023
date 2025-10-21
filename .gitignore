@@ -24,6 +24,7 @@ cabal.project.local~
 .HTF/
 .ghc.environment.*
 xml.txt
+score.txt
 tnote.txt
 stack.yaml.lock
 *.code-workspace
