@@ -110,7 +110,8 @@ prepareRun mProcHand arg = do
   treeFs <- treeFiles isMusicDocName compD
   fp <- mostRecentFileL treeFs 
   let fpNoExt = dropExtension fp
-  findXmlInDocDir fpNoExt
+  -- findXmlInDocDir fpNoExt : not needed now; 'prepareInXml' will look
+  -- both in music document dir and /Users/home/out.musicxml
   prepareInXml fpNoExt
   flag <- compile (fp -<.> "hs")
   if flag
@@ -120,11 +121,7 @@ prepareRun mProcHand arg = do
       return $ Just ph
     else return mProcHand
 
--- After moving to Dorico: 
--- we need to write a function to rename
--- its exported musicxml file to a name that matches the base
--- name of the music doc file plus ".musicxml"
---
+{-
 -- baseNameDoc: full path to the music doc minus its extension
 findXmlInDocDir :: FilePath -> IO ()
 findXmlInDocDir pathBaseNameDoc = do
@@ -139,7 +136,7 @@ findXmlInDocDir pathBaseNameDoc = do
           cond2 = takeExtension p == ".musicxml" 
           cond3 = length (takeBaseName p) /= length baseName
   considered <- map (dir </>) . filter willConsider <$> listDirectory dir
-  fn <- mostRecentXml considered
+  fn <- mostRecentFiles considered
   putStrLn $ "findXmlInDocDir: Files considered for musicxml copy: " ++ show considered
   let file1 = fn
       file2 = dir </> baseName ++ ".musicxml"
@@ -148,28 +145,45 @@ findXmlInDocDir pathBaseNameDoc = do
     else do
       putStrLn $ printf "findXmlInDocDir: copying %s to %s" file1 file2
       copyFile file1 file2
+-}
 
-  {-
-  case considered of
-    []  -> "findXmlInDocDir: no xml file in doc directory to rename" `trace` return ()
-    [x] -> do
-      let file1 = dir </> x
-          file2 = dir </> baseName ++ ".musicxml"
-      putStrLn $ printf "findXmlInDocDir: copying %s to %s" file1 file2
-      copyFile file1 file2
-    _   -> error "2 xml files in doc dir with matching name prefix"
-  -}
-
-mostRecentXml :: [FilePath] -> IO FilePath
-mostRecentXml fps = do
+mostRecentFiles :: [FilePath] -> IO FilePath
+mostRecentFiles fps = do
   times <- mapM getModificationTime fps
   let tuples = sort $ zip times fps
       (_,out) = case tuples of
-        [] -> error ("in mostRecentXml, no files were passed in. This could indicate there are no XML " ++
+        [] -> error ("in mostRecentFile, no files were passed in. This could indicate there are no XML " ++
               "files in music doc directory")
         xs -> last xs
   return out
 
+-- Parameter:
+--    full path to most recent document (.mzsc, .dorico, .sib)
+--
+-- This finds all XML files in the doc path and also
+-- checks for /Users/mike/out.musicxml and copies 
+-- the most recent one to /Users/mike/in.musicxml
+prepareInXml :: FilePath -> IO ()
+prepareInXml fp = do
+  let dir = takeDirectory fp
+      baseName = takeBaseName fp
+      cond1 p = takeExtension p == ".musicxml"
+      cond2 p = take (length baseName) (takeBaseName p) == baseName
+      willConsider p = cond1 p && cond2 p
+  considered <- filter willConsider <$> listDirectory dir
+  homeD <- homeDirectory
+  let homeDFile = homeD </> "out.musicxml"
+  homeDFileExists <- doesFileExist homeDFile
+  let considered2 | homeDFileExists = homeDFile : considered
+                  | otherwise       = considered
+  mostRecent <- case considered2 of
+                    [] -> error ("no xml files exists (not out.musicxml " ++
+                                "or any xml files in document directory)")
+                    xs -> printf "among xml files considering: %s" (show considered2)
+                          `trace` mostRecentFiles xs
+  copyFile (printf "file used: %s" mostRecent `trace` mostRecent) (homeD </> "in.musicxml")
+
+{-
 prepareInXml :: FilePath -> IO ()
 prepareInXml fp = do
   let localXmlFp = fp <.> "musicxml"
@@ -190,7 +204,7 @@ prepareInXml fp = do
   if which == 1 
     then "using local XML file" `trace` copyFile localXmlFp $ homeD </> "in.musicxml"
     else copyFile outXmlFp $ homeD </> "in.musicxml"
-
+-}
 
 prepareCalib :: Maybe ProcessHandle -> IO (Maybe ProcessHandle)
 prepareCalib mProcHand = do
