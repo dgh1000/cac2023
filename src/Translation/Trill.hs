@@ -1,7 +1,7 @@
 
 module Translation.Trill where
 
-
+import System.Random
 import qualified Data.Map.Strict as M
 import Text.Printf
 import Data.Map.Strict(Map)
@@ -52,13 +52,14 @@ trillTimes tShape@(TrillShape step1 _ _) tMin tMax =
   (map toTrillData outLower,map toTrillData outUpper)
 
   where
+    gen = mkStdGen (round $ tMin * 1000)
     step2 | step1 == Upper = Lower
           | step1 == Lower = Upper
     nsSteps = zip (cycle [step1,step2]) [0..]
     -- compute 'ts1': a rough estimate of trill times (they don't necessarily
     --      end right on tMax)
     ts1 :: [(Double,Double)]
-    ts1 = trillTimes2 tShape (tMax-tMin)
+    ts1 = trillTimes2 gen tShape (tMax-tMin)
     nSteps = length ts1
     -- compute a multiplier 'ratio' to adjust actual trill times to
     -- exactly fit in tMin to tMax
@@ -94,8 +95,8 @@ trillTimes tShape@(TrillShape step1 _ _) tMin tMax = zip nsSteps outPairs
 --
 -- Compute first approximation of trill times. Final time may not be equal to
 -- dur.
-trillTimes2 :: TrillShape -> Double -> [(Double,Double)]
-trillTimes2 (TrillShape step1 segs step2) dur = unfoldr step (0,step1)
+trillTimes2 :: StdGen -> TrillShape -> Double -> [(Double,Double)]
+trillTimes2 gen (TrillShape step1 segs step2) dur = unfoldr step (0,step1)
   where
     tab = makeTable segs dur
     step :: (Double,TrillStep) -> Maybe ((Double,Double),(Double,TrillStep))
@@ -121,6 +122,13 @@ trillTimes2 (TrillShape step1 segs step2) dur = unfoldr step (0,step1)
 
 -- makeTable
 --   Make pairs (<trill rate>, <t start>)
+--
+-- 'segs' comes from TrillShape: [(<trill rate>, <segment length of trill dur>]
+-- Segment lengths are integers. The actual duration of each segment is computed
+-- as follows:
+--   seg_dur_in_secs = trill_dur_secs * segment_length_int / (sum all segment lengths)
+
+-- 
 makeTable :: [(Double,Int)] -> Double -> [(Double,Double)]
 makeTable segs dur
   | not (null segs) = zip times rates

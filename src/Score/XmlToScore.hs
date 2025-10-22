@@ -1122,10 +1122,10 @@ alterOfFlatKey step numFlats =
 --    it also p
 isTrill :: Map Loc [MarkD] -> Loc -> Int -> PrelimChord -> Maybe Int
 isTrill syms atLoc vn pc = case maybeOrnament of
-    Just i -> Just i
+    Just i -> printf "Ornament trill at %s" (showLoc2 atLoc) `trace` Just i
     _      -> maybeNotation
   where
-    maybeNotation = M.lookup atLoc syms >>= listToMaybe . mapMaybe (mTrill vn (prcStaff pc))
+    maybeNotation = M.lookup atLoc syms >>= listToMaybe . mapMaybe (mTrill atLoc vn (prcStaff pc))
     maybeOrnament | Score.ScoreData.TrillMark `elem` prcModifiers pc 
                       = Just $ computeTrillOrn (prcModifiers pc)
                   | otherwise                                        
@@ -1159,13 +1159,16 @@ mTrill _ _ = Nothing
 -- Computes upper alter for the notation trill case. Not used in the ornament trill
 -- case.
 -- new: accepts non-accidental (normal) trill symbol mark
-mTrill :: Int -> Maybe Int -> MarkD -> Maybe Int
-mTrill vn mChordStaff (SymbolMark s mVoi mStaff)
+mTrill :: Loc -> Int -> Maybe Int -> MarkD -> Maybe Int
+mTrill atLoc vn mChordStaff (SymbolMark s mVoi mStaff)
   | isJust mVoi = case mVoi of
-      Just v | v == vn   -> "notation trill: voice num matches" `trace` mTrill' s
+      Just v | v == vn   -> printf "notation trill at %s: voice num matches" (showLoc2 atLoc)
+                            `trace` mTrill' s
              | otherwise -> Nothing
-  | otherwise = "notation trill: no voice num present, skipping" `trace` Nothing
-mTrill _ _ _ = Nothing
+  | otherwise = printf "notation trill at %s: no voice num present, skipping" 
+                (showLoc2 atLoc)
+                `trace` Nothing
+mTrill _ _ _ _ = Nothing
 
 mTrill' :: String -> Maybe Int
 mTrill' s = case s of
