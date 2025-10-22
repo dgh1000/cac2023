@@ -308,7 +308,8 @@ parseDirection eDir = fmap (\x -> XMDDirection x mOffset mVoice mStaff) xd
       "pedal"           -> Just $ parsePedal eDirType
       "octave-shift"    -> Just $ parseOctaveShift eDirType
       "other-direction" -> Just . XDOtherDirection . strContent $ eDirType
-      "?DoletSibelius"  -> "?Dolet encountered" `trace` Nothing
+      "?DoletSibelius"  -> ("?Dolet encountered in direction type element, which is " ++
+                            "probably a notation based trill mark") `trace` Nothing
       t -> printf "Warning: unknown direction element type '%s'" t `trace`
         Nothing
     toInt1 s = case reads s of {(i,_):_ -> i}
