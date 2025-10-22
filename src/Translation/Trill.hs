@@ -1,11 +1,11 @@
 
 module Translation.Trill where
 
-import System.Random
+import System.Random (mkStdGen, StdGen(..), uniformR)
 import qualified Data.Map.Strict as M
 import Text.Printf
 import Data.Map.Strict(Map)
-import Data.Maybe 
+import Data.Maybe
 import Data.List (unfoldr, find, mapAccumL)
 import Util.Math (scale)
 import Score.ScoreData
@@ -19,7 +19,7 @@ import Translation
 ----------------------------------------------------------------------
 --             data needed in this module
 
-data Fold = Fold 
+data Fold = Fold
   { fTime :: Double
   , fStep :: TrillStep
   }
@@ -59,7 +59,7 @@ trillTimes tShape@(TrillShape step1 _ _) tMin tMax =
     -- compute 'ts1': a rough estimate of trill times (they don't necessarily
     --      end right on tMax)
     ts1 :: [(Double,Double)]
-    ts1 = trillTimes2 gen tShape (tMax-tMin)
+    ts1 = trillTimes3 gen tShape (tMax-tMin)
     nSteps = length ts1
     -- compute a multiplier 'ratio' to adjust actual trill times to
     -- exactly fit in tMin to tMax
@@ -89,7 +89,7 @@ trillTimes tShape@(TrillShape step1 _ _) tMin tMax = zip nsSteps outPairs
     ts1 = trillTimes2 tShape (tMax-tMin)
     roughDur | not (null ts1) = let (_,t) = last ts1 in t
     ratio = (tMax-tMin)/roughDur
--}    
+-}
 
 -- trillTimes2
 --
@@ -105,9 +105,39 @@ trillTimes2 gen (TrillShape step1 segs step2) dur = unfoldr step (0,step1)
       | otherwise = Just ( (t1,t2)
                          , (t2, if nextStep==Upper then Lower else Upper) )
       where
+        -- here's where we could use randomness. d could be 10% bigger or 10% smaller,
+        -- let's say. We need gen in the unfoldr data
         d = 1/tableLookup tab t1
         t2 = t1+d
-        
+
+trillTimes3 :: StdGen -> TrillShape -> Double -> [(Double,Double)]
+trillTimes3 gen (TrillShape step1 segs step2) dur = 
+    unfoldr (trillStep tab step1 step2 dur) (TrillUnfoldr 0 step1 gen)
+  where
+    tab = makeTable segs dur
+
+data TrillUnfoldr = TrillUnfoldr Double TrillStep StdGen
+
+-- trillStep
+--   compute the stage 1 trill beginning and end times of each note.
+--   Makes use of the trill shape, the overall duration of the trill, and
+--   a random StdGen to vary the note durations randomly.
+trillStep :: [(Double,Double)] -> TrillStep -> TrillStep -> Double -> 
+              TrillUnfoldr -> Maybe ((Double,Double),TrillUnfoldr)
+trillStep table step1 step2 dur (TrillUnfoldr t1 nextStep gen) = out
+  where
+    out | t1 > dur-d/2 && nextStep /= step2  = Nothing
+        | otherwise = Just ((t1,t2),TrillUnfoldr t2 nextStep2 gen2)
+    nextStep2 = if nextStep == Upper then Lower else Upper
+    d = 1/tableLookup table t1
+    v :: Double
+    (v,gen2) = uniformR (0.95,1.05) gen
+    d2 = v*d
+    t2 = t1+d2 -- change back to d2
+
+
+
+
 {-        
     step :: Fold -> Maybe ((Double,Double,TrillStep),Fold)
     step (Fold t1 nextStep) 
@@ -127,14 +157,15 @@ trillTimes2 gen (TrillShape step1 segs step2) dur = unfoldr step (0,step1)
 -- Segment lengths are integers. The actual duration of each segment is computed
 -- as follows:
 --   seg_dur_in_secs = trill_dur_secs * segment_length_int / (sum all segment lengths)
-
--- 
+-- (in the following not sure what units rate is in, but presumably repetitions per
+--  second?)
+-- Output value: [(<delta time from beginning of trill>,<rate>)] 
 makeTable :: [(Double,Int)] -> Double -> [(Double,Double)]
 makeTable segs dur
   | not (null segs) = zip times rates
   where
     rates = let r = map fst segs in r ++ [last r]
-    durUnits = dur / (sum $ map (fromIntegral . snd) segs)
+    durUnits = dur / sum (map (fromIntegral . snd) segs)
     times = scanl (+) 0 $ map (\(_,d) -> durUnits * fromIntegral d) segs
 
 
@@ -158,9 +189,9 @@ tableLookup segs t = case segs of
   [(_,i)] -> i
   ss -> let lst | not (null ss) = last ss
             minT = fst $ head ss
-            maxT = fst $ lst
+            maxT = fst lst
             minV = snd $ head ss
-            maxV = snd $ lst
+            maxV = snd lst
             paired = zip ss (tail ss)
         in case (t < minT, t > maxT) of
              (True ,     _) -> minV
