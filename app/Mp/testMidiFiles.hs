@@ -1,4 +1,3 @@
-
 import Sound.MIDI.IO
 import Sound.MIDI.File.Load
 import Sound.MIDI.File
