@@ -1,14 +1,16 @@
 
 import Text.Printf
+import System.MIDI
 
--- decideInputOrOutput di = if input di then "Input :" else "Output:"
-
--- showDevice :: Int -> IO ()
--- showDevice x = do
---   di <- getDeviceInfo x
---   putStrLn $ printf "%d: %s '%s'" x (decideInputOrOutput di) (name di) 
-
--- main = do
---   c <- countDevices
---   mapM_ showDevice [0..c-1]
-
+-- | Prints all available MIDI destination names to the console
+printDestinationNames :: IO ()
+printDestinationNames = do
+    -- 1. Fetch the list of Destination handles from the OS layer
+    destinations <- enumerateDestinations
+    
+    -- 2. Extract the string name from each individual Destination handle
+    names <- mapM getName destinations
+    
+    -- 3. Print out the structured results
+    putStrLn "Available MIDI Destinations:"
+    mapM_ putStrLn names

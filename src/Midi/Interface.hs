@@ -75,10 +75,10 @@ findSystemDevice :: [Destination] -> IO Int
 findSystemDevice dests = do
   e <- lookupEnv "COMPUTER_SYSTEM"
   dev <- case e of
-    Just _  -> findIndexOfDevice "MidiPipe Input 3" dests
+    Just _  -> findIndexOfDevice "Bus 3" dests
     Nothing -> findIndexOfDevice "port3" dests
   case dev of
-    Nothing -> throwMine "MidiPipe Input 3 or port3 is not present"
+    Nothing -> throwMine "Bus 3 or port3 is not present"
     Just d  -> return d
 
 openConnections :: IO [Connection]
