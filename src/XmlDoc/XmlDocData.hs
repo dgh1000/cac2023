@@ -145,6 +145,7 @@ data XArticulation =
 data XOrnament =
    TrillMark
  | Tremolo TremoloType Int    -- number of bars
+ | AccidentalMark String      -- sharp, flat, 
  deriving(Show,Eq)
 
 data XTechnical = XTOpenString
@@ -163,7 +164,7 @@ data XPitch = XPitch
   , xOctave :: Int }
             deriving(Show)
 
-data WedgeType = WedgeCresc | WedgeDim | WedgeStop
+data WedgeType = WedgeCresc | WedgeDim | WedgeStop | WedgeContinue
                deriving(Show)
 
 ----------------------------------------------------------------------

@@ -586,6 +586,7 @@ computeHairpinsOneScoreStaff = M.fromList . mapMaybe pairUp . L.tails .
         Just (loc1, Hairpin Crescendo  loc2 staffN)
     pairUp ((loc1,WedgeDim,staffN)  :(loc2,WedgeStop,_):_) = 
         Just (loc1, Hairpin Diminuendo loc2 staffN)
+    pairUp ((loc1,WedgeContinue,_):_:_) = ("wedge continue at " ++ showLoc2 loc1) `trace` Nothing
     pairUp _ = Nothing
 
 ----------------------------------------------------------------------
@@ -708,6 +709,7 @@ getChordModifiers n@XNNote {XD.xnNotations=notations} = concatMap g notations
     TremoloStart   -> DoubTremStart nBars
     TremoloStop    -> DoubTremStop  nBars
   ornToMod XD.TrillMark = Just SD.TrillMark
+  ornToMod (XD.AccidentalMark s) = Just $ SD.AccidentalMark s
   techToMod XTOpenString = OpenString
   techToMod XTDownBow    = DownBow
   techToMod XTUpBow      = UpBow
@@ -1120,12 +1122,22 @@ alterOfFlatKey step numFlats =
 --    it also p
 isTrill :: Map Loc [MarkD] -> Loc -> Int -> PrelimChord -> Maybe Int
 isTrill syms atLoc vn pc = case maybeOrnament of
-    Just i -> Just i
+    Just i -> printf "Ornament trill at %s" (showLoc2 atLoc) `trace` Just i
     _      -> maybeNotation
   where
-    maybeNotation = M.lookup atLoc syms >>= listToMaybe . mapMaybe (mTrill vn (prcStaff pc))
-    maybeOrnament | Score.ScoreData.TrillMark `elem` prcModifiers pc = Just 2
-                  | otherwise                                        = Nothing
+    maybeNotation = M.lookup atLoc syms >>= listToMaybe . mapMaybe (mTrill atLoc vn (prcStaff pc))
+    maybeOrnament | Score.ScoreData.TrillMark `elem` prcModifiers pc 
+                      = Just $ computeTrillOrn (prcModifiers pc)
+                  | otherwise                                        
+                      = Nothing
+
+computeTrillOrn :: Set ChordModifier -> Int
+computeTrillOrn mods = case [s | Score.ScoreData.AccidentalMark s <- S.toList mods] of
+  []          -> 2
+  ["flat"]    -> -1
+  ["natural"] -> 0
+  ["sharp"]   -> 1
+  _           -> "multiple accidental marks on trill; ignoring them" `trace` 2
 
 {-
 Old mTrill that enforced the trill symbol had to be on a specific voice. 
@@ -1143,18 +1155,20 @@ mTrill vn (SymbolMark s vTest) | vTest /= vn = Nothing
 mTrill _ _ = Nothing
 -}
 
--- new mTrill that accepts non-accidental (normal) trill symbol mark
--- Oct 2025: 
-mTrill :: Int -> Maybe Int -> MarkD -> Maybe Int
-mTrill vn mChordStaff (SymbolMark s mVoi mStaff)
+-- mTrill
+-- Computes upper alter for the notation trill case. Not used in the ornament trill
+-- case.
+-- new: accepts non-accidental (normal) trill symbol mark
+mTrill :: Loc -> Int -> Maybe Int -> MarkD -> Maybe Int
+mTrill atLoc vn mChordStaff (SymbolMark s mVoi mStaff)
   | isJust mVoi = case mVoi of
-      Just v | v == vn   -> "voice num matches" `trace` mTrill' s
+      Just v | v == vn   -> printf "notation trill at %s: voice num matches" (showLoc2 atLoc)
+                            `trace` mTrill' s
              | otherwise -> Nothing
-  -- | isJust mChordStaff = case (mChordStaff,mStaff) of
-  --     (Just st1,Just st2) -> mTrill' s
-  --     _                                -> Nothing
-  | otherwise = ("mStaff:" ++ show mStaff) `trace` Nothing
-mTrill _ _ _ = "Nothing case" `trace` Nothing
+  | otherwise = printf "notation trill at %s: no voice num present, skipping" 
+                (showLoc2 atLoc)
+                `trace` Nothing
+mTrill _ _ _ _ = Nothing
 
 mTrill' :: String -> Maybe Int
 mTrill' s = case s of

@@ -247,14 +247,20 @@ parseArticulations = mapMaybe g . allChildren
 
 
 
+parseOrnaments :: Element -> [XOrnament]
 parseOrnaments = mapMaybe g . allChildren
   where
     g elem = case qName . elName $ elem of
       "tremolo" -> Just . parseTremolo $ elem
       "trill-mark" -> Just TrillMark
+      "accidental-mark" -> Just . parseAccidentalMark $ elem
       _            -> printf "Warning: unrecognized ornament '%s'"
                       (qName . elName $ elem) `trace` Nothing
 
+parseAccidentalMark :: Element -> XOrnament
+parseAccidentalMark elem = AccidentalMark $ strContent elem
+
+parseTremolo :: Element -> XOrnament
 parseTremolo elem = Tremolo typ nBars
   where
     toInt1 s = case reads s of {(i,_):_ -> i}
@@ -298,11 +304,12 @@ parseDirection eDir = fmap (\x -> XMDDirection x mOffset mVoice mStaff) xd
         where defaulty = myFindAttr "default-y" eDirType >>=
                 \s -> case reads s of {(i,_):_ -> Just i}
       "dynamics"        -> Just $ parseDynamics eDirType
-      "wedge"           -> Just $ parseWedge eDirType
+      "wedge"           -> parseWedge eDirType
       "pedal"           -> Just $ parsePedal eDirType
       "octave-shift"    -> Just $ parseOctaveShift eDirType
       "other-direction" -> Just . XDOtherDirection . strContent $ eDirType
-      "?DoletSibelius"  -> "?Dolet encountered" `trace` Nothing
+      "?DoletSibelius"  -> ("?Dolet encountered in direction type element, which is " ++
+                            "probably a notation based trill mark") `trace` Nothing
       t -> printf "Warning: unknown direction element type '%s'" t `trace`
         Nothing
     toInt1 s = case reads s of {(i,_):_ -> i}
@@ -357,11 +364,12 @@ parseMetronome e = case met of
 
 parseDynamics e = case allChildren e of {[d] -> XDDynamics . myElName $ d}
 
-parseWedge :: Element -> XDirection
+parseWedge :: Element -> Maybe XDirection
 parseWedge e = case myFindAttr "type" e of
-  Just "crescendo"  -> XDWedge WedgeCresc
-  Just "diminuendo" -> XDWedge WedgeDim
-  Just "stop"       -> XDWedge WedgeStop
+  Just "crescendo"  -> Just $ XDWedge WedgeCresc
+  Just "diminuendo" -> Just $ XDWedge WedgeDim
+  Just "stop"       -> Just $ XDWedge WedgeStop
+  Just "continue"   -> "noticed Wedge continue" `trace` Nothing
   x                 -> error $ printf "wedge problems:%s" (show x)
 
 

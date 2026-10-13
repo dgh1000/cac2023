@@ -414,6 +414,7 @@ data ChordModifier = SingTrem Int
                    | UpBow
                    | OpenString
                    | TrillMark
+                   | AccidentalMark String
                      deriving(Show,Eq,Ord,NFData,Generic)
 
 

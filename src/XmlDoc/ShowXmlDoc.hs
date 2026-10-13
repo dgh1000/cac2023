@@ -57,10 +57,10 @@ instance ShowItemClass XMsr where
 data TimedXMsrData = TimedXMsrData Int XMsrData
 
 toTimedMsrData :: [XMsrData] -> (Int,[Maybe TimedXMsrData])
-toTimedMsrData xmsrs = mapAccumL step 0 xmsrs
+toTimedMsrData = mapAccumL step 0
   where
     step :: Int -> XMsrData -> (Int,Maybe TimedXMsrData) 
-    step t d@(XMDDirection _ _ _ _) = (t, Just $ TimedXMsrData t d)
+    step t d@XMDDirection {} = (t, Just $ TimedXMsrData t d)
     step t d@(XMDNote n) = (t + xnDuration n, Just $ TimedXMsrData t d)
     step t d@(XMDBackup b) = (t - b, Nothing)
     step t d@(XMDForward f) = (t + f, Nothing)
@@ -68,7 +68,7 @@ toTimedMsrData xmsrs = mapAccumL step 0 xmsrs
 
 instance ShowItemClass TimedXMsrData where
   showI (TimedXMsrData t (XMDDirection xdir mOffset mVoice mStaff)) =
-    Component ("[" ++ show t ++ "] " ++ (show xdir))
+    Component ("[" ++ show t ++ "] " ++ show xdir)
       True  [ SingleLine $ "offset: " ++ show mOffset
             , SingleLine $ "voice: " ++ show mVoice
             , SingleLine $ "staff: " ++ show mStaff ]
