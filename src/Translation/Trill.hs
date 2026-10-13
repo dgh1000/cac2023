@@ -131,7 +131,7 @@ trillStep table step1 step2 dur (TrillUnfoldr t1 nextStep gen) = out
     nextStep2 = if nextStep == Upper then Lower else Upper
     d = 1/tableLookup table t1
     v :: Double
-    (v,gen2) = uniformR (0.95,1.05) gen
+    (v,gen2) = uniformR (0.75,1.25) gen
     d2 = v*d
     t2 = t1+d2 -- change back to d2
 
