@@ -363,7 +363,6 @@ lookupStaffMarkLE :: (MarkD -> Maybe a) -> String ->
 lookupStaffMarkLE g msg loc marks =
   lookupPriorStaffMarkData' g msg loc marks
 
-
 -- lookupControlSettingsMarks
 --
 lookupControlSettingsMarks ::

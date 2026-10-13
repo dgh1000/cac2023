@@ -1,5 +1,6 @@
 module Instruments.Piano where
 
+import Debug.Trace(trace)
 import qualified Data.Map.Strict as M
 import Data.Map.Strict(Map)
 import Text.Printf
@@ -8,6 +9,8 @@ import Data.Maybe
 import Control.Monad
 import Control.Monad.State
 import Control.Lens
+import Text.Read (readMaybe)
+import Data.Char (isDigit)
 import Instruments
 import Translation
 import Translation.InstrUtils
@@ -31,6 +34,7 @@ import Common.CommonUtil
 import Score.ScoreData
 import Util.Exception
 import Util.Map
+-- import qualified Data.IntMap as M
 
 defCtrlSettings :: Map String [Int]
 defCtrlSettings = M.fromList [("1", [21]),("2",[22]), ("3",[23]), ("4",[24]), ("5",[25]),
@@ -57,9 +61,9 @@ pianoRun instr pno2 metaPre = do
                     scMarksByStaff score
   mapM (doPnoStaff instr pno2 mergedMarks metaPre) staffNs
     >>= (alterTOff True . concat)
-    >>= includeNotes 
+    >>= includeNotes
   computePedal pno2 metaPre staffNs >>= includeRaws
-  
+
 -- 9/2/22 notes on the Tr state monad
 -- TrState input: Score, all MetaInstr, TimeMap, Loudness maps, Control curves, 
 -- TrState output: [[SNote]], [[TrRaw]], UnitTimeMod
@@ -71,7 +75,7 @@ pianoRun instr pno2 metaPre = do
 
 doPnoStaff :: MetaInstr -> Piano2 -> Map Loc [MarkD] ->
               MetaPrepared -> String -> Tr [SNote]
-doPnoStaff instr pno2 mergedMarks metaPre staffN = do 
+doPnoStaff instr pno2 mergedMarks metaPre staffN = do
   let staffNs = iStaffNs instr
       doSNote :: SNote -> Tr SNote
       -- 9/2/22 notes in preparation for adding acci/appo 
@@ -93,7 +97,7 @@ doPnoStaff instr pno2 mergedMarks metaPre staffN = do
                   updateStac >>= updateEndAlter (pno2AllLegato pno2) >>=
                   updateArp staffNs mergedMarks >>=
                   pnoUpdateCtrlSetting pno2 >>=
-                  pnoUpdateDest pno2
+                  pnoUpdateDest2 pno2
   -- so here we are looking up just the staff
   mapM doSNote . pLookup staffN $ view allSNotes metaPre
   -- here we want to generate SNotes for acci/appo and modify any SNotes that
@@ -109,7 +113,7 @@ doStaffCtrls pno2 staffN = do
   let dest = pLookup staffN $ pno2Dests pno2
       vol = TrRaw staffN 0 dest 0xb0 7 (pno2Vol pno2)
   includeInitRaws [vol]
--}    
+-}
 
 doInit :: [String] -> Piano2 -> Tr ()
 doInit names pno2 = do
@@ -117,7 +121,7 @@ doInit names pno2 = do
         TrRaw stName 0 (pLookup stName $ pno2Dests pno2) 0xB0 7 (pno2Vol pno2)
   -- look up staff names
   includeInitRaws . map mkInitRaw $ names
-  
+
 
 
 pLookup k m = case M.lookup k m of {Just x -> x}
@@ -135,12 +139,52 @@ pnoUpdateVel pno2 s = do
            }
 
 
+-- modification oct. 12 to allow Piano to have midi channel
+-- specified by marks
+--
+-- we'll add something to InstrUtils.hs to read most recent
+-- midi channel mark - okay added that but we need to pass it
+-- the map of marks
+-- This is how we do it in pnoUpdateCtrlSetting
+-- marks <- (iuLookup2 "xx" (snStaffName s) . scMarksByStaff) `liftM` gets
+--             (view score)
+
 pnoUpdateDest :: Piano2 -> SNote -> Tr SNote
-pnoUpdateDest pno s = 
+pnoUpdateDest pno s =
   return s { snDescr = "pnoUpdateDest"
            , snHistory = s : snHistory s
            , snDest  = pLookup (snStaffName s) $ pno2Dests pno
            }
+
+updateMidiChan :: Int -> Int -> SNote -> SNote
+updateMidiChan port chan s =
+  s { snDescr = "update midi chan"
+    , snHistory = s : snHistory s
+    , snDest = (port,chan) }
+
+pnoUpdateDest2 :: Piano2 -> SNote -> Tr SNote
+pnoUpdateDest2 pno2 s = do
+  marks <- (iuLookup2 "xx" (snStaffName s) . scMarksByStaff) `liftM` gets
+              (view score)
+  let (portNum,_) = pLookup (snStaffName s) (pno2Dests pno2)
+      mName = lookupStaffMarkLE isMidiChan "'isMidiChan'"
+            (snLoc s) marks
+      ret = case mName of
+        Nothing -> s
+        Just c  -> updateMidiChan portNum c s
+  return ret
+
+
+parseInt :: String -> Maybe Int
+parseInt str
+    | null str          = Nothing
+    | all isDigit str   = readMaybe str
+    | otherwise         = Nothing
+
+
+isMidiChan :: MarkD -> Maybe Int
+isMidiChan (Patch s) = parseInt s
+isMidiChan _         = Nothing
 
 -- making a piano note involves what?
 --
@@ -156,16 +200,25 @@ pnoUpdateCtrlSetting :: Piano2 -> SNote -> Tr SNote
 pnoUpdateCtrlSetting pno2 s = do
   marks <- (iuLookup2 "xx" (snStaffName s) . scMarksByStaff) `liftM` gets
               (view score)
-  let mName = lookupStaffMarkLE isCtrlSetting "'ctrlSetting'" 
+  let mName = lookupStaffMarkLE isCtrlSetting "'ctrlSetting'"
             (snLoc s) marks
       ret = case mName of
         Nothing -> s
         Just name  -> modifyCtrlSettings s name
   return ret
-  
-        
+
+{-
+-- for debug Oct 2026. don't need it for now
+showMarks :: String -> Map Loc [MarkD] -> String
+showMarks staffN m = unlines $ staffN : map g (M.toAscList m)
+  where
+    g (loc,ms) = unlines $ map (h loc) ms
+    h loc (Patch s) = printf "Patch %s at loc %s" (showLoc2 loc) s
+    h loc _         = printf "Other mark at loc %s" (showLoc2 loc)
+-}
+
 modifyCtrlSettings :: SNote -> String -> SNote
-modifyCtrlSettings 
+modifyCtrlSettings
   s@SNote { snMods = modsIn }
   name = s { snMods = modsIn ++ map toModifCtrl ctrlsValues }
   where
@@ -176,7 +229,7 @@ modifyCtrlSettings
     toModifCtrl key = ModifKs (Left (-0.1)) key
 
 
-                          
+
 
 computePedal :: Piano2 -> MetaPrepared -> [String] -> Tr [TrRaw]
 computePedal pno2 metaPre staffNs = do
@@ -240,7 +293,7 @@ dumpPedEvts m = unlines $ map g $ M.toAscList m
 
 
 didChopEnd :: (Loc,Loc) -> Map Loc PedalEvt -> Bool
-didChopEnd (locB,locE) mIn = 
+didChopEnd (locB,locE) mIn =
   case M.toDescList $ fst $ M.split locE mIn of
     (_,PedalStart ):_ -> True
     (_,PedalChange):_ -> True

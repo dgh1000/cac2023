@@ -29,7 +29,7 @@ isShort (Chord _ _ _ mods _ _) = Staccato `elem` mods
 instance ShowItemClass SNote where
     showI (SNote desc hist staffN loc end2 vn ch note onOff loud dest
            pit nomPit vel mods alterEnd sepSame trill _) =
-      SingleLine $ printf "t1: %.4f t2: %.4f" t1 t2 
+      SingleLine $ printf "t1: %.4f t2: %.4f dest:%s" t1 t2 (show dest)
         where
           (t1,t2) = case onOff of {(_,x):_ -> x}
   

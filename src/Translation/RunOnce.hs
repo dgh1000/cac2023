@@ -123,7 +123,7 @@ doPlay mBeg mEnd mSolo splicePts (RunData metasIn) = do
     Left msg -> putStrLn msg
     Right (sNotes,shorts) -> do
       -- debugDump finalState
-      -- writeSNotes sNotes
+      writeSNotes sNotes
       raws <- E.evaluate $ force shorts
       allOff conns
       threadDelay 300000
