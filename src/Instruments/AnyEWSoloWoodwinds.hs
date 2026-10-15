@@ -81,7 +81,7 @@ ewSoloFlute staffN destDXF destKS =
             anySimpleModExample :: String -> Bool -> VelCurve -> (Int,Int) ->
                        String -> Loc -> Loc -> Tr [TrRaw]
             -}
-            , _anySimpleModFn      = qm
+            , _anySimpleCtrlFn     = qm
             , _anySimpleDestFn     = df
             , _anySimpleVelSource  = VsCurve vcf
             , _anySimpleKsFn       = ksf
@@ -158,7 +158,7 @@ ewSoloClarinet staffN destDXF destKS =
             anySimpleModExample :: String -> Bool -> VelCurve -> (Int,Int) ->
                        String -> Loc -> Loc -> Tr [TrRaw]
             -}
-            , _anySimpleModFn      = qm
+            , _anySimpleCtrlFn     = qm
             , _anySimpleDestFn     = df
             , _anySimpleVelSource  = VsCurve vcf
             , _anySimpleKsFn       = ksf

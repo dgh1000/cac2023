@@ -2,15 +2,6 @@
 {-# LANGUAGE TupleSections, FlexibleInstances, TemplateHaskell,
     FunctionalDependencies #-}
 
--- NOTES 2021
--- what can Any do?
-
--- data Any = Any
---  { _anyNotesFn :: Map Loc [MarkD] -> SNote -> Tr SNote
---  , _anyModFn   :: String -> Loc -> Loc -> Tr [TrRaw]
---  }
-
-
 
 module Instruments.Any where
 
@@ -42,6 +33,27 @@ import Util.Map
 import Translation.Curves
 import Instruments
 
+-- Oct. 2026: 
+--
+-- Goal is to update Any and AnySimple to 
+-- (1) generalize the modFn to include control marks. 
+--     control marks CC number and data will be based on a SendCtrl mark.
+--     we need to base the control marks' destinations on MidiChan marks
+--     or the default channel 
+-- (2) modify the notes function to update their destinations based
+--     on MidiChan marks. 
+--
+-- Where do these things take place in the current system? 
+--
+-- (1) modFn as currently stands: 
+--   - type Any has a modFn (just changed to ctrlFn) with the signature
+--       ctrlFn :: String -> Loc -> Loc -> Tr [TrRaw]
+--     - is this enough? well it gives us staff name so we can look up marks.
+--       limits of Loc. we can still make mod marks if we want.
+--   - type AnySimple has a mod function too. 
+-- (2) 
+
+
 -- any: useful for instruments which combine multiple articulations of same
 -- instrument, clearly same instrument.
 --
@@ -63,7 +75,7 @@ data AnySimple = AnySimple
   , _anySimpleStacFn       :: SNote -> Tr SNote
   , _anySimpleEndAlterFn   :: SNote -> Tr SNote
   , _anySimpleArpFn        :: SNote -> Tr SNote
-  , _anySimpleModFn        :: String -> Loc -> Loc -> Tr [TrRaw] -- staffN, b/e
+  , _anySimpleCtrlFn       :: String -> Loc -> Loc -> Tr [TrRaw] -- staffN, b/e
   , _anySimpleDestFn       :: SNote -> String -> (Int,Int) -- artic
   , _anySimpleVelSource    :: VelocitySource
   , _anySimpleKsFn         :: SNote -> String -> Maybe Int -- artic input, maybe ks out
@@ -90,13 +102,28 @@ makeAny staffNs shapeFn accentAmt velCurve splitTrillFlag notesFn modFn =
 
 -- Change Sept. 13, 2023: added the argument splitTrillFlag so I 
 --   can pass it along to Meta 
+--
+-- Oct. 2026. as I prepare to make a synth instrument
+-- for driving the Moog. We want to send mod values from dynamics along
+-- with midi velocity. I guess they have to correspond. If we want them
+-- functioning separately we can a different Moog instrument.
+-- Anywhere in this function we would choose the channel for SNotes? Anywhere
+-- we send mod values? SendCtrl values? We use functions in AnySimple.
+-- what's difference between Any and AnySimple? I don't understand 
+-- how the fields of AnySimple are accessed beside anysimpleNotes and modFn.
+-- Any has only a notes function and a mods function
+--
 makeAnySimple :: String -> GsFunc -> Bool -> AnySimple -> MetaInstr
 makeAnySimple staffN shapeFn splitTrillFlag anySimp =
   MetaInstr staffN [staffN] (Any (anySimpleNotes anySimp) 
-                                 (view modFn anySimp))
+                                 (view ctrlFn anySimp))
             splitTrillFlag runAny shapeFn
 
 
+-- change Oct. 2026. I'm getting rid of bracket functions. To specify synth
+-- setting, my plan is to use MidiChan marks and SendCtrl marks. We'll just 
+-- use a lot of them if needed. A good start.
+--
 -- using a synth meta instr means:
 --
 --   "patch": a combination of a midi channel and a set of midi controls to be
@@ -111,7 +138,15 @@ makeAnySimple staffN shapeFn splitTrillFlag anySimp =
 --
 -- 
 
-
+-- Oct. 2026: run any takes only an Any which has a notes function
+-- and a mods function. Is that enough? What about keyswitches?
+-- Oh those are attached to notes. What about SendCtrl? Would that be covered
+-- in ModFn? oh I have those attached to notes. I need to send them
+-- at the loc they are attached to so I can send them on an empty staff.
+-- An example would be Pedal in piano.
+-- Okay it looks like mod function is called for entire composition playback
+-- range. but it assumes to use the dest fixed to that staff, rather than
+-- a dest indicated by previous channel mark.
 runAny :: MetaInstr -> Any -> MetaPrepared -> Tr ()
 runAny instr (Any nFn modFn) metaPre = do
   -- do staff: what's the common pattern here
@@ -136,6 +171,10 @@ anyLk k m = case M.lookup k m of {Just x -> x}
 --   staves (okay that's easy), marks, 
 --
 --   how does it fine # marking for keyswitch?
+--
+-- Oct. 2026: need to find associated midi channel for notes. Wait 
+-- we already have a destFn. Can that be incorporated? This seems to
+-- have been built-in to accomodate Hollywood orchestra. 
 anySimpleNotes :: AnySimple -> Map Loc [MarkD] -> SNote -> Tr SNote 
 anySimpleNotes anySimp mergedMarks sn = do
   -- is 'artic' what we are calling thet # function?

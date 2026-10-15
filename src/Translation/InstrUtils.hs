@@ -249,8 +249,8 @@ computeCtrls staffN dest = do
 
 
 maybeCtrl :: MarkD -> Maybe (Int,Int)
-maybeCtrl (MidiCtrl ctrl _ val) = Just (ctrl,val)
-maybeCtrl _                = Nothing
+maybeCtrl (MidiCtrl ctrl val) = Just (ctrl,val)
+maybeCtrl _                   = Nothing
 
 
 
@@ -366,7 +366,7 @@ lookupStaffMarkLE g msg loc marks =
 -- lookupControlSettingsMarks
 --
 lookupControlSettingsMarks ::
-  String -> Loc -> Loc -> Map String (Map Loc [MarkD]) -> [(Loc, String)]
+  String -> Loc -> Loc -> Map String (Map Loc [MarkD]) -> [(Loc, (Int,Int))]
 lookupControlSettingsMarks
   staffN begLoc endLoc m = mapMaybe ms2 $ M.toList m3
   where
@@ -374,12 +374,12 @@ lookupControlSettingsMarks
     m3 :: Map Loc [MarkD]
     m3 = M.filterWithKey pred m3
     pred l _ = begLoc <= l && l < endLoc
-    maybeCtrlSetting :: MarkD -> Maybe String
-    maybeCtrlSetting (CtrlSetting s) = Just s
+    maybeCtrlSetting :: MarkD -> Maybe (Int,Int)
+    maybeCtrlSetting (CtrlSetting c i) = Just (c,i)
     maybeCtrlSetting _               = Nothing
-    ms :: [MarkD] -> Maybe String
+    ms :: [MarkD] -> Maybe (Int,Int)
     ms marks = listToMaybe $ mapMaybe maybeCtrlSetting marks
-    ms2 :: (Loc,[MarkD]) -> Maybe (Loc,String)
+    ms2 :: (Loc,[MarkD]) -> Maybe (Loc,(Int,Int))
     ms2 (loc,marks) = case ms marks of
       Nothing -> Nothing
       Just s  -> Just (loc, s)
@@ -477,8 +477,8 @@ isStac :: MarkD -> Maybe Double
 isStac (StacDur d) = Just d
 isStac _            = Nothing
 
-isCtrlSetting :: MarkD -> Maybe String
-isCtrlSetting (CtrlSetting s) = Just s
+isCtrlSetting :: MarkD -> Maybe (Int,Int)
+isCtrlSetting (CtrlSetting c i) = Just (c,i)
 isCtrlSetting _               = Nothing
 
 isExt (Extend d) = Just d

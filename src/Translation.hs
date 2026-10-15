@@ -477,6 +477,7 @@ data LowLevelTrill =
                              -- both odd and even
   }
   | NonSplitTrill Int
+  deriving (Show)
   
 
 -- <idx, 0-origin> <of total n> <tBeg> <tEnd>
@@ -515,6 +516,7 @@ data SNote = SNote
   , snTrill     :: LowLevelTrill
   , snPitWarpOffset :: Double
   }
+  deriving (Show)
   
 data ControlCurve = ControlCurve 
   { _controlCurveDest    :: (Int,Int)
