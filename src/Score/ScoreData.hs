@@ -152,8 +152,9 @@ data Mark a = SymbolMark String (Maybe Int) (Maybe Int)
             | BracketR String
             | BracketC
             | Boundary2 (Maybe a)
-            | MidiCtrl Int a Int -- <ctrl num> <value as numvar> <value as Int>
-            | CtrlSetting String
+            | MidiCtrl Int Int -- <ctrl num> <value>
+            | MidiChan Int 
+            | CtrlSetting Int Int
             | GenericShape (GsContent a)
             -- | ControlShape (CtrlShapeContent a)
             | Lev1DynL   Double

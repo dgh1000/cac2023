@@ -158,8 +158,12 @@ playRawEvents' streams absBegin evts@((t,_):_) = do
   spinUntil (head streams) (absBegin+t)
   forM_ sameTimes (\(_,(streamId,msg)) -> do
     when (streamId >= length streams || streamId < 0) 
-      (throwMine $ "In playRawEvents', got stream id greater than number " ++
-        "of MIDI streams available, OR LESS THAN ZERO")
+      (throwMine $ 
+        printf ("In playRawEvents', got stream id %d, for msg %s which is " ++
+        "greater " ++
+        "than number of MIDI streams available, OR LESS THAN ZERO") 
+        streamId (show msg)
+      )
     -- writeShort (streams !! streamId) $ toPMEvent (x,y,z))
     send (streams !! streamId) msg)
   playRawEvents' streams absBegin remainEvts

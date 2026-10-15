@@ -208,9 +208,11 @@ instrument technique
 
 patch: a general term for regions of sound within a staff
 
-  different regions may be translated into MIDI differently
+  different regions may be translated into MIDI differently.
+  patch also has a special meaning to the Piano instrument, which
+  looks for $<number> and changes MIDI channel to that number.
 
-  $p:name
+  $alphanum
 
 Generic shape
 
@@ -340,7 +342,7 @@ computeWordMarkX :: Map String (Map Loc [String]) ->
                      Map String (Map Loc [String]) ->
                      Map Loc (Map String [MarkD])
 computeWordMarkX mAbove mBelow = M.unionWith (M.unionWith (++))
-    marksAbove marksBelow 
+    marksAbove marksBelow
   where
     -- marksBleow
     marksBelow' :: Map Loc (Map String [MarkN])
@@ -358,9 +360,9 @@ computeWordMarkX mAbove mBelow = M.unionWith (M.unionWith (++))
     marksAbove = M.mapWithKey (rawMarkToMarkD vars) x
     -- merge Map Loc (Map String [MarkD]), Map Loc (Map String [MarkD])
     -- union in which the merging function is a union in which merging is ++
-    
 
-parseWordBelow :: Map Loc [String] -> Map Loc [MarkN] 
+
+parseWordBelow :: Map Loc [String] -> Map Loc [MarkN]
 parseWordBelow = M.mapWithKey (\k v -> map (f k) v)
   where
     f loc s = case parse dynamic "" s of
@@ -395,7 +397,7 @@ toMarkD vars loc mIn = f mIn
     g = computeNumVar vars loc
     f :: Mark NumVar -> Mark Double
     f (SymbolMark s i mStaff) = SymbolMark s i mStaff
-    f (SetTempo nv1 nv2 flag) = SetTempo (fmap g nv1) (g nv2) flag  
+    f (SetTempo nv1 nv2 flag) = SetTempo (fmap g nv1) (g nv2) flag
     f (ArpDelta d) = ArpDelta d
     f (StacDur d) = StacDur d
     f (Trunc d) = Trunc d
@@ -403,7 +405,7 @@ toMarkD vars loc mIn = f mIn
     f (Extend d) =  Extend d
     f (AbsWarp s nv1) =  AbsWarp s $ g nv1
     f (Pause nv1) =  Pause $ g nv1
-    f (PostPause nv1) =  PostPause $ g nv1 
+    f (PostPause nv1) =  PostPause $ g nv1
     f W =  W
     f (RampBeg nv) =  RampBeg $ g nv
     f (RampEndBeg nv1 nv2) =  RampEndBeg (g nv1) (g nv2)
@@ -417,7 +419,8 @@ toMarkD vars loc mIn = f mIn
     f (BracketR s)           = BracketR s
     f (Boundary2 nv)         = Boundary2 $ fmap g nv
     f (AdjustL dur nv1)       = AdjustL dur (g nv1)
-    f (MidiCtrl cn nv1 _)    = MidiCtrl cn (g nv1) (round $ g nv1)
+    f (MidiCtrl cn value)    = MidiCtrl cn value
+    f (MidiChan cn)          = MidiChan cn
     f (GenericShape c)       = GenericShape (k c)
     f (Lev1DynL v)           = Lev1DynL v
     f (Lev1DynR v)           = Lev1DynR v
@@ -425,18 +428,19 @@ toMarkD vars loc mIn = f mIn
     f (Lev2DynL sign nv)     = Lev2DynL sign (g nv)
     f (Lev2DynR sign nv)     = Lev2DynR sign (g nv)
     f (Lev2DynLR sign nv)    = Lev2DynLR sign (g nv)
-    f (CtrlSetting c)        = CtrlSetting  c
+    f (CtrlSetting ctrl num) = CtrlSetting  ctrl num
     f (SpliceBeg s)     = SpliceBeg s
     f (SpliceEnd s)     = SpliceEnd s
     f (LeftSideShift nv1 nv) = LeftSideShift (g nv1) (g nv)
     f (RightSideShift nv1 nv) = RightSideShift (g nv1) (g nv)
-    k (GsLeft c amt)   = GsLeft c $ fmap g amt 
-    k (GsOneLoc c amt) = GsOneLoc c $ fmap g amt 
+    k (GsLeft c amt)   = GsLeft c $ fmap g amt
+    k (GsOneLoc c amt) = GsOneLoc c $ fmap g amt
     k (GsRight c)      = GsRight c
     k2 (CscLeft c amt)  = CscLeft c $ fmap g amt
     k2 (CscRight c) = CscRight c
 
-    
+
+
 
 ----------------------------------------------------------------------
 
@@ -540,17 +544,17 @@ computeNumVar vars loc (NumVar d mName) = case mName of
     t x = throwMine $ printf "at %s, %s" (showLoc2 loc) x
 
 
-  
+
 ----------------------------------------------------------------------
 
-rawMark :: Parser (RawMark NumVar) 
+rawMark :: Parser (RawMark NumVar)
 rawMark = comment <|> setVar <|> (RmMark <$> mark)
 
 
 comment :: Parser (RawMark NumVar)
 comment = try (string "**") >> return Comment
 
-setVar :: Parser (RawMark NumVar) 
+setVar :: Parser (RawMark NumVar)
 setVar = do
   v <- try $ do s <- varName
                 char '='
@@ -571,7 +575,7 @@ mark = setTempo <|> arp <|> stac <|> trunc <|> ltrunc <|>
        bracketL <|> bracketR <|> patch <|> artic <|> boundary <|> adjust <|>
        midiCtrl <|> postPause <|> genericOneLoc <|> genericLeft <|>
        genericRight <|> spliceBeg <|> spliceEnd <|> ctrlSetting <|>
-       leftShift <|> rightShift
+       leftShift <|> rightShift <|> midiChan
 
 
 
@@ -581,9 +585,8 @@ midiCtrl = do
            notFollowedBy $ char '*'
   ds <- many1 digit
   char ','
-  nv <- numVar
-  return $ MidiCtrl (read ds) nv 0
-  
+  MidiCtrl (read ds) <$> parseInt
+
 
 
 setTempo = setTempo1 <|> setTempo2
@@ -602,7 +605,7 @@ setTempo2 = do
   v1 <- try $ do v <- numVar
                  string "=T="
                  return v
-  
+
   v2 <- numVar
   flag <- option False (char '*' >> return True)
   return $ SetTempo (Just v1) v2 flag
@@ -648,11 +651,11 @@ extend = do
   s <- seconds
   eof
   return $ Extend s
-  
+
 
 -- beat value can be specified as single int, float, ratio of floats specified
 -- with %, and any of that times a variable.
-absWarp = 
+absWarp =
   (do try $ string "<<"
       -- it's okay here to assume this is an absolute left sided warp
       v <- numVar
@@ -691,7 +694,7 @@ timeshift1 = do
   v <- numVar
   flag <- option False (char '*' >> return True)
   return $ TimeShift Nothing v flag
-  
+
 timeshift2 = do
   v1 <- try numVar
   char '%'
@@ -747,8 +750,8 @@ maybeEndBeg = do
   -- This is the case of a simple ramp end.
   (do eof
       return Nothing)
-     
-  
+
+
 rampBegMarker = (try $ string "--") <|> (try $ string "=")
 
 
@@ -796,7 +799,7 @@ trillShape step1 = do
   let step22 = if step2 == '^' then Upper else Lower
   return $ TrillShape step11 segs step22
 
- 
+
 bracketL :: Parser MarkN
 bracketL = do
   char '['
@@ -825,10 +828,14 @@ bracketC = try $ do
 
 patch :: Parser MarkN
 patch = do
-  char '$'
+  try $ string "p:"
   s <- many1 alphaNum
   return $ Patch s
 
+midiChan :: Parser MarkN
+midiChan = do
+  try $ string "c:"
+  MidiChan <$> parseInt
 
 artic :: Parser MarkN
 artic = do
@@ -854,7 +861,7 @@ boundaryLeadingNumvar = do
   dir <- (char '-' >> return (-1)) <|> (char '+' >> return 1)
   NumVar x v <- numVar
   return $ Boundary2 (Just $ NumVar (dir*x) v)
-  
+
 
 adjust :: Parser MarkN
 adjust = do
@@ -873,7 +880,7 @@ genericOneLoc = do
                     numVar
   nvs <- many oneParam
   eof
-  return $ GenericShape (GsOneLoc typ nvs) 
+  return $ GenericShape (GsOneLoc typ nvs)
 
 
 genericLeft :: Parser MarkN
@@ -892,9 +899,9 @@ genericRight = try $ do
   typ <- many1 alphaNum
   char ')'
   eof
-  return $ GenericShape (GsRight typ) 
-    
-    
+  return $ GenericShape (GsRight typ)
+
+
 genericCenter :: Parser MarkN
 genericCenter = try $ do
   try $ string "!!"
@@ -950,7 +957,7 @@ spliceBeg = do
   try (string "//")
   n <- many1 alphaNum
   eof
-  return $ SpliceBeg n 
+  return $ SpliceBeg n
 
 
 spliceEnd :: Parser MarkN
@@ -964,22 +971,24 @@ spliceEnd = do
 ctrlSetting :: Parser MarkN
 ctrlSetting = do
   char '&'
-  n <- many1 alphaNum
+  n <- parseInt
+  char ':'
+  i <- parseInt
   eof
-  return $ CtrlSetting n
+  return $ CtrlSetting n i
 
 
 ----------------------------------------------------------------------
 
-seconds = do 
+seconds = do
   char '@'
   i <- parseInt
   return $ 0.01 * fromIntegral i
 
 
 numVar :: Parser NumVar
-numVar = 
-  (do n <- varName 
+numVar =
+  (do n <- varName
       return $ NumVar 1 (Just n))
   <|>
   (do n <- num
@@ -1044,7 +1053,7 @@ simpleDouble_dot = do
 
 
 simpleDouble_notDot :: Parser String
-simpleDouble_notDot = many1 $ oneOf ".0123456789"  
+simpleDouble_notDot = many1 $ oneOf ".0123456789"
 
 
 ----------------------------------------------------------------------
@@ -1074,7 +1083,7 @@ lev1DynL = try $ do
   return $ Lev1DynL v
 
 
-lev1DynR :: Parser (Mark NumVar) 
+lev1DynR :: Parser (Mark NumVar)
 lev1DynR = try $ do
   char '*'
   v <- rawDynNum
@@ -1099,7 +1108,7 @@ lev1DynLR2 = try $ do
   char '*'
   eof
   return $ Lev1DynLR v1 v2
-  
+
 
 rawDynNum :: Parser Double
 rawDynNum = do
@@ -1120,7 +1129,7 @@ dynamic2 = do
 
 rawDyn :: Parser Double
 rawDyn = (try (string "pppp") >> return 0)
-      <|> 
+      <|>
       (try (string "ppp") >> return 1)
       <|>
       (try (string "pp") >> return 2)

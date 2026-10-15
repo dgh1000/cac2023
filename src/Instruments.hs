@@ -70,9 +70,13 @@ makeFields ''NoteConf
 --   function based on staff name and range of Locs . Does it have
 --   to be mod that it generates? How does any simple generate 
 --   a vol curve?
+-- 
+-- 
+-- NOTES Oct 2026. Generalizing this to accomondate midi control marks
+-- in scores. changed name of modFn to ctrlFn. 
 data Any = Any
   { _anyNotesFn :: Map Loc [MarkD] -> SNote -> Tr SNote
-  , _anyModFn   :: String -> Loc -> Loc -> Tr [TrRaw]
+  , _anyCtrlFn   :: String -> Loc -> Loc -> Tr [TrRaw]
   }
 
 makeFields ''Any

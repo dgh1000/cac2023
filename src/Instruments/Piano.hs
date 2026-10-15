@@ -1,5 +1,6 @@
 module Instruments.Piano where
 
+import System.IO.Unsafe
 import Debug.Trace(trace)
 import qualified Data.Map.Strict as M
 import Data.Map.Strict(Map)
@@ -34,6 +35,7 @@ import Common.CommonUtil
 import Score.ScoreData
 import Util.Exception
 import Util.Map
+import Util.Showable (ShowItemClass(showIString))
 -- import qualified Data.IntMap as M
 
 defCtrlSettings :: Map String [Int]
@@ -162,29 +164,24 @@ updateMidiChan port chan s =
     , snHistory = s : snHistory s
     , snDest = (port,chan) }
 
+-- pnoUpdateDest2 ::  Piano2 -> SNote -> Tr SNote
+-- pnoUpdateDest2 pno2 s = printf "original snote: %s" (show s) `trace`
+--   pnoUpdateDest2' pno2 s
+
 pnoUpdateDest2 :: Piano2 -> SNote -> Tr SNote
 pnoUpdateDest2 pno2 s = do
-  marks <- (iuLookup2 "xx" (snStaffName s) . scMarksByStaff) `liftM` gets
-              (view score)
-  let (portNum,_) = pLookup (snStaffName s) (pno2Dests pno2)
+  marks <- gets ((iuLookup2 "xx" (snStaffName s) . scMarksByStaff) . view score)
+  let (portNum,defaultChan) = pLookup (snStaffName s) (pno2Dests pno2)
       mName = lookupStaffMarkLE isMidiChan "'isMidiChan'"
             (snLoc s) marks
       ret = case mName of
-        Nothing -> s
+        Nothing -> updateMidiChan portNum defaultChan s
         Just c  -> updateMidiChan portNum c s
   return ret
 
-
-parseInt :: String -> Maybe Int
-parseInt str
-    | null str          = Nothing
-    | all isDigit str   = readMaybe str
-    | otherwise         = Nothing
-
-
 isMidiChan :: MarkD -> Maybe Int
-isMidiChan (Patch s) = parseInt s
-isMidiChan _         = Nothing
+isMidiChan (MidiChan i) = Just i
+isMidiChan _            = Nothing
 
 -- making a piano note involves what?
 --
@@ -204,7 +201,7 @@ pnoUpdateCtrlSetting pno2 s = do
             (snLoc s) marks
       ret = case mName of
         Nothing -> s
-        Just name  -> modifyCtrlSettings s name
+        Just (c,value)  -> modifyCtrlSettings s (c,value)
   return ret
 
 {-
@@ -217,6 +214,12 @@ showMarks staffN m = unlines $ staffN : map g (M.toAscList m)
     h loc _         = printf "Other mark at loc %s" (showLoc2 loc)
 -}
 
+{-
+
+Old version, in which the "contrl setting" was just a string,
+and was looked up in a table, which probably had a bunch of 
+settings. I don't know if I ever used this, so I changed
+it to two ints. 
 modifyCtrlSettings :: SNote -> String -> SNote
 modifyCtrlSettings
   s@SNote { snMods = modsIn }
@@ -227,10 +230,20 @@ modifyCtrlSettings
       Nothing -> error $ "undefined ctrl setting: " ++ name
     toModifCtrl :: Int -> Modif
     toModifCtrl key = ModifKs (Left (-0.1)) key
+-}
+
+-- An example of a control setting in the score:
+-- "&78:64" means send a 64 to controller 78.
+modifyCtrlSettings :: SNote -> (Int,Int) -> SNote
+modifyCtrlSettings
+  s@SNote { snMods = modsIn }
+  (ctrl,value)
+  = s { snMods = ModifCtrl (Left 0.001) ctrl value : modsIn }
 
 
-
-
+-- Oct. 2026. This is an example of midi events (specifically control events)
+-- that are not attached to notes. So this returns raws that are unconnected
+-- to notes. Same as mod function.
 computePedal :: Piano2 -> MetaPrepared -> [String] -> Tr [TrRaw]
 computePedal pno2 metaPre staffNs = do
   score <- gets $ view score
@@ -290,6 +303,11 @@ dumpPedEvts :: Map Loc PedalEvt -> String
 dumpPedEvts m = unlines $ map g $ M.toAscList m
   where
     g (k,v) = printf "%s %s" (showLoc2 k) (show v)
+
+dumpMetaPre :: MetaPrepared -> IO MetaPrepared 
+dumpMetaPre mp = do
+  writeFile "metapre.txt" (showIString mp)
+  return mp
 
 
 didChopEnd :: (Loc,Loc) -> Map Loc PedalEvt -> Bool
