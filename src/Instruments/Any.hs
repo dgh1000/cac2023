@@ -39,7 +39,8 @@ import Instruments
 -- (1) generalize the modFn to include control marks. 
 --     control marks CC number and data will be based on a SendCtrl mark.
 --     we need to base the control marks' destinations on MidiChan marks
---     or the default channel 
+--     or the default channel. the ctrl function taking the staff name
+--     will be enough to find MidiChan marks
 -- (2) modify the notes function to update their destinations based
 --     on MidiChan marks. 
 --
@@ -51,20 +52,42 @@ import Instruments
 --     - is this enough? well it gives us staff name so we can look up marks.
 --       limits of Loc. we can still make mod marks if we want.
 --   - type AnySimple has a mod function too. 
--- (2) 
-
-
--- any: useful for instruments which combine multiple articulations of same
--- instrument, clearly same instrument.
+--   - does AnySimple have any other functions for sending control events? There is
+--     modifFn which computes the modifiers to a given SNote which can sometimes
+--     take the form of a CC message. But these are note-attached and not attached
+--     to marks
+--     - there is expr function which might influence what CC 11 events are sent.
+--       those would be handled by the existing "mod functions"
+--     - there is 'configs'. how are those used? a grep shows that everywhere 
+--       in the code those are initialized to M.empty. It might have something
+--       to do with bracket functions or shape functions, but has never been
+--       implemented.
+-- (2) what functions in Any or AnySimple influence the computation of notes?
+--     in particular the dests. 
+--   - stacFn, endAlterFn, arpFn :: SNote -> Tr SNote 
+--       (I wonder how arpFn works without reference to Score? maybe it's passed
+--        though parial application. Same with stacFn and endAlterFn? Why don't 
+--        these need staff name? ah, staff name is in SNote)
+--   - accentAmt :: Double
+--   - destFn :: SNote -> String -> (Int,Int)
+--       (I wonder how this is configured. Look this up eventually.)
+--   - velSource :: VelocitySource. not sure what this does. It can take VsCurve
+--       or VsArticulation. If VsArticulation is there another way to configure it?
+--   - ksFn :: SNote -> String -> Maybe Int
+--      the string is an articulation. I think this was how I was using QL Orchestra
+--      in those compositions from 2023.
+--   - modifFn :: SNote -> String -> [Modif] 
+--      this seems to refer to choosing the articulation, I think. either through
+--      keyswitch or CC value. Clearly note attached. But I don't know if
+--      I intended this to be used for CC articulations only, as keyswitches would
+--      have come through the ksFn.
+--   - volFn, exprFn :: String -> Either Int VelCurve. String is articulation, so
+--      I could have separate velocity curves for each articulation.
 --
--- our different articulations could be considered different instruments.
---
-
--- can this handle garritan in which accents are hardness of accent and mod is
--- volume on most instruments?
-
--- NOTES 2021
-
+-- How I should implement these two changes: (CC marks and midi chan marks)
+-- 
+--   use the existing destFn but update it's type signature to take staff name
+--   as well as artic. 
 
 data VelocitySource = VsCurve (SNote -> String -> VelCurve)
                     | VsArticulation
